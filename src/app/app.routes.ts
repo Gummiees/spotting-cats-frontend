@@ -11,6 +11,7 @@ import { Logout } from "./logout/logout";
 import { Settings } from "./settings/settings";
 
 export const routes: Routes = [
+  { path: "", redirectTo: "/cats", pathMatch: "full" },
   { path: "cats", component: CatsComponent },
   { path: "login", component: Login, canActivate: [AnonymousGuard] },
   {

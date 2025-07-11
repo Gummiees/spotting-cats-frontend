@@ -2,12 +2,13 @@ import { Component, signal } from "@angular/core";
 import { RouterLink, RouterLinkActive } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import { AuthStateService } from "@shared/services/auth-state.service";
+import { AdminBadge } from "@shared/components/admin-badge/admin-badge";
 
 @Component({
   selector: "app-navbar",
   templateUrl: "./navbar.html",
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, CommonModule],
+  imports: [RouterLink, RouterLinkActive, CommonModule, AdminBadge],
 })
 export class Navbar {
   isMenuOpen = signal(false);

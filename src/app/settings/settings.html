@@ -1,14 +1,14 @@
 <app-modal
-[isOpen]="isDeleteModalOpen()"
-title="Delete Account"
-message="Are you sure you want to delete your account?"
-confirmText="Delete"
+[isOpen]="isDeactivateModalOpen()"
+title="Deactivate Account"
+message="Are you sure you want to deactivate your account? Your account will be deleted after 30 days if you don't log back in."
+confirmText="Deactivate"
 cancelText="Cancel"
-(onConfirm)="onConfirmDelete()"
-(onCancel)="onCancelDelete()"
+(onConfirm)="onConfirmDeactivate()"
+(onCancel)="onCancelDeactivate()"
 />
 
-@if(loadingDelete()) {
+@if(loadingDeactivate()) {
   <app-spinner />
 }
 <app-header title="Settings" />
@@ -117,7 +117,7 @@ cancelText="Cancel"
       
       <div class="mt-6">
         <div class=" flex items-center gap-x-6">
-          <button class="transition duration-200 ease-in-out rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-700 outline-red-700 focus:outline-2 focus:outline-offset-2 active:bg-red-800  focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700" (click)="onDelete()">Delete account</button>
+          <button class="transition duration-200 ease-in-out rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-700 outline-red-700 focus:outline-2 focus:outline-offset-2 active:bg-red-800  focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700" (click)="onDeactivate()">Deactivate account</button>
         </div>
       </div>
     </form>

@@ -11,10 +11,11 @@ export class AuthStateService {
   private _isAuthenticated = signal<boolean>(false);
   private _user = signal<OwnUser | null>(null);
   private _isLoading = signal<boolean>(false);
+  private _initialAuthCheck: Promise<boolean> | null = null;
 
   constructor(private http: HttpClient) {
     // Check authentication status on service initialization
-    this.checkAuthStatus();
+    this._initialAuthCheck = this.checkAuthStatus();
   }
 
   get isAuthenticated() {
@@ -27,6 +28,10 @@ export class AuthStateService {
 
   get isLoading() {
     return this._isLoading.asReadonly();
+  }
+
+  get initialAuthCheck() {
+    return this._initialAuthCheck;
   }
 
   async checkAuthStatus(): Promise<boolean> {

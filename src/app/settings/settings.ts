@@ -15,6 +15,7 @@ import { AdminBadge } from "@shared/components/admin-badge/admin-badge";
 import moment from "moment";
 import { Spinner } from "@shared/components/spinner/spinner";
 import { LoadingButton } from "@shared/components/loading-button/loading-button";
+import { SnackbarService } from "@shared/components/snackbar/snackbar.service";
 
 @Component({
   selector: "app-settings",
@@ -34,8 +35,8 @@ export class Settings {
   loadingUsername = signal(false);
   loadingEmail = signal(false);
   loadingAvatar = signal(false);
-  loadingDelete = signal(false);
-  isDeleteModalOpen = signal(false);
+  loadingDeactivate = signal(false);
+  isDeactivateModalOpen = signal(false);
   isAvatarModalOpen = signal(false);
 
   avatarUrl = signal<string>("");
@@ -63,7 +64,8 @@ export class Settings {
   constructor(
     private authStateService: AuthStateService,
     private userService: UserService,
-    private router: Router
+    private router: Router,
+    private snackbarService: SnackbarService
   ) {
     effect(() => {
       this.form.patchValue({
@@ -122,8 +124,14 @@ export class Settings {
     try {
       this.loadingUsername.set(true);
       await this.userService.updateUsername(username);
+      this.snackbarService.show(
+        "Username updated successfully",
+        3000,
+        "success"
+      );
     } catch (error) {
       console.error(error);
+      this.snackbarService.show("Failed to update username", 3000, "error");
     } finally {
       this.loadingUsername.set(false);
     }
@@ -138,8 +146,10 @@ export class Settings {
     try {
       this.loadingEmail.set(true);
       await this.userService.updateEmail(email);
+      this.snackbarService.show("Email updated successfully", 3000, "success");
     } catch (error) {
       console.error(error);
+      this.snackbarService.show("Failed to update email", 3000, "error");
     } finally {
       this.loadingEmail.set(false);
     }
@@ -154,19 +164,21 @@ export class Settings {
     try {
       this.loadingAvatar.set(true);
       await this.userService.updateAvatar(avatarUrl);
+      this.snackbarService.show("Avatar updated successfully", 3000, "success");
     } catch (error) {
       console.error(error);
+      this.snackbarService.show("Failed to update avatar", 3000, "error");
     } finally {
       this.loadingAvatar.set(false);
     }
   }
 
-  onDelete() {
-    this.isDeleteModalOpen.set(true);
+  onDeactivate() {
+    this.isDeactivateModalOpen.set(true);
   }
 
-  onCancelDelete() {
-    this.isDeleteModalOpen.set(false);
+  onCancelDeactivate() {
+    this.isDeactivateModalOpen.set(false);
   }
 
   onChangeAvatarModal() {
@@ -182,15 +194,21 @@ export class Settings {
     this.onCloseAvatarModal();
   }
 
-  async onConfirmDelete() {
+  async onConfirmDeactivate() {
     try {
-      this.loadingDelete.set(true);
-      await this.userService.delete();
+      this.loadingDeactivate.set(true);
+      await this.userService.deactivate();
       this.router.navigate(["/"]);
+      this.snackbarService.show(
+        "Account deactivated successfully",
+        3000,
+        "success"
+      );
     } catch (error) {
       console.error(error);
+      this.snackbarService.show("Failed to deactivate account", 3000, "error");
     } finally {
-      this.loadingDelete.set(false);
+      this.loadingDeactivate.set(false);
     }
   }
 
@@ -200,6 +218,22 @@ export class Settings {
     }
 
     return this.user.usernameUpdatedAt < this.thirtyDaysAgo();
+  }
+
+  canUpdateEmail(): boolean {
+    if (!this.user?.emailUpdatedAt) {
+      return true;
+    }
+
+    return this.user.emailUpdatedAt < this.ninetyDaysAgo();
+  }
+
+  canUpdateAvatar(): boolean {
+    if (!this.user?.avatarUpdatedAt) {
+      return true;
+    }
+
+    return this.user.avatarUpdatedAt < this.thirtyDaysAgo();
   }
 
   totalDaysSinceLastUsernameUpdate(): number {
@@ -228,22 +262,6 @@ export class Settings {
 
   private totalDaysSinceLastUpdate(date: Date): number {
     return moment().diff(moment(date), "days");
-  }
-
-  canUpdateEmail(): boolean {
-    if (!this.user?.emailUpdatedAt) {
-      return true;
-    }
-
-    return this.user.emailUpdatedAt < this.ninetyDaysAgo();
-  }
-
-  canUpdateAvatar(): boolean {
-    if (!this.user?.avatarUpdatedAt) {
-      return true;
-    }
-
-    return this.user.avatarUpdatedAt < this.thirtyDaysAgo();
   }
 
   private thirtyDaysAgo(): Date {
