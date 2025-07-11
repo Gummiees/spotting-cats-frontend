@@ -1,5 +1,8 @@
 <div class="min-h-full">
   <app-navbar />
+  @if(isLoading) {
+    <app-spinner />
+  }
   <app-snackbar #snackbar></app-snackbar>
   <router-outlet />
 </div>

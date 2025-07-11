@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { Snackbar, SnackbarType } from "./snackbar";
+import { Snackbar, SnackbarType } from "@shared/components/snackbar/snackbar";
 
 @Injectable({ providedIn: "root" })
 export class SnackbarService {

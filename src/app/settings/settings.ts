@@ -15,7 +15,8 @@ import { AdminBadge } from "@shared/components/admin-badge/admin-badge";
 import moment from "moment";
 import { Spinner } from "@shared/components/spinner/spinner";
 import { LoadingButton } from "@shared/components/loading-button/loading-button";
-import { SnackbarService } from "@shared/components/snackbar/snackbar.service";
+import { SnackbarService } from "@shared/services/snackbar.service";
+import { LoadingService } from "@shared/services/loading.service";
 
 @Component({
   selector: "app-settings",
@@ -35,7 +36,6 @@ export class Settings {
   loadingUsername = signal(false);
   loadingEmail = signal(false);
   loadingAvatar = signal(false);
-  loadingDeactivate = signal(false);
   isDeactivateModalOpen = signal(false);
   isAvatarModalOpen = signal(false);
 
@@ -65,7 +65,8 @@ export class Settings {
     private authStateService: AuthStateService,
     private userService: UserService,
     private router: Router,
-    private snackbarService: SnackbarService
+    private snackbarService: SnackbarService,
+    private loadingService: LoadingService
   ) {
     effect(() => {
       this.form.patchValue({
@@ -196,8 +197,9 @@ export class Settings {
 
   async onConfirmDeactivate() {
     try {
-      this.loadingDeactivate.set(true);
+      this.loadingService.loading = true;
       await this.userService.deactivate();
+      this.loadingService.loading = false;
       this.router.navigate(["/"]);
       this.snackbarService.show(
         "Account deactivated successfully",
@@ -208,7 +210,7 @@ export class Settings {
       console.error(error);
       this.snackbarService.show("Failed to deactivate account", 3000, "error");
     } finally {
-      this.loadingDeactivate.set(false);
+      this.loadingService.loading = false;
     }
   }
 
