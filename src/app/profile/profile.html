@@ -1,0 +1,9 @@
+<hr />
+<div>
+  <div *ngIf="loading()">Loading...</div>
+  <img [src]="user?.avatarUrl" alt="avatar" />
+  <p>Username: {{ user?.username }}</p>
+  <p>Email: {{ user?.email }}</p>
+  <p>Is Admin: {{ user?.isAdmin }}</p>
+  <button (click)="onDelete()">Delete</button>
+</div>

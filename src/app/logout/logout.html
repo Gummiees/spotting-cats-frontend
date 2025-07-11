@@ -1,0 +1,10 @@
+<hr />
+<div>
+  @if(loading()) {
+    <p>Logging out...</p>
+  }
+  <h1>Logout</h1>
+  <button [disabled]="loading()" (click)="onClick()">
+    Logout
+  </button>
+</div>

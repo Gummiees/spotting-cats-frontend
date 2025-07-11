@@ -1,0 +1,125 @@
+<app-modal
+[isOpen]="isDeleteModalOpen()"
+title="Delete Account"
+message="Are you sure you want to delete your account?"
+confirmText="Delete"
+cancelText="Cancel"
+(onConfirm)="onConfirmDelete()"
+(onCancel)="onCancelDelete()"
+/>
+
+@if(loadingDelete()) {
+  <app-spinner />
+}
+<app-header title="Settings" />
+<main>
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <form [formGroup]="form">
+      <div class="border-b border-gray-900/10 space-y-12 pb-6">
+        <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
+          @if(user?.isAdmin) {
+            <app-admin-badge />
+          }
+
+          <div class="col-span-full">
+            <label for="username" class="block text-sm/6 font-medium text-gray-900">Username</label>
+            <div class="mt-2 flex items-center gap-x-2">
+              <div class="flex items-center rounded-md bg-white pl-3 outline-1 outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-violet-500 flex-1">
+                <input minlength="3" maxlength="20" type="text" name="username" id="username" formControlName="username" class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm/6 disabled:opacity-50 disabled:cursor-not-allowed" placeholder="janesmith" />
+              </div>
+              <button [disabled]="loadingUsername() || !isUsernameValid()" class="transition duration-200 ease-in-out rounded-md bg-violet-500 px-3 py-2 text-sm font-semibold text-white shadow-xs enabled:hover:bg-violet-600 enabled:outline-violet-600 enabled:active:bg-violet-700 enabled:focus-visible:outline-2 enabled:focus-visible:outline-offset-2 enabled:focus-visible:outline-violet-600 disabled:opacity-50 disabled:cursor-not-allowed" (click)="onSaveUsername()">
+                <app-loading-button [loading]="loadingUsername()" buttonText="Save" />
+              </button>
+            </div>
+            <div class="mt-2 flex items-center gap-x-2">
+              <p class="text-sm text-gray-500">You can update your username every 30 days.</p>
+            </div>
+            @if(!canUpdateUsername()) {
+              <div class="mt-2 flex items-center gap-x-2">
+                <p class="text-sm text-red-600">You updated your username <ng-container [ngPlural]="totalDaysSinceLastUsernameUpdate()">
+                  <ng-template ngPluralCase="=0">today</ng-template>
+                  <ng-template ngPluralCase="=1">yesterday</ng-template>
+                  <ng-template ngPluralCase="other">{{totalDaysSinceLastUsernameUpdate()}} days ago</ng-template>
+                </ng-container>.</p>
+              </div>
+            }
+          </div>
+              
+          <div class="col-span-full">
+            <label for="email" class="block text-sm/6 font-medium text-gray-900">Email address</label>
+            <div class="mt-2 flex items-center gap-x-2">
+              <div class="flex items-center rounded-md bg-white pl-3 outline-1 outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-violet-500 flex-1">
+                <input id="email" name="email" type="email" autocomplete="email" formControlName="email" class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm/6 disabled:opacity-50 disabled:cursor-not-allowed" />
+              </div>
+              <button [disabled]="loadingEmail() || !isEmailValid()" class="transition duration-200 ease-in-out rounded-md bg-violet-500 px-3 py-2 text-sm font-semibold text-white shadow-xs enabled:hover:bg-violet-600 enabled:outline-violet-600 enabled:active:bg-violet-700 enabled:focus-visible:outline-2 enabled:focus-visible:outline-offset-2 enabled:focus-visible:outline-violet-600 disabled:opacity-50 disabled:cursor-not-allowed" (click)="onSaveEmail()">
+                <app-loading-button [loading]="loadingEmail()" buttonText="Save" />
+              </button>
+            </div>
+            <div class="mt-2 flex items-center gap-x-2">
+              <p class="text-sm text-gray-500">You can update your email every 90 days.</p>
+            </div>
+            @if(!canUpdateEmail()) {
+              <div class="mt-2 flex items-center gap-x-2">
+                <p class="text-sm text-red-600">You updated your email <ng-container [ngPlural]="totalDaysSinceLastEmailUpdate()">
+                  <ng-template ngPluralCase="=0">today</ng-template>
+                  <ng-template ngPluralCase="=1">yesterday</ng-template>
+                  <ng-template ngPluralCase="other">{{totalDaysSinceLastEmailUpdate()}} days ago</ng-template>
+                </ng-container>.</p>
+              </div>
+            }
+          </div>
+      
+          <div class="col-span-full">
+            <div class="block text-sm/6 font-medium text-gray-900">Avatar</div>
+            <div class="mt-2 flex items-center gap-x-3 relative">
+              <img [ngClass]="canUpdateAvatar() ? ['cursor-pointer'] : ['cursor-not-allowed']" class="size-16 text-gray-300 w-16 h-16" [src]="avatarUrl()" aria-hidden="true" data-slot="icon" (click)="canUpdateAvatar() ? onChangeAvatarModal() : null"/>
+              <button [disabled]="!canUpdateAvatar()" type="button" class="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset enabled:hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed enabled:active:outline-1 enabled:active:outline-offset-2 enabled:active:outline-gray-300" (click)="onChangeAvatarModal()">Change</button>
+              <button [disabled]="loadingAvatar() || !isAvatarValid()" type="button" class="transition duration-200 ease-in-out rounded-md bg-violet-500 px-2.5 py-1.5 text-sm font-semibold text-white shadow-xs enabled:hover:bg-violet-600 enabled:outline-violet-600 enabled:active:bg-violet-700 enabled:focus-visible:outline-2 enabled:focus-visible:outline-offset-2 enabled:focus-visible:outline-violet-600 disabled:opacity-50 disabled:cursor-not-allowed" (click)="onSaveAvatar()">
+                <app-loading-button [loading]="loadingAvatar()" buttonText="Save" />
+              </button>
+              
+              @if(isAvatarModalOpen()) {
+                <div class="absolute left-26 bottom-0 w-3 h-3 rotate-45 bg-white ring-1 ring-black/5 pointer-events-none z-10"></div>
+                <div
+                  class="absolute left-0 right-0 top-12 z-10 mt-2 origin-top-left rounded-md bg-white shadow-lg ring-1 ring-black/5 "
+                  role="menu"
+                  aria-orientation="vertical"
+                  aria-labelledby="menu-button"
+                  tabindex="-1"
+                >
+                  <div class="max-h-[calc(64px*3+0.5rem*2)] overflow-y-auto p-2">
+                    <div class="grid auto-rows-min gap-2" style="grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));">
+                    @for(avatar of availableAvatars(); track avatar.id) {
+                      <div class="col-span-1">
+                        <img  [src]="avatar.url" alt="Avatar" class="w-16 h-16 rounded-full cursor-pointer hover:scale-110 transition-transform duration-150" (click)="onSelectAvatar(avatar.url)"/>
+                      </div>
+                    }
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+            <div class="mt-2 flex items-center gap-x-2">
+              <p class="text-sm text-gray-500">You can update your avatar every 30 days.</p>
+            </div>
+            @if(!canUpdateAvatar()) {
+              <div class="mt-2 flex items-center gap-x-2">
+                <p class="text-sm text-red-600">You updated your avatar <ng-container [ngPlural]="totalDaysSinceLastAvatarUpdate()">
+                  <ng-template ngPluralCase="=0">today</ng-template>
+                  <ng-template ngPluralCase="=1">yesterday</ng-template>
+                  <ng-template ngPluralCase="other">{{totalDaysSinceLastAvatarUpdate()}} days ago</ng-template>
+                </ng-container>.</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+      
+      <div class="mt-6">
+        <div class=" flex items-center gap-x-6">
+          <button class="transition duration-200 ease-in-out rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-700 outline-red-700 focus:outline-2 focus:outline-offset-2 active:bg-red-800  focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700" (click)="onDelete()">Delete account</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</main>

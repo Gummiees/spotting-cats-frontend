@@ -1,0 +1,10 @@
+<hr />
+<div>
+  @if(loading()) {
+    <p>Sending code...</p>
+  }
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+    <input type="text" placeholder="email" formControlName="email" />
+    <button type="submit" [disabled]="loading()">Login</button>
+  </form>
+</div>

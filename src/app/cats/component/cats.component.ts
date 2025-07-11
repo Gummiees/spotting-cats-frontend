@@ -1,7 +1,4 @@
 import { Component, OnInit, signal } from "@angular/core";
-import { CatsService } from "../services/cats.service";
-import { firstValueFrom } from "rxjs";
-import { Cat } from "../models/cat";
 import {
   FormBuilder,
   FormGroup,
@@ -9,6 +6,10 @@ import {
   ReactiveFormsModule,
 } from "@angular/forms";
 import { CommonModule } from "@angular/common";
+import { firstValueFrom } from "rxjs";
+
+import { Cat } from "@models/cat";
+import { CatsService, NewCat } from "../../shared/services/cats.service";
 
 @Component({
   selector: "app-cats",
@@ -72,7 +73,7 @@ export class CatsComponent implements OnInit {
       });
     } else {
       await this.addCat({
-        id: "", // id will be set by backend
+        id: "",
         ...formValue,
       });
     }
@@ -108,9 +109,9 @@ export class CatsComponent implements OnInit {
     });
   }
 
-  public async addCat(cat: Cat) {
+  public async addCat(newCat: NewCat) {
     await this.executeWithErrorHandling(async () => {
-      await this.addApiCat(cat);
+      await this.addApiCat(newCat);
       await this.loadCats();
       this.showSuccess("Cat added successfully!");
     });
@@ -134,7 +135,7 @@ export class CatsComponent implements OnInit {
 
   private async getApiCats(): Promise<Cat[]> {
     try {
-      const result = await firstValueFrom(this.catsService.getCats());
+      const result = await this.catsService.getCats();
       return Array.isArray(result) ? result : [];
     } catch (error) {
       console.error("Error fetching cats:", error);
@@ -142,16 +143,16 @@ export class CatsComponent implements OnInit {
     }
   }
 
-  private async addApiCat(cat: Cat) {
-    return firstValueFrom(this.catsService.addCat(cat));
+  private async addApiCat(newCat: NewCat) {
+    return this.catsService.addCat(newCat);
   }
 
   private async updateApiCat(id: string, cat: Cat) {
-    return firstValueFrom(this.catsService.updateCat(id, cat));
+    return this.catsService.updateCat(id, cat);
   }
 
   private async deleteApiCat(id: string) {
-    return firstValueFrom(this.catsService.deleteCat(id));
+    return this.catsService.deleteCat(id);
   }
 
   private async executeWithErrorHandling<T>(
