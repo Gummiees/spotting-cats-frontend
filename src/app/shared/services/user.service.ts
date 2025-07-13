@@ -1,9 +1,9 @@
 import { HttpClient } from "@angular/common/http";
-import { Injectable, signal } from "@angular/core";
+import { Injectable } from "@angular/core";
 import { environment } from "@environments/environment";
 import { ExternalUser } from "@models/external-user";
 import { OwnUser } from "@models/own-user";
-import { firstValueFrom, tap } from "rxjs";
+import { firstValueFrom, map, tap } from "rxjs";
 import { StorageService } from "./storage.service";
 import { AuthStateService } from "./auth-state.service";
 
@@ -243,12 +243,14 @@ export class UserService {
     }
 
     return firstValueFrom(
-      this.http.post<void>(`${environment.apiUrl}/users/deactivate`, {}).pipe(
-        tap(() => {
-          this.authStateService.setUnauthenticated();
-          this.storageService.clear();
-        })
-      )
+      this.http
+        .post<void>(`${environment.apiUrl}/v1/users/deactivate`, {})
+        .pipe(
+          tap(() => {
+            this.authStateService.setUnauthenticated();
+            this.storageService.clear();
+          })
+        )
     ).catch((error) => {
       switch (error.status) {
         case 401:
@@ -259,24 +261,41 @@ export class UserService {
     });
   }
 
-  async delete(): Promise<void> {
-    if (!this.authStateService.user()) {
-      throw new UserServiceException("User not logged in");
-    }
-
+  async checkUsernameAvailability(username: string): Promise<boolean> {
     return firstValueFrom(
-      this.http.delete<void>(`${environment.apiUrl}/v1/users/delete`, {}).pipe(
-        tap(() => {
-          this.authStateService.setUnauthenticated();
-          this.storageService.clear();
-        })
-      )
+      this.http
+
+        .get<{ available: boolean }>(
+          `${environment.apiUrl}/v1/users/check-username`,
+          {
+            params: { username },
+          }
+        )
+        .pipe(map((response) => response.available))
     ).catch((error) => {
       switch (error.status) {
-        case 401:
-          this.authStateService.setUnauthenticated();
-          this.storageService.clear();
-          throw new UnauthorizedException(error.error.message);
+        case 400:
+          throw new InvalidUsernameException(error.error.message);
+        default:
+          throw new UserServiceException(error.error.message);
+      }
+    });
+  }
+
+  async checkEmailAvailability(email: string): Promise<boolean> {
+    return firstValueFrom(
+      this.http
+        .get<{ available: boolean }>(
+          `${environment.apiUrl}/v1/users/check-email`,
+          {
+            params: { email },
+          }
+        )
+        .pipe(map((response) => response.available))
+    ).catch((error) => {
+      switch (error.status) {
+        case 400:
+          throw new InvalidEmailException(error.error.message);
         default:
           throw new UserServiceException(error.error.message);
       }

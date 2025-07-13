@@ -6,12 +6,19 @@ import { AdminBadge } from "@shared/components/admin-badge/admin-badge";
 import { UserService } from "@shared/services/user.service";
 import { SnackbarService } from "@shared/services/snackbar.service";
 import { LoadingService } from "@shared/services/loading.service";
+import { PrimaryButton } from "../primary-button/primary-button";
 
 @Component({
   selector: "app-navbar",
   templateUrl: "./navbar.html",
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, CommonModule, AdminBadge],
+  imports: [
+    RouterLink,
+    RouterLinkActive,
+    CommonModule,
+    AdminBadge,
+    PrimaryButton,
+  ],
 })
 export class Navbar {
   isMenuOpen = signal(false);
@@ -48,7 +55,7 @@ export class Navbar {
     try {
       await this.userService.logout();
       this.loadingService.loading = false;
-      this.router.navigate(["/login"]);
+      this.router.navigate(["/"]);
     } catch (error) {
       console.error(error);
       this.snackbarService.show("Failed to sign out", "error");

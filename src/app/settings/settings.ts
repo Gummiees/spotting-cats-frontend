@@ -1,4 +1,4 @@
-import { Component, effect, signal } from "@angular/core";
+import { Component, effect, OnDestroy, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { Router } from "@angular/router";
 import { AuthStateService } from "@shared/services/auth-state.service";
@@ -17,9 +17,23 @@ import {
 } from "@angular/forms";
 import { AdminBadge } from "@shared/components/admin-badge/admin-badge";
 import moment from "moment";
-import { LoadingButton } from "@shared/components/loading-button/loading-button";
 import { SnackbarService } from "@shared/services/snackbar.service";
 import { LoadingService } from "@shared/services/loading.service";
+import { PrimaryButton } from "@shared/components/primary-button/primary-button";
+import { SecondaryButton } from "@shared/components/secondary-button/secondary-button";
+import {
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  switchMap,
+  Subject,
+  takeUntil,
+  tap,
+  of,
+  from,
+  catchError,
+} from "rxjs";
+import { stricterEmailValidator } from "@shared/validators/stricter-email.validator";
 
 @Component({
   selector: "app-settings",
@@ -30,12 +44,13 @@ import { LoadingService } from "@shared/services/loading.service";
     Modal,
     Header,
     AdminBadge,
-    LoadingButton,
     ReactiveFormsModule,
     ModalContentSimple,
+    PrimaryButton,
+    SecondaryButton,
   ],
 })
-export class Settings {
+export class Settings implements OnDestroy {
   loadingUsername = signal(false);
   loadingEmail = signal(false);
   loadingAvatar = signal(false);
@@ -43,6 +58,11 @@ export class Settings {
   isDeactivateModalOpen = signal(false);
   isAvatarModalOpen = signal(false);
   isVerifyEmailModalOpen = signal(false);
+  isUsernameAvailable = signal<boolean | null>(null);
+  isEmailAvailable = signal<boolean | null>(null);
+  subUntilDestroyed$ = new Subject<void>();
+  private isCheckingUsername = signal(false);
+  private isCheckingEmail = signal(false);
 
   avatarUrl = signal<string>("");
   availableAvatars = signal<{ id: number; url: string }[]>([]);
@@ -52,7 +72,7 @@ export class Settings {
       Validators.minLength(3),
       Validators.maxLength(20),
     ]),
-    email: new FormControl("", [Validators.required, Validators.email]),
+    email: new FormControl("", [Validators.required, stricterEmailValidator()]),
   });
   verifyEmailInput = new FormControl("", [
     Validators.required,
@@ -78,11 +98,17 @@ export class Settings {
     private snackbarService: SnackbarService,
     private loadingService: LoadingService
   ) {
+    this.checkUsernameAvailabilityEffect();
+    this.checkEmailAvailabilityEffect();
+
     effect(() => {
-      this.form.patchValue({
-        username: this.user?.username,
-        email: this.user?.email,
-      });
+      this.form.patchValue(
+        {
+          username: this.user?.username,
+          email: this.user?.email,
+        },
+        { emitEvent: false }
+      );
       this.avatarUrl.set(this.user?.avatarUrl ?? "");
       this.updateUsernameFieldState();
       this.updateEmailFieldState();
@@ -90,6 +116,79 @@ export class Settings {
     });
 
     this.generateAvailableAvatars();
+  }
+
+  private checkUsernameAvailabilityEffect(): void {
+    this.form
+      .get("username")
+      ?.valueChanges.pipe(
+        tap(() => {
+          this.isCheckingUsername.set(true);
+          this.isUsernameAvailable.set(null);
+        }),
+        filter(
+          (username) => !!username && this.isNewUsernameDifferent(username)
+        ),
+        distinctUntilChanged(),
+        debounceTime(500),
+        takeUntil(this.subUntilDestroyed$),
+        switchMap((username) =>
+          from(this.checkUsernameAvailability(username!)).pipe(
+            catchError(() => of(false))
+          )
+        )
+      )
+      .subscribe((isAvailable) => {
+        this.isUsernameAvailable.set(isAvailable);
+        this.isCheckingUsername.set(false);
+      });
+  }
+
+  private checkEmailAvailabilityEffect(): void {
+    this.form
+      .get("email")
+      ?.valueChanges.pipe(
+        tap(() => {
+          this.isCheckingEmail.set(true);
+          this.isEmailAvailable.set(null);
+        }),
+        filter(
+          (email) =>
+            !!email &&
+            this.form.get("email")!.valid &&
+            this.isNewEmailDifferent(email)
+        ),
+        distinctUntilChanged(),
+        debounceTime(500),
+        takeUntil(this.subUntilDestroyed$),
+        switchMap((email) =>
+          from(this.checkEmailAvailability(email!)).pipe(
+            catchError(() => of(false))
+          )
+        )
+      )
+      .subscribe((isAvailable) => {
+        this.isEmailAvailable.set(isAvailable);
+        this.isCheckingEmail.set(false);
+      });
+  }
+
+  private async checkUsernameAvailability(username: string): Promise<boolean> {
+    try {
+      return await this.userService.checkUsernameAvailability(username);
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+
+  private async checkEmailAvailability(email: string): Promise<boolean> {
+    try {
+      return await this.userService.checkEmailAvailability(email);
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
   }
 
   private generateAvailableAvatars(): void {
@@ -111,14 +210,21 @@ export class Settings {
   isUsernameValid(): boolean {
     return (
       !!this.username &&
+      !!this.username.value &&
       this.username.valid &&
-      this.username.value !== this.user?.username
+      this.isNewUsernameDifferent(this.username.value) &&
+      this.isUsernameAvailable() === true &&
+      !this.isCheckingUsername()
     );
   }
 
   isEmailValid(): boolean {
     return (
-      !!this.email && this.email.valid && this.email.value !== this.user?.email
+      !!this.email &&
+      this.email.valid &&
+      this.email.value !== this.user?.email &&
+      this.isEmailAvailable() === true &&
+      !this.isCheckingEmail()
     );
   }
 
@@ -128,7 +234,7 @@ export class Settings {
 
   async onSaveUsername() {
     const username = this.form.value.username;
-    if (!username || username === this.user?.username) {
+    if (!username || !this.isNewUsernameDifferent(username)) {
       return;
     }
 
@@ -148,9 +254,17 @@ export class Settings {
     }
   }
 
+  private isNewUsernameDifferent(username: string): boolean {
+    return username !== this.user?.username;
+  }
+
+  private isNewEmailDifferent(email: string): boolean {
+    return email !== this.user?.email;
+  }
+
   async onSaveEmail() {
     const email = this.form.value.email;
-    if (!email || email === this.user?.email) {
+    if (!email || !this.isNewEmailDifferent(email)) {
       return;
     }
 
@@ -347,5 +461,10 @@ export class Settings {
         avatarField.disable();
       }
     }
+  }
+
+  ngOnDestroy(): void {
+    this.subUntilDestroyed$.next();
+    this.subUntilDestroyed$.complete();
   }
 }
