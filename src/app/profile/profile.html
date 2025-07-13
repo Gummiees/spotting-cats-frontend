@@ -1,15 +1,18 @@
 <app-modal
-[isOpen]="isBanModalOpen()"
 confirmText="Confirm"
 cancelText="Cancel"
-[isLoading]="loadingBan()"
-(onConfirm)="onConfirmBan()"
-(onCancel)="onCancelBan()"
+confirmColor="warning"
+[isOpen]="isModalOpen()"
+[isLoading]="loading()"
+(onConfirm)="onConfirm()"
+(onCancel)="onCancel()"
 >
   <app-modal-content-simple
-    title="Ban User"
-    message="Please enter the reason for banning the user."
-    icon="ban"
+    [title]="modalTitle"
+    [message]="modalMessage"
+    [fullWidth]="true"
+    modalType="warning"
+    icon="gavel"
   >
     <div class="mt-2">
       <textarea 
@@ -23,15 +26,28 @@ cancelText="Cancel"
     </div>
   </app-modal-content-simple>
 </app-modal>
-@if(user()?.isBanned && !loggedInUser?.isAdmin) {
+@if(user()?.isBanned && loggedInUser?.role === "user") {
   <app-not-found />
 } @else {
 <app-header title="Profile" />
 <main>
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="mt-4 flex items-center gap-x-2">
+      @if(user()?.role === "superadmin" && loggedInUser?.role !== "user") {
+          <app-badge type="superadmin" />
+      }
+      @if(user()?.role === "admin" && loggedInUser?.role !== "user") {
+          <app-badge type="admin" />
+      }
+      @if(user()?.role === "moderator" && loggedInUser?.role !== "user") {
+          <app-badge type="moderator" />
+      }
+      @if(user()?.isBanned && loggedInUser?.role !== "user") {
+          <app-badge type="banned" />
+      }
+    </div>
       <div class="mt-4 border-b border-gray-900/10 pb-6 flex flex-col gap-y-2">
         <div class="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
-
           <div class="col-span-full">
             <label for="username" class="block text-sm/6 font-medium text-gray-900">Username</label>
             <div class="mt-2 flex items-center gap-x-2">
@@ -49,13 +65,16 @@ cancelText="Cancel"
           </div>
         </div>
       </div>
-      @if(loggedInUser?.isAdmin) {
+      @if(hasPermissionToBan()) {
       <div class="mt-6">
-        <div class=" flex items-center gap-x-6">
-          <button class="transition duration-200 ease-in-out rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-700 outline-red-700 focus:outline-2 focus:outline-offset-2 active:bg-red-800  focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700" (click)="onBanUser()">
-            <app-admin-badge />
-            <span>Ban user</span>
-          </button>
+        <div class="flex items-center gap-x-2">
+          <app-primary-button [buttonText]="buttonText" buttonType="warning" (onClick)="onOpenModal()">
+            <ng-container prefix>
+              <span class="material-symbols-outlined text-white !text-[16px] leading-none align-middle">shield_person</span>
+            </ng-container>
+          </app-primary-button>
+          <!-- make/remove admin button shield_person icon-->
+          <!-- make/remove moderator button add_moderator/remove_moderator icon-->
         </div>
       </div>
       }

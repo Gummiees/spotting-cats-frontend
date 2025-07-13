@@ -1,6 +1,7 @@
 import { Injectable } from "@angular/core";
 import { CanActivate } from "@angular/router";
 import { AuthStateService } from "../services/auth-state.service";
+import { isAdminOrSuperadmin } from "@shared/utils/role-permissions";
 
 @Injectable({
   providedIn: "root",
@@ -10,8 +11,9 @@ export class AdminGuard implements CanActivate {
 
   async canActivate(): Promise<boolean> {
     // If we already have a user, check if they're admin immediately
-    if (this.authStateService.user()) {
-      return this.authStateService.user()?.isAdmin ?? false;
+    const user = this.authStateService.user();
+    if (user) {
+      return isAdminOrSuperadmin(user.role);
     }
 
     // Wait for the initial auth check to complete
@@ -19,6 +21,6 @@ export class AdminGuard implements CanActivate {
       await this.authStateService.initialAuthCheck;
     }
 
-    return this.authStateService.user()?.isAdmin ?? false;
+    return isAdminOrSuperadmin(this.authStateService.user()?.role ?? "user");
   }
 }

@@ -2,23 +2,18 @@ import { Component, output, signal } from "@angular/core";
 import { Router, RouterLink, RouterLinkActive } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import { AuthStateService } from "@shared/services/auth-state.service";
-import { AdminBadge } from "@shared/components/admin-badge/admin-badge";
+import { Badge } from "@shared/components/badge/badge";
 import { UserService } from "@shared/services/user.service";
 import { SnackbarService } from "@shared/services/snackbar.service";
 import { LoadingService } from "@shared/services/loading.service";
 import { PrimaryButton } from "../primary-button/primary-button";
+import { isAdminOrSuperadmin } from "@shared/utils/role-permissions";
 
 @Component({
   selector: "app-navbar",
   templateUrl: "./navbar.html",
   standalone: true,
-  imports: [
-    RouterLink,
-    RouterLinkActive,
-    CommonModule,
-    AdminBadge,
-    PrimaryButton,
-  ],
+  imports: [RouterLink, RouterLinkActive, CommonModule, Badge, PrimaryButton],
 })
 export class Navbar {
   isMenuOpen = signal(false);
@@ -36,6 +31,13 @@ export class Navbar {
     private snackbarService: SnackbarService,
     private loadingService: LoadingService
   ) {}
+
+  isAdminOrSuperadmin() {
+    if (!this.user) {
+      return false;
+    }
+    return isAdminOrSuperadmin(this.user.role);
+  }
 
   toggleMenu() {
     this.isMenuOpen.set(!this.isMenuOpen());

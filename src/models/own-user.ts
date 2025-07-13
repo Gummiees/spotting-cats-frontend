@@ -1,9 +1,11 @@
+import { UserRole } from "./user-roles";
+
 export interface OwnUser {
   id: string;
   email: string;
   username: string;
   avatarUrl: string;
-  isAdmin: boolean;
+  role: UserRole;
   isInactive: boolean;
   isBanned: boolean;
   banReason?: string;
@@ -15,4 +17,6 @@ export interface OwnUser {
   avatarUpdatedAt?: Date;
   deactivatedAt?: Date;
   bannedAt?: Date;
+  roleUpdatedAt?: Date;
+  roleUpdatedBy?: string;
 }

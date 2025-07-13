@@ -15,7 +15,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from "@angular/forms";
-import { AdminBadge } from "@shared/components/admin-badge/admin-badge";
+import { Badge } from "@shared/components/badge/badge";
 import moment from "moment";
 import { SnackbarService } from "@shared/services/snackbar.service";
 import { LoadingService } from "@shared/services/loading.service";
@@ -43,7 +43,7 @@ import { stricterEmailValidator } from "@shared/validators/stricter-email.valida
     CommonModule,
     Modal,
     Header,
-    AdminBadge,
+    Badge,
     ReactiveFormsModule,
     ModalContentSimple,
     PrimaryButton,

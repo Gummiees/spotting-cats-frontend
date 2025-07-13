@@ -4,6 +4,11 @@ import { environment } from "@environments/environment";
 import { firstValueFrom } from "rxjs";
 import { StorageService } from "./storage.service";
 import { AuthStateService } from "./auth-state.service";
+import {
+  hasPermissionToBan,
+  isAdminOrSuperadmin,
+} from "@shared/utils/role-permissions";
+import { UserRole } from "@models/user-roles";
 
 @Injectable({
   providedIn: "root",
@@ -15,12 +20,34 @@ export class AdminService {
     private authStateService: AuthStateService
   ) {}
 
-  async banUser(username: string, reason: string | null): Promise<void> {
+  async migrateAvatars(): Promise<void> {
+    const user = this.authStateService.user();
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    if (!isAdminOrSuperadmin(user.role)) {
+      throw new Error("User is not admin");
+    }
+
+    return firstValueFrom(
+      this.http.post<void>(
+        `${environment.apiUrl}/v1/users/admin/ensure-avatars`,
+        {}
+      )
+    );
+  }
+
+  async banUser(
+    username: string,
+    reason: string | null,
+    role: UserRole
+  ): Promise<void> {
     const loggedInUser = this.authStateService.user();
     if (!loggedInUser) {
       throw new UnauthorizedException("User not logged in");
     }
-    if (!loggedInUser.isAdmin) {
+    if (!hasPermissionToBan(loggedInUser.role, role)) {
       this.authStateService.setUnauthenticated();
       this.storageService.clear();
       throw new ForbiddenException("User is not an admin");
@@ -45,12 +72,12 @@ export class AdminService {
     });
   }
 
-  async unbanUser(username: string): Promise<void> {
+  async unbanUser(username: string, role: UserRole): Promise<void> {
     const loggedInUser = this.authStateService.user();
     if (!loggedInUser) {
       throw new UnauthorizedException("User not logged in");
     }
-    if (!loggedInUser.isAdmin) {
+    if (!hasPermissionToBan(loggedInUser.role, role)) {
       this.authStateService.setUnauthenticated();
       this.storageService.clear();
       throw new ForbiddenException("User is not an admin");

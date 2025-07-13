@@ -1,7 +1,9 @@
+import { UserRole } from "./user-roles";
+
 export interface ExternalUser {
   username: string;
   avatarUrl: string;
-  isAdmin: boolean;
+  role: UserRole;
   isInactive: boolean;
   isBanned: boolean;
   lastLoginAt: Date;

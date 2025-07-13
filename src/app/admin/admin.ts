@@ -1,6 +1,6 @@
 import { Component } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { AdminService } from "./admin.service";
+import { AdminService } from "@shared/services/admin.service";
 import { AuthStateService } from "@shared/services/auth-state.service";
 
 @Component({

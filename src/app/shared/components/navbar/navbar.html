@@ -18,7 +18,7 @@
         <div class="hidden sm:ml-6 sm:block">
           <div class="flex space-x-4">
             <a routerLink="/cats" routerLinkActive #catsRla="routerLinkActive" [ngClass]="catsRla.isActive ? ['bg-gray-900', 'text-white'] : ['text-gray-300']" [attr.aria-current]="catsRla.isActive ? 'page' : null" class="rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-700 hover:text-white" (click)="closeMenus()">Cats</a>
-            @if(user?.isAdmin) {
+            @if(isAdminOrSuperadmin()) {
               <a routerLink="/admin" routerLinkActive #adminRla="routerLinkActive" [ngClass]="adminRla.isActive ? ['bg-gray-900', 'text-white'] : ['text-gray-300']" [attr.aria-current]="adminRla.isActive ? 'page' : null" class="rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-700 hover:text-white" (click)="closeMenus()">Admin</a>
             }
           </div>
@@ -46,12 +46,20 @@
           </div>
 
           <!-- Dropdown menu -->
-          <div [ngClass]="userMenuOpen() ? ['transition', 'ease-out', 'duration-100', 'transform', 'opacity-100', 'scale-100'] : ['transition', 'ease-in', 'duration-75', 'transform', 'opacity-0', 'scale-95']" class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-hidden" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1">
+          <div [ngClass]="userMenuOpen() ? ['transition', 'ease-out', 'duration-100', 'transform', 'opacity-100', 'scale-100'] : ['transition', 'ease-in', 'duration-75', 'transform', 'opacity-0', 'scale-95']" class="absolute right-0 z-10 mt-2 w-52 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-hidden" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1">
             <div class="block px-4 py-2 text-sm text-gray-700 flex items-center gap-x-2" role="menuitem" tabindex="-1" id="user-menu-item-0">
               <span>{{user.username}}</span>
-              @if(user.isAdmin) {
-                <app-admin-badge />
+              @switch(user.role) {
+                @case("superadmin") {
+                  <app-badge type="superadmin" />
                 }
+                @case("admin") {
+                  <app-badge type="admin" />
+                }
+                @case("moderator") {
+                  <app-badge type="moderator" />
+                }
+              }
             </div>
             <a routerLink="/settings" routerLinkActive #settingsRla="routerLinkActive" [ngClass]="settingsRla.isActive ? ['bg-gray-200', 'outline-hidden'] : null" [attr.aria-current]="settingsRla.isActive ? 'page' : null" class="block  hover:bg-gray-200 px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="user-menu-item-1" (click)="closeMenus()">Settings</a>
             <div class="block px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-200" role="menuitem" tabindex="-1" id="user-menu-item-2" (click)="onLogout()">Sign out</div>
@@ -68,7 +76,7 @@
   <div [ngClass]="isMenuOpen() ? 'block' : 'hidden'" class="sm:hidden" id="mobile-menu">
     <div class="space-y-1 px-2 pt-2 pb-3">
       <a routerLink="/cats" routerLinkActive #catsRla="routerLinkActive" [ngClass]="catsRla.isActive ? ['bg-gray-900', 'text-white'] : ['text-gray-300 hover:bg-gray-700 hover:text-white']" [attr.aria-current]="catsRla.isActive ? 'page' : null" class="block rounded-md px-3 py-2 text-base text-sm font-medium" (click)="closeMenus()">Cats</a>
-      @if(user?.isAdmin) {
+      @if(isAdminOrSuperadmin()) {
         <a routerLink="/admin" routerLinkActive #adminRla="routerLinkActive" [ngClass]="adminRla.isActive ? ['bg-gray-900', 'text-white'] : ['text-gray-300 hover:bg-gray-700 hover:text-white']" [attr.aria-current]="adminRla.isActive ? 'page' : null" class="block rounded-md px-3 py-2 text-base text-sm font-medium" (click)="closeMenus()">Admin</a>
       }
     </div>

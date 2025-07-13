@@ -69,6 +69,9 @@ export class LoginModal {
     this.loadingButton.set(true);
     try {
       await this.userService.verifyCode(code);
+      this.email.set(null);
+      this.emailInput.reset();
+      this.codeInput.reset();
       this.onSuccessfulLogin.emit();
     } catch (error) {
       this.snackbarService.show(

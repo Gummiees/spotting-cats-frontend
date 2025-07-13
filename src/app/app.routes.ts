@@ -13,10 +13,10 @@ export const routes: Routes = [
   { path: "cats", component: CatsComponent },
   { path: "admin", component: Admin, canActivate: [AdminGuard] },
   { path: "settings", component: Settings, canActivate: [AuthGuard] },
-  { path: "**", component: NotFound },
   {
     path: "user/:username",
     component: Profile,
     resolve: { user: ProfileResolverService },
   },
+  { path: "**", component: NotFound },
 ];
