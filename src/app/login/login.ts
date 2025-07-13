@@ -8,16 +8,17 @@ import {
 import { CommonModule } from "@angular/common";
 import { UserService } from "@shared/services/user.service";
 import { Router } from "@angular/router";
+import { LoadingButton } from "@shared/components/loading-button/loading-button";
 
 @Component({
   selector: "app-login",
   templateUrl: "./login.html",
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule, LoadingButton],
 })
 export class Login {
   loginForm: FormGroup;
-  loading = signal(false);
+  loadingButton = signal(false);
 
   constructor(
     private fb: FormBuilder,
@@ -30,7 +31,7 @@ export class Login {
   }
 
   public async onSubmit() {
-    this.loading.set(true);
+    this.loadingButton.set(true);
     try {
       await this.userService.sendCode(
         this.loginForm.value.email.trim().toLowerCase()
@@ -39,7 +40,7 @@ export class Login {
     } catch (error) {
       console.error(error);
     } finally {
-      this.loading.set(false);
+      this.loadingButton.set(false);
     }
   }
 }

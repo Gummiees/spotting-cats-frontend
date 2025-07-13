@@ -9,11 +9,11 @@
             <ng-content></ng-content>
           </div>
           <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-x-2">
-            <button type="button" [ngClass]="getConfirmButtonClass()" class="transition duration-200 ease-in-out rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs enabled:focus-visible:outline-2 enabled:focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed" (click)="onConfirmClick()">
+            <button type="button" [ngClass]="getConfirmButtonClass()" class="mt-3 inline-flex w-full justify-center sm:w-auto sm:mt-0 transition duration-200 ease-in-out ring-1 ring-violet-500 ring-inset rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs enabled:focus-visible:outline-2 enabled:focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed" (click)="onConfirmClick()">
             <app-loading-button [loading]="isLoading()" [buttonText]="confirmText()" />
             </button>
-            <button type="button" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 sm:mt-0 sm:w-auto" (click)="onCancelClick()">
-              <app-loading-button [loading]="isLoading()" [buttonText]="cancelText()" />
+            <button type="button" class="mt-3 inline-flex w-full justify-center bg-white sm:w-auto sm:mt-0 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 transition duration-200 ease-in-out rounded-md px-3 py-2 text-sm font-semibold text-violet-600 shadow-xs enabled:focus-visible:outline-2 enabled:focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed" (click)="onCancelClick()">
+              <app-loading-button [loading]="isLoading()" [buttonText]="cancelText()" [isPrimaryButton]="false" />
             </button>
           </div>
         </div>

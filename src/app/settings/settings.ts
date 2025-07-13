@@ -137,12 +137,12 @@ export class Settings {
       await this.userService.updateUsername(username);
       this.snackbarService.show(
         "Username updated successfully",
-        3000,
-        "success"
+        "success",
+        3000
       );
     } catch (error) {
       console.error(error);
-      this.snackbarService.show("Failed to update username", 3000, "error");
+      this.snackbarService.show("Failed to update username", "error");
     } finally {
       this.loadingUsername.set(false);
     }
@@ -157,10 +157,10 @@ export class Settings {
     try {
       this.loadingEmail.set(true);
       await this.userService.updateEmail(email);
-      this.onVerifyEmail();
+      this.isVerifyEmailModalOpen.set(true);
     } catch (error) {
       console.error(error);
-      this.snackbarService.show("Failed to update email", 3000, "error");
+      this.snackbarService.show("Failed to update email", "error");
     } finally {
       this.loadingEmail.set(false);
     }
@@ -175,10 +175,10 @@ export class Settings {
     try {
       this.loadingAvatar.set(true);
       await this.userService.updateAvatar(avatarUrl);
-      this.snackbarService.show("Avatar updated successfully", 3000, "success");
+      this.snackbarService.show("Avatar updated successfully", "success", 3000);
     } catch (error) {
       console.error(error);
-      this.snackbarService.show("Failed to update avatar", 3000, "error");
+      this.snackbarService.show("Failed to update avatar", "error");
     } finally {
       this.loadingAvatar.set(false);
     }
@@ -190,10 +190,6 @@ export class Settings {
 
   onCancelDeactivate() {
     this.isDeactivateModalOpen.set(false);
-  }
-
-  onVerifyEmail() {
-    this.isVerifyEmailModalOpen.set(true);
   }
 
   onCancelVerifyEmail() {
@@ -221,12 +217,12 @@ export class Settings {
       this.router.navigate(["/"]);
       this.snackbarService.show(
         "Account deactivated successfully",
-        3000,
-        "success"
+        "success",
+        3000
       );
     } catch (error) {
       console.error(error);
-      this.snackbarService.show("Failed to deactivate account", 3000, "error");
+      this.snackbarService.show("Failed to deactivate account", "error");
     } finally {
       this.loadingService.loading = false;
     }
@@ -235,7 +231,7 @@ export class Settings {
   async onConfirmVerifyEmail() {
     const code = this.verifyEmailInput.value;
     if (!code) {
-      this.snackbarService.show("Please enter a code", 3000, "error");
+      this.snackbarService.show("Please enter a code", "error");
       return;
     }
 
@@ -243,13 +239,13 @@ export class Settings {
       this.loadingVerifyEmail.set(true);
       await this.userService.verifyEmail(code);
       this.isVerifyEmailModalOpen.set(false);
-      this.snackbarService.show("Email verified successfully", 3000, "success");
+      this.snackbarService.show("Email verified successfully", "success", 3000);
     } catch (error) {
       if (error instanceof InvalidCodeException) {
-        this.snackbarService.show(error.message, 3000, "error");
+        this.snackbarService.show(error.message, "error");
       } else {
         console.error(error);
-        this.snackbarService.show("Failed to verify email", 3000, "error");
+        this.snackbarService.show("Failed to verify email", "error");
       }
     } finally {
       this.loadingVerifyEmail.set(false);

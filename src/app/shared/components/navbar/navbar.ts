@@ -1,4 +1,4 @@
-import { Component, signal } from "@angular/core";
+import { Component, output, signal } from "@angular/core";
 import { Router, RouterLink, RouterLinkActive } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import { AuthStateService } from "@shared/services/auth-state.service";
@@ -16,6 +16,7 @@ import { LoadingService } from "@shared/services/loading.service";
 export class Navbar {
   isMenuOpen = signal(false);
   userMenuOpen = signal(false);
+  onLogin = output<void>();
 
   get user() {
     return this.authStateService.user();
@@ -50,9 +51,13 @@ export class Navbar {
       this.router.navigate(["/login"]);
     } catch (error) {
       console.error(error);
-      this.snackbarService.show("Failed to sign out", 3000, "error");
+      this.snackbarService.show("Failed to sign out", "error");
     } finally {
       this.loadingService.loading = false;
     }
+  }
+
+  onLoginClick() {
+    this.onLogin.emit();
   }
 }

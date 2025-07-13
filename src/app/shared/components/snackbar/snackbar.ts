@@ -14,7 +14,7 @@ export class Snackbar {
   message = signal("");
   type = signal<SnackbarType>("success");
 
-  show(message: string, duration = 3000, type: SnackbarType = "success") {
+  show(message: string, type: SnackbarType = "success", duration = 3000) {
     this.message.set(message);
     this.visible.set(true);
     this.type.set(type);

@@ -10,4 +10,5 @@ import { CommonModule } from "@angular/common";
 export class LoadingButton {
   loading = input.required<boolean>();
   buttonText = input.required<string>();
+  isPrimaryButton = input<boolean>(true);
 }

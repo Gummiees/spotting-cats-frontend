@@ -1,12 +1,5 @@
 import { CommonModule } from "@angular/common";
-import {
-  Component,
-  input,
-  ContentChildren,
-  AfterContentInit,
-  QueryList,
-  ElementRef,
-} from "@angular/core";
+import { Component, input } from "@angular/core";
 import { ModalType } from "../modal/modal";
 
 @Component({
@@ -20,6 +13,7 @@ export class ModalContentSimple {
   message = input.required<string>();
   modalType = input<ModalType>("default");
   icon = input<string>("info");
+  fullWidth = input<boolean>(false);
 
   getIconBackgroundColor(): string {
     return this.modalType() === "warning" ? "bg-red-100" : "bg-violet-100";

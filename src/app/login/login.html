@@ -1,10 +1,9 @@
-<hr />
 <div>
-  @if(loading()) {
-    <p>Sending code...</p>
-  }
   <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
     <input type="text" placeholder="email" formControlName="email" />
-    <button type="submit" [disabled]="loading()">Login</button>
+
+    <button type="submit" class="transition duration-200 ease-in-out rounded-md bg-violet-500 px-3 py-2 text-sm font-semibold text-white shadow-xs enabled:hover:bg-violet-600 enabled:outline-violet-600 enabled:active:bg-violet-700 enabled:focus-visible:outline-2 enabled:focus-visible:outline-offset-2 enabled:focus-visible:outline-violet-600 disabled:opacity-50 disabled:cursor-not-allowed">
+      <app-loading-button [loading]="loadingButton()" buttonText="Login" />
+    </button>
   </form>
 </div>

@@ -9,7 +9,7 @@ export class SnackbarService {
     this.snackbarRef = snackbar;
   }
 
-  show(message: string, duration = 3000, type: SnackbarType = "success") {
-    this.snackbarRef?.show(message, duration, type);
+  show(message: string, type: SnackbarType = "success", duration = 3000) {
+    this.snackbarRef?.show(message, type, duration);
   }
 }

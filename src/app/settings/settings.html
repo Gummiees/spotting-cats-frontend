@@ -43,11 +43,11 @@ cancelText="Cancel"
 <main>
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <form [formGroup]="form">
-      <div class="border-b border-gray-900/10 space-y-12 pb-6">
-        <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
-          @if(user?.isAdmin) {
+      <div class="mt-4 border-b border-gray-900/10 pb-6 flex flex-col gap-y-2">
+        @if(user?.isAdmin) {
             <app-admin-badge />
-          }
+        }
+        <div class="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
 
           <div class="col-span-full">
             <label for="username" class="block text-sm/6 font-medium text-gray-900">Username</label>
@@ -79,9 +79,6 @@ cancelText="Cancel"
               <div class="flex items-center rounded-md bg-white pl-3 outline-1 outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-violet-500 flex-1">
                 <input id="email" name="email" type="email" autocomplete="email" formControlName="email" class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm/6 disabled:opacity-50 disabled:cursor-not-allowed" />
               </div>
-              <button class="transition duration-200 ease-in-out rounded-md bg-violet-500 px-3 py-2 text-sm font-semibold text-white shadow-xs enabled:hover:bg-violet-600 enabled:outline-violet-600 enabled:active:bg-violet-700 enabled:focus-visible:outline-2 enabled:focus-visible:outline-offset-2 enabled:focus-visible:outline-violet-600 disabled:opacity-50 disabled:cursor-not-allowed" (click)="onVerifyEmail()">
-                <app-loading-button [loading]="loadingEmail()" buttonText="Verify" />
-              </button>
               <button [disabled]="loadingEmail() || !isEmailValid()" class="transition duration-200 ease-in-out rounded-md bg-violet-500 px-3 py-2 text-sm font-semibold text-white shadow-xs enabled:hover:bg-violet-600 enabled:outline-violet-600 enabled:active:bg-violet-700 enabled:focus-visible:outline-2 enabled:focus-visible:outline-offset-2 enabled:focus-visible:outline-violet-600 disabled:opacity-50 disabled:cursor-not-allowed" (click)="onSaveEmail()">
                 <app-loading-button [loading]="loadingEmail()" buttonText="Save" />
               </button>
