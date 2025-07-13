@@ -1,0 +1,31 @@
+import { CommonModule } from "@angular/common";
+import {
+  Component,
+  input,
+  ContentChildren,
+  AfterContentInit,
+  QueryList,
+  ElementRef,
+} from "@angular/core";
+import { ModalType } from "../modal/modal";
+
+@Component({
+  selector: "app-modal-content-simple",
+  templateUrl: "./modal-content-simple.html",
+  standalone: true,
+  imports: [CommonModule],
+})
+export class ModalContentSimple {
+  title = input.required<string>();
+  message = input.required<string>();
+  modalType = input<ModalType>("default");
+  icon = input<string>("info");
+
+  getIconBackgroundColor(): string {
+    return this.modalType() === "warning" ? "bg-red-100" : "bg-violet-100";
+  }
+
+  getIconColor(): string {
+    return this.modalType() === "warning" ? "text-red-600" : "text-violet-500";
+  }
+}

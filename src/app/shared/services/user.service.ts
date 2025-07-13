@@ -187,6 +187,31 @@ export class UserService {
     await this.authStateService.checkAuthStatus();
   }
 
+  async verifyEmail(code: string): Promise<void> {
+    if (!this.authStateService.user()) {
+      throw new UserServiceException("User not logged in");
+    }
+
+    await firstValueFrom(
+      this.http.post<void>(`${environment.apiUrl}/v1/users/email/verify`, {
+        code,
+      })
+    ).catch((error) => {
+      switch (error.status) {
+        case 400:
+          throw new InvalidCodeException(error.error.message);
+        case 401:
+          this.authStateService.setUnauthenticated();
+          this.storageService.clear();
+          throw new UnauthorizedException(error.error.message);
+        default:
+          throw new UserServiceException(error.error.message);
+      }
+    });
+
+    await this.authStateService.checkAuthStatus();
+  }
+
   async updateAvatar(avatarUrl: string): Promise<void> {
     if (!this.authStateService.user()) {
       throw new UserServiceException("User not logged in");
@@ -274,6 +299,8 @@ export class InvalidEmailException extends UserServiceException {}
 export class InvalidUsernameException extends UserServiceException {}
 
 export class InvalidAvatarException extends UserServiceException {}
+
+export class InvalidCodeException extends UserServiceException {}
 
 export class RateLimitException extends UserServiceException {}
 

@@ -2,9 +2,13 @@ import { Component, effect, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { Router } from "@angular/router";
 import { AuthStateService } from "@shared/services/auth-state.service";
-import { UserService } from "@shared/services/user.service";
+import {
+  InvalidCodeException,
+  UserService,
+} from "@shared/services/user.service";
 import { Modal } from "@shared/components/modal/modal";
 import { Header } from "@shared/components/header/header";
+import { ModalContentSimple } from "@shared/components/modal-content-simple/modal-content-simple";
 import {
   FormControl,
   FormGroup,
@@ -13,7 +17,6 @@ import {
 } from "@angular/forms";
 import { AdminBadge } from "@shared/components/admin-badge/admin-badge";
 import moment from "moment";
-import { Spinner } from "@shared/components/spinner/spinner";
 import { LoadingButton } from "@shared/components/loading-button/loading-button";
 import { SnackbarService } from "@shared/services/snackbar.service";
 import { LoadingService } from "@shared/services/loading.service";
@@ -27,17 +30,19 @@ import { LoadingService } from "@shared/services/loading.service";
     Modal,
     Header,
     AdminBadge,
-    Spinner,
     LoadingButton,
     ReactiveFormsModule,
+    ModalContentSimple,
   ],
 })
 export class Settings {
   loadingUsername = signal(false);
   loadingEmail = signal(false);
   loadingAvatar = signal(false);
+  loadingVerifyEmail = signal(false);
   isDeactivateModalOpen = signal(false);
   isAvatarModalOpen = signal(false);
+  isVerifyEmailModalOpen = signal(false);
 
   avatarUrl = signal<string>("");
   availableAvatars = signal<{ id: number; url: string }[]>([]);
@@ -49,6 +54,11 @@ export class Settings {
     ]),
     email: new FormControl("", [Validators.required, Validators.email]),
   });
+  verifyEmailInput = new FormControl("", [
+    Validators.required,
+    Validators.minLength(6),
+    Validators.maxLength(6),
+  ]);
 
   get username() {
     return this.form.get("username");
@@ -147,7 +157,7 @@ export class Settings {
     try {
       this.loadingEmail.set(true);
       await this.userService.updateEmail(email);
-      this.snackbarService.show("Email updated successfully", 3000, "success");
+      this.onVerifyEmail();
     } catch (error) {
       console.error(error);
       this.snackbarService.show("Failed to update email", 3000, "error");
@@ -182,6 +192,14 @@ export class Settings {
     this.isDeactivateModalOpen.set(false);
   }
 
+  onVerifyEmail() {
+    this.isVerifyEmailModalOpen.set(true);
+  }
+
+  onCancelVerifyEmail() {
+    this.isVerifyEmailModalOpen.set(false);
+  }
+
   onChangeAvatarModal() {
     this.isAvatarModalOpen.set(!this.isAvatarModalOpen());
   }
@@ -211,6 +229,30 @@ export class Settings {
       this.snackbarService.show("Failed to deactivate account", 3000, "error");
     } finally {
       this.loadingService.loading = false;
+    }
+  }
+
+  async onConfirmVerifyEmail() {
+    const code = this.verifyEmailInput.value;
+    if (!code) {
+      this.snackbarService.show("Please enter a code", 3000, "error");
+      return;
+    }
+
+    try {
+      this.loadingVerifyEmail.set(true);
+      await this.userService.verifyEmail(code);
+      this.isVerifyEmailModalOpen.set(false);
+      this.snackbarService.show("Email verified successfully", 3000, "success");
+    } catch (error) {
+      if (error instanceof InvalidCodeException) {
+        this.snackbarService.show(error.message, 3000, "error");
+      } else {
+        console.error(error);
+        this.snackbarService.show("Failed to verify email", 3000, "error");
+      }
+    } finally {
+      this.loadingVerifyEmail.set(false);
     }
   }
 

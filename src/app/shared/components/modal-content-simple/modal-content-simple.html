@@ -1,0 +1,12 @@
+<div class="sm:flex sm:items-start">
+  <div [ngClass]="getIconBackgroundColor()" class="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full sm:mx-0 sm:size-10">
+    <span [ngClass]="getIconColor()" class="material-symbols-outlined leading-none align-middle !text-[24px]">{{ icon() }}</span>
+  </div>
+  <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+    <h3 class="text-base font-semibold text-gray-900" id="dialog-title">{{ title() }}</h3>
+    <div class="mt-2">
+      <p class="text-sm text-gray-500">{{ message() }}</p>
+    </div>
+    <ng-content></ng-content>
+  </div>
+</div> 
