@@ -5,19 +5,34 @@ import {
   RouterStateSnapshot,
 } from "@angular/router";
 import { ExternalUser } from "@models/external-user";
-import { UserService } from "@shared/services/user.service";
+import { UserService, NotFoundException } from "@shared/services/user.service";
+import { LoadingService } from "@shared/services/loading.service";
 
 @Injectable({
   providedIn: "root",
 })
-export class ProfileResolverService implements Resolve<ExternalUser> {
-  constructor(private userService: UserService) {}
+export class ProfileResolverService implements Resolve<ExternalUser | null> {
+  constructor(
+    private userService: UserService,
+    private loadingService: LoadingService
+  ) {}
 
-  resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
+  async resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
     const username = route.paramMap.get("username");
     if (!username) {
       throw new Error("Username parameter is required");
     }
-    return this.userService.getUserByUsername(username);
+
+    try {
+      this.loadingService.setRouteLoading(true);
+      return await this.userService.getUserByUsername(username);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        return null;
+      }
+      throw error;
+    } finally {
+      this.loadingService.setRouteLoading(false);
+    }
   }
 }

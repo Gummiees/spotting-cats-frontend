@@ -325,9 +325,9 @@ export class Settings implements OnDestroy {
 
   async onConfirmDeactivate() {
     try {
-      this.loadingService.loading = true;
+      this.loadingService.setLoading(true);
       await this.userService.deactivate();
-      this.loadingService.loading = false;
+      this.loadingService.setLoading(false);
       this.router.navigate(["/"]);
       this.snackbarService.show(
         "Account deactivated successfully",
@@ -338,7 +338,7 @@ export class Settings implements OnDestroy {
       console.error(error);
       this.snackbarService.show("Failed to deactivate account", "error");
     } finally {
-      this.loadingService.loading = false;
+      this.loadingService.setLoading(false);
     }
   }
 

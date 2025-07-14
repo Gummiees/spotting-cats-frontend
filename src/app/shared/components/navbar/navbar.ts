@@ -53,16 +53,16 @@ export class Navbar {
   }
 
   async onLogout() {
-    this.loadingService.loading = true;
+    this.loadingService.setLoading(true);
     try {
       await this.userService.logout();
-      this.loadingService.loading = false;
+      this.loadingService.setLoading(false);
       this.router.navigate(["/"]);
     } catch (error) {
       console.error(error);
       this.snackbarService.show("Failed to sign out", "error");
     } finally {
-      this.loadingService.loading = false;
+      this.loadingService.setLoading(false);
     }
   }
 

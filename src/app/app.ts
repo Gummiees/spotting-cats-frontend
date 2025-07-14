@@ -5,13 +5,7 @@ import {
   signal,
   ViewChild,
 } from "@angular/core";
-import {
-  NavigationEnd,
-  NavigationStart,
-  Router,
-  RouterEvent,
-  RouterOutlet,
-} from "@angular/router";
+import { RouterOutlet } from "@angular/router";
 import { Navbar } from "@shared/components/navbar/navbar";
 import { AuthStateService } from "@shared/services/auth-state.service";
 import { Snackbar } from "@shared/components/snackbar/snackbar";
@@ -36,7 +30,6 @@ import { LoginModal } from "./login-modal/login-modal";
 })
 export class App implements OnInit, AfterViewInit {
   isLoginModalOpen = signal(false);
-  isLoadingRoute = signal(false);
 
   @ViewChild("snackbar") snackbarComponent!: Snackbar;
 
@@ -44,31 +37,18 @@ export class App implements OnInit, AfterViewInit {
     return this.loadingService.loading;
   }
 
+  get isLoadingRoute() {
+    return this.loadingService.routeLoading;
+  }
+
   constructor(
     private authStateService: AuthStateService,
     private snackbarService: SnackbarService,
-    private loadingService: LoadingService,
-    private router: Router
+    private loadingService: LoadingService
   ) {}
 
   async ngOnInit() {
     await this.authStateService.checkAuthStatus();
-    this.routerEvents();
-  }
-
-  routerEvents() {
-    this.router.events.subscribe((event) => {
-      switch (true) {
-        case event instanceof NavigationStart: {
-          this.isLoadingRoute.set(true);
-          break;
-        }
-        case event instanceof NavigationEnd: {
-          this.isLoadingRoute.set(false);
-          break;
-        }
-      }
-    });
   }
 
   ngAfterViewInit() {

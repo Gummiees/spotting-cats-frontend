@@ -5,8 +5,8 @@ import { firstValueFrom } from "rxjs";
 import { StorageService } from "./storage.service";
 import { AuthStateService } from "./auth-state.service";
 import {
-  hasPermissionToBan,
   isAdminOrSuperadmin,
+  hasPermissionOverUser,
 } from "@shared/utils/role-permissions";
 import { UserRole } from "@models/user-roles";
 
@@ -35,7 +35,16 @@ export class AdminService {
         `${environment.apiUrl}/v1/users/admin/ensure-avatars`,
         {}
       )
-    );
+    ).catch((error) => {
+      switch (error.status) {
+        case 401:
+          throw new UnauthorizedException(error.error.message);
+        case 403:
+          return this.onForbiddenRequest(error);
+        default:
+          throw new AdminServiceException(error.error.message);
+      }
+    });
   }
 
   async banUser(
@@ -47,7 +56,12 @@ export class AdminService {
     if (!loggedInUser) {
       throw new UnauthorizedException("User not logged in");
     }
-    if (!hasPermissionToBan(loggedInUser.role, role)) {
+    if (
+      !hasPermissionOverUser({
+        loggedInUserRole: loggedInUser.role,
+        userRole: role,
+      })
+    ) {
       this.authStateService.setUnauthenticated();
       this.storageService.clear();
       throw new ForbiddenException("User is not an admin");
@@ -63,9 +77,7 @@ export class AdminService {
         case 401:
           throw new UnauthorizedException(error.error.message);
         case 403:
-          this.authStateService.setUnauthenticated();
-          this.storageService.clear();
-          throw new ForbiddenException(error.error.message);
+          return this.onForbiddenRequest(error);
         default:
           throw new AdminServiceException(error.error.message);
       }
@@ -77,10 +89,13 @@ export class AdminService {
     if (!loggedInUser) {
       throw new UnauthorizedException("User not logged in");
     }
-    if (!hasPermissionToBan(loggedInUser.role, role)) {
-      this.authStateService.setUnauthenticated();
-      this.storageService.clear();
-      throw new ForbiddenException("User is not an admin");
+    if (
+      !hasPermissionOverUser({
+        loggedInUserRole: loggedInUser.role,
+        userRole: role,
+      })
+    ) {
+      return this.onForbiddenRequest("User is not an admin");
     }
 
     return firstValueFrom(
@@ -100,6 +115,69 @@ export class AdminService {
       }
     });
   }
+
+  async cleanup(): Promise<void> {
+    return firstValueFrom(
+      this.http.post<void>(`${environment.apiUrl}/v1/users/admin/cleanup`, {})
+    ).catch((error) => {
+      switch (error.status) {
+        case 401:
+          throw new UnauthorizedException(error.error.message);
+        case 403:
+          return this.onForbiddenRequest(error);
+        case 429:
+          throw new RateLimitException(error.error.message);
+        default:
+          throw new AdminServiceException(error.error.message);
+      }
+    });
+  }
+
+  async updateRole(username: string, role: UserRole): Promise<void> {
+    return firstValueFrom(
+      this.http.put<void>(`${environment.apiUrl}/v1/users/role`, {
+        username,
+        role,
+      })
+    ).catch((error) => {
+      switch (error.status) {
+        case 401:
+          throw new UnauthorizedException(error.error.message);
+        case 403:
+          return this.onForbiddenRequest(error);
+        case 404:
+          throw new NotFoundException(error.error.message);
+        default:
+          throw new AdminServiceException(error.error.message);
+      }
+    });
+  }
+
+  async demoteToUser(username: string): Promise<void> {
+    return firstValueFrom(
+      this.http.put<void>(`${environment.apiUrl}/v1/users/role`, {
+        username,
+        role: "user",
+      })
+    ).catch((error) => {
+      switch (error.status) {
+        case 401:
+          throw new UnauthorizedException(error.error.message);
+        case 403:
+          return this.onForbiddenRequest(error);
+        case 404:
+          throw new NotFoundException(error.error.message);
+        default:
+          throw new AdminServiceException(error.error.message);
+      }
+    });
+  }
+
+  private onForbiddenRequest(error: any) {
+    this.authStateService.setUnauthenticated();
+    this.storageService.clear();
+    throw new ForbiddenException(error.error.message);
+  }
 }
 
 export class AdminServiceException extends Error {
@@ -111,3 +189,7 @@ export class AdminServiceException extends Error {
 export class UnauthorizedException extends AdminServiceException {}
 
 export class ForbiddenException extends AdminServiceException {}
+
+export class RateLimitException extends AdminServiceException {}
+
+export class NotFoundException extends AdminServiceException {}

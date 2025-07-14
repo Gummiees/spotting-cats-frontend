@@ -16,10 +16,10 @@ export class ModalContentSimple {
   fullWidth = input<boolean>(false);
 
   getIconBackgroundColor(): string {
-    return this.modalType() === "warning" ? "bg-red-100" : "bg-violet-100";
+    return this.modalType() === "danger" ? "bg-red-100" : "bg-violet-100";
   }
 
   getIconColor(): string {
-    return this.modalType() === "warning" ? "text-red-600" : "text-violet-500";
+    return this.modalType() === "danger" ? "text-red-600" : "text-violet-500";
   }
 }

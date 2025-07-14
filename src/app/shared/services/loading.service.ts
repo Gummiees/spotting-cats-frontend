@@ -5,12 +5,21 @@ import { Injectable, signal } from "@angular/core";
 })
 export class LoadingService {
   private _loading = signal(false);
-
-  set loading(loading: boolean) {
-    this._loading.set(loading);
-  }
+  private _routeLoading = signal(false);
 
   get loading() {
     return this._loading();
+  }
+
+  get routeLoading() {
+    return this._routeLoading();
+  }
+
+  setLoading(loading: boolean) {
+    this._loading.set(loading);
+  }
+
+  setRouteLoading(loading: boolean) {
+    this._routeLoading.set(loading);
   }
 }

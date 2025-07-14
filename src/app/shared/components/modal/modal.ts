@@ -6,7 +6,7 @@ import {
   PrimaryButtonType,
 } from "../primary-button/primary-button";
 
-export type ModalType = "default" | "warning";
+export type ModalType = "default" | "danger";
 
 @Component({
   selector: "app-modal",
@@ -32,12 +32,12 @@ export class Modal {
   }
 
   getConfirmButtonClass(): string {
-    return this.confirmColor() === "warning"
+    return this.confirmColor() === "danger"
       ? " bg-red-600 enabled:hover:bg-red-700 enabled:outline-red-700 enabled:focus-visible:outline-red-700 enabled:active:bg-red-800"
       : " bg-violet-500 enabled:hover:bg-violet-600 enabled:outline-violet-600 enabled:focus-visible:outline-violet-600 enabled:active:bg-violet-700";
   }
 
   getButtonType(): PrimaryButtonType {
-    return this.confirmColor() === "warning" ? "warning" : "default";
+    return this.confirmColor() === "danger" ? "danger" : "default";
   }
 }

@@ -4,18 +4,21 @@ export function isAdminOrSuperadmin(role: UserRole): boolean {
   return role === "admin" || role === "superadmin";
 }
 
-export function hasPermissionToBan(
-  loggedInUserRole: UserRole,
-  userRole: UserRole
-): boolean {
-  switch (loggedInUserRole) {
+export function hasPermissionOverUser({
+  loggedInUserRole,
+  userRole,
+}: {
+  loggedInUserRole: UserRole;
+  userRole: UserRole;
+}): boolean {
+  switch (userRole) {
     case "superadmin":
-      return userRole !== "superadmin";
-    case "admin":
-      return isAdminOrSuperadmin(userRole);
-    case "moderator":
-      return userRole === "user";
-    default:
       return false;
+    case "admin":
+      return loggedInUserRole === "superadmin";
+    case "moderator":
+      return isAdminOrSuperadmin(loggedInUserRole);
+    default:
+      return loggedInUserRole !== "user";
   }
 }

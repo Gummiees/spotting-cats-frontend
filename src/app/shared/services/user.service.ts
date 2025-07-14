@@ -124,7 +124,11 @@ export class UserService {
 
   async getUserByUsername(username: string): Promise<ExternalUser> {
     return firstValueFrom(
-      this.http.get<ExternalUser>(`${environment.apiUrl}/v1/users/${username}`)
+      this.http
+        .get<{ user: ExternalUser }>(
+          `${environment.apiUrl}/v1/users/${username}`
+        )
+        .pipe(map((response) => response.user))
     ).catch((error) => {
       switch (error.status) {
         case 400:

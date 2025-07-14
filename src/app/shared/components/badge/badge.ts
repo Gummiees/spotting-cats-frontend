@@ -1,7 +1,12 @@
 import { CommonModule } from "@angular/common";
 import { Component, input } from "@angular/core";
 
-export type BadgeType = "superadmin" | "admin" | "banned" | "moderator";
+export type BadgeType =
+  | "superadmin"
+  | "admin"
+  | "banned"
+  | "moderator"
+  | "inactive";
 
 @Component({
   selector: "app-badge",
