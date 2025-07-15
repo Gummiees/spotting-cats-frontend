@@ -6,12 +6,14 @@ confirmColor="danger"
 (onConfirm)="onConfirmDeactivate()"
 (onCancel)="onCancelDeactivate()"
 >
-  <app-modal-content-simple
-    title="Deactivate Account"
-    modalType="danger"
-    icon="danger"
-    message="Are you sure you want to deactivate your account? Your account will be deleted after 30 days if you don't log back in."
-  />
+  <content>
+    <app-modal-content-simple
+      title="Deactivate Account"
+      modalType="danger"
+      icon="danger"
+      message="Are you sure you want to deactivate your account? Your account will be deleted after 30 days if you don't log back in."
+    />
+  </content>
 </app-modal>
 
 <app-modal
@@ -22,22 +24,24 @@ cancelText="Cancel"
 (onConfirm)="onConfirmVerifyEmail()"
 (onCancel)="onCancelVerifyEmail()"
 >
-  <app-modal-content-simple
-    title="Verify Email"
-    message="Please enter the code sent to your original email."
-    icon="mail"
-  >
-    <div class="mt-2">
-      <input 
-      name="input"
-      class="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-violet-600 sm:text-sm sm:leading-6"
-      type="number" 
-      autocomplete="one-time-code"
-      placeholder="Enter code" 
-      [formControl]="verifyEmailInput"
-      />
-    </div>
-  </app-modal-content-simple>
+  <content>
+    <app-modal-content-simple
+      title="Verify Email"
+      message="Please enter the code sent to your original email."
+      icon="mail"
+    >
+      <div class="mt-2">
+        <input 
+        name="input"
+        class="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-violet-600 sm:text-sm sm:leading-6"
+        type="number" 
+        autocomplete="one-time-code"
+        placeholder="Enter code" 
+        [formControl]="verifyEmailInput"
+        />
+      </div>
+    </app-modal-content-simple>
+  </content>
 </app-modal>
 <app-header title="Settings" />
 <main>

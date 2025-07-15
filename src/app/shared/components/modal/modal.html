@@ -6,11 +6,16 @@
       <div class="items-center sm:p-4 p-2 flex min-h-full justify-center text-center">
         <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
           <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-            <ng-content></ng-content>
+            <ng-content select="content"></ng-content>
           </div>
-          <div class="bg-gray-50 px-4 py-3 flex flex-row-reverse sm:px-6 gap-x-2">
-            <app-primary-button [isLoading]="isLoading()" [buttonText]="confirmText()" (onClick)="onConfirmClick()" [buttonType]="getButtonType()" [isDisabled]="isDisabled()" />
-            <app-secondary-button [isLoading]="isLoading()" [buttonText]="cancelText()" (onClick)="onCancelClick()" />
+          <div class="py-3 bg-gray-50 flex w-full justify-between">
+            <div class="px-4 flex flex-row-reverse sm:px-6 gap-x-2">
+              <ng-content select="footer"></ng-content>
+            </div>
+            <div class="px-4 flex flex-row-reverse sm:px-6 gap-x-2">
+              <app-primary-button [isLoading]="isLoading()" [buttonText]="confirmText()" (onClick)="onConfirmClick()" [buttonType]="getButtonType()" [isDisabled]="isDisabled()" />
+              <app-secondary-button [isLoading]="isLoading()" [buttonText]="cancelText()" (onClick)="onCancelClick()" />
+            </div>
           </div>
         </div>
       </div>

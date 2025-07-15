@@ -9,20 +9,27 @@
 (onConfirm)="onConfirmModal()"
 (onCancel)="onCancelModal()"
 >
-  <app-modal-content-simple
-    [title]="title"
-    [message]="message"
-    icon="account_circle"
-    [fullWidth]="isFullWidth"
-  >
-    <div class="mt-2">
-      <input 
-      class="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-violet-600 sm:text-sm sm:leading-6"
-      [type]="inputType" 
-      [autocomplete]="autocomplete"
-      [placeholder]="inputPlaceholder" 
-      [formControl]="input"
-      />
-    </div>
-  </app-modal-content-simple>
+  <content>
+    <app-modal-content-simple
+      [title]="title"
+      [message]="message"
+      icon="account_circle"
+      [fullWidth]="isFullWidth"
+    >
+      <div class="mt-2">
+        <input 
+        class="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-violet-600 sm:text-sm sm:leading-6"
+        [type]="inputType" 
+        [autocomplete]="autocomplete"
+        [placeholder]="inputPlaceholder" 
+        [formControl]="input"
+        />
+      </div>
+    </app-modal-content-simple>
+  </content>
+  <footer>
+    <!-- @if(shouldDisplayResendButton) { -->
+      <app-primary-button buttonType="info" [isDisabled]="isResendButtonDisabled" [isLoading]="loadingButton()" [buttonText]="resendButtonText" (onClick)="onResendCode()" />
+    <!-- } -->
+  </footer>
 </app-modal>
