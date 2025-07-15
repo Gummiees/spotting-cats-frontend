@@ -1,10 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  OnInit,
-  signal,
-  ViewChild,
-} from "@angular/core";
+import { AfterViewInit, Component, signal, ViewChild } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
 import { Navbar } from "@shared/components/navbar/navbar";
 import { AuthStateService } from "@shared/services/auth-state.service";
@@ -28,7 +22,7 @@ import { LoginModal } from "./login-modal/login-modal";
   templateUrl: "./app.html",
   styleUrl: "./app.scss",
 })
-export class App implements OnInit, AfterViewInit {
+export class App implements AfterViewInit {
   isLoginModalOpen = signal(false);
 
   @ViewChild("snackbar") snackbarComponent!: Snackbar;
@@ -46,10 +40,6 @@ export class App implements OnInit, AfterViewInit {
     private snackbarService: SnackbarService,
     private loadingService: LoadingService
   ) {}
-
-  async ngOnInit() {
-    await this.authStateService.checkAuthStatus();
-  }
 
   ngAfterViewInit() {
     this.snackbarService.register(this.snackbarComponent);
