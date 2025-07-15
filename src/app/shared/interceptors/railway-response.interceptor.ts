@@ -1,6 +1,7 @@
 import { HttpInterceptorFn, HttpResponse } from "@angular/common/http";
 import { map } from "rxjs";
 import { RailwayResponse } from "../models/railway.response";
+import { environment } from "@environments/environment";
 
 // Type guard to check if response is a RailwayResponse
 function isRailwayResponse<T>(
@@ -17,6 +18,10 @@ function isRailwayResponse<T>(
 }
 
 export const railwayResponseInterceptor: HttpInterceptorFn = (req, next) => {
+  if (!req.url.startsWith(environment.apiUrl)) {
+    return next(req);
+  }
+
   return next(req).pipe(
     map((event) => {
       if (event instanceof HttpResponse) {

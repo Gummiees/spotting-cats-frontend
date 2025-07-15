@@ -21,4 +21,5 @@ export interface ExternalUser {
   roleUpdatedAt?: Date;
   roleUpdatedBy?: string;
   ipAddresses?: string[];
+  lastIpAddress?: string;
 }

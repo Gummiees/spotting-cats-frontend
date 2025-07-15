@@ -3,9 +3,15 @@ import { ModalContentSimple } from "@shared/components/modal-content-simple/moda
 import { Modal } from "@shared/components/modal/modal";
 import { FormControl, ReactiveFormsModule, Validators } from "@angular/forms";
 import { CommonModule } from "@angular/common";
-import { UserService } from "@shared/services/user.service";
+import {
+  InvalidEmailException,
+  UserService,
+} from "@shared/services/user.service";
 import { SnackbarService } from "@shared/services/snackbar.service";
-import { ForbiddenException } from "@shared/services/admin.service";
+import {
+  ForbiddenException,
+  RateLimitException,
+} from "@shared/services/admin.service";
 
 @Component({
   selector: "app-login-modal",
@@ -58,6 +64,13 @@ export class LoginModal {
         this.snackbarService.show(error.message, "error");
         return;
       }
+      if (error instanceof RateLimitException) {
+        this.snackbarService.show(
+          "You have reached the maximum number of requests. Please try again later.",
+          "error"
+        );
+        return;
+      }
       this.snackbarService.show(
         "An error occurred while sending the code",
         "error"
@@ -87,40 +100,66 @@ export class LoginModal {
   }
 
   async onCancelModal() {
-    this.onCancel.emit();
+    this.email() ? this.resetInputs() : this.onCancel.emit();
   }
 
-  getTitle(): string {
+  private resetInputs() {
+    this.emailInput.reset();
+    this.codeInput.reset();
+    this.email.set(null);
+  }
+
+  get title(): string {
     return this.email() ? "Verify Email" : "Login";
   }
 
-  getMessage(): string {
+  get message(): string {
     return this.email()
       ? "Please enter the code sent to your email."
       : "Please enter your email to login.";
   }
 
-  getInputType(): string {
+  get inputType(): string {
     return this.email() ? "number" : "email";
   }
 
-  getInputPlaceholder(): string {
+  get inputPlaceholder(): string {
     return this.email() ? "Enter code" : "Enter email";
   }
 
-  getAutocomplete(): string {
+  get autocomplete(): string {
     return this.email() ? "one-time-code" : "email";
   }
 
-  getConfirmText(): string {
+  get confirmText(): string {
     return this.email() ? "Verify" : "Send code";
   }
 
-  isFullWidth(): boolean {
+  get cancelText(): string {
+    return this.email() ? "Return" : "Cancel";
+  }
+
+  get isFullWidth(): boolean {
     return !this.email();
   }
 
-  getInput(): FormControl {
+  get input(): FormControl {
     return this.email() ? this.codeInput : this.emailInput;
+  }
+
+  get isDisabled(): boolean {
+    return (
+      this.loadingButton() ||
+      (!this.email() && this.isEmailInvalid) ||
+      (!!this.email() && this.isCodeInvalid)
+    );
+  }
+
+  private get isEmailInvalid(): boolean {
+    return this.emailInput.invalid || this.emailInput.pristine;
+  }
+
+  private get isCodeInvalid(): boolean {
+    return this.codeInput.invalid || this.codeInput.pristine;
   }
 }

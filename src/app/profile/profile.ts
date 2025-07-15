@@ -20,6 +20,7 @@ import {
 import { Subscription } from "rxjs";
 import { UserService } from "@shared/services/user.service";
 import { DaysAgoPipe } from "@shared/pipes/days-ago.pipe";
+import { IpService } from "./ip.service";
 
 @Component({
   selector: "app-profile",
@@ -38,6 +39,7 @@ import { DaysAgoPipe } from "@shared/pipes/days-ago.pipe";
     RouterLink,
     DatePipe,
   ],
+  providers: [IpService],
 })
 export class Profile implements OnInit, OnDestroy {
   loadingBan = signal(false);
@@ -49,6 +51,7 @@ export class Profile implements OnInit, OnDestroy {
   banReasonInput = new FormControl("", [Validators.required]);
   user = signal<ExternalUser | null>(null);
   userNotFound = signal(false);
+  countryEmoji = signal<string | undefined>(undefined);
   private userSubscription!: Subscription;
   private username!: string;
 
@@ -62,7 +65,8 @@ export class Profile implements OnInit, OnDestroy {
     private snackbarService: SnackbarService,
     private adminService: AdminService,
     private userService: UserService,
-    private loadingService: LoadingService
+    private loadingService: LoadingService,
+    private ipService: IpService
   ) {}
 
   ngOnInit(): void {
@@ -72,6 +76,7 @@ export class Profile implements OnInit, OnDestroy {
         const user = data["user"] as ExternalUser | null;
         this.user.set(user);
         this.userNotFound.set(user === null);
+        this.getCountryEmojiByIp();
       },
       error: (_) => {
         this.userNotFound.set(true);
@@ -273,6 +278,7 @@ export class Profile implements OnInit, OnDestroy {
         this.username
       );
       this.user.set(externalUser);
+      this.getCountryEmojiByIp();
     } catch (error) {
       this.snackbarService.show("Failed to get user profile", "error");
     } finally {
@@ -347,6 +353,38 @@ export class Profile implements OnInit, OnDestroy {
         this.loggedInUser.role === "moderator" ||
         this.loggedInUser.role === "superadmin")
     );
+  }
+
+  get userIpAddresses(): string[] | undefined {
+    return this.user()?.ipAddresses;
+  }
+
+  async getCountryEmojiByIp(): Promise<string | undefined> {
+    const user = this.user();
+    if (!user || !user.lastIpAddress) {
+      this.countryEmoji.set(undefined);
+      return;
+    }
+
+    try {
+      const countryCode = await this.ipService.getCountryCodeByIp(
+        user.lastIpAddress
+      );
+      const emoji = this.countryCodeToEmoji(countryCode);
+      this.countryEmoji.set(emoji);
+      return emoji;
+    } catch (error) {
+      this.countryEmoji.set(undefined);
+      return undefined;
+    }
+  }
+
+  countryCodeToEmoji(countryCode: string): string {
+    return countryCode
+      .toUpperCase()
+      .replace(/./g, (char) =>
+        String.fromCodePoint(127397 + char.charCodeAt(0))
+      );
   }
 
   hasBadge(): boolean {

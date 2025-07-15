@@ -2,8 +2,13 @@ import { HttpErrorResponse, HttpInterceptorFn } from "@angular/common/http";
 import * as leoProfanity from "leo-profanity";
 import { SnackbarService } from "../services/snackbar.service";
 import { inject } from "@angular/core";
+import { environment } from "@environments/environment";
 
 export const profanityInterceptor: HttpInterceptorFn = (req, next) => {
+  if (!req.url.startsWith(environment.apiUrl)) {
+    return next(req);
+  }
+
   const snackbarService = inject(SnackbarService);
 
   // Check request body for POST/PUT/PATCH
@@ -52,7 +57,6 @@ function checkProfanityInObject(obj: any): boolean {
   }
 
   if (typeof obj === "string") {
-    console.log("Checking profanity in string:", obj);
     return leoProfanity.check(obj);
   }
 
