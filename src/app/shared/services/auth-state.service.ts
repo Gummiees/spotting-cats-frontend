@@ -38,6 +38,7 @@ export class AuthStateService {
     this._isLoading.set(true);
 
     try {
+      debugger;
       const user = await firstValueFrom(
         this.http
           .get<{ user: OwnUser }>(`${environment.apiUrl}/v1/users/profile`)
