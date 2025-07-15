@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "allowedCommonJsDependencies": ["moment"],
+            "allowedCommonJsDependencies": ["moment", "leo-profanity"],
             "browser": "src/main.ts",
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
