@@ -16,7 +16,6 @@ import {
   Validators,
 } from "@angular/forms";
 import { Badge } from "@shared/components/badge/badge";
-import moment from "moment";
 import { SnackbarService } from "@shared/services/snackbar.service";
 import { LoadingService } from "@shared/services/loading.service";
 import { PrimaryButton } from "@shared/components/primary-button/primary-button";
@@ -34,6 +33,7 @@ import {
   catchError,
 } from "rxjs";
 import { stricterEmailValidator } from "@shared/validators/stricter-email.validator";
+import { DaysAgoPipe } from "@shared/pipes/days-ago.pipe";
 
 @Component({
   selector: "app-settings",
@@ -48,6 +48,7 @@ import { stricterEmailValidator } from "@shared/validators/stricter-email.valida
     ModalContentSimple,
     PrimaryButton,
     SecondaryButton,
+    DaysAgoPipe,
   ],
 })
 export class Settings implements OnDestroy {
@@ -234,7 +235,8 @@ export class Settings implements OnDestroy {
 
   async onSaveUsername() {
     const username = this.form.value.username;
-    if (!username || !this.isNewUsernameDifferent(username)) {
+    if (!this.canUpdateUsername() || !username || !this.isUsernameValid()) {
+      this.snackbarService.show("You can't update your username", "error");
       return;
     }
 
@@ -264,7 +266,8 @@ export class Settings implements OnDestroy {
 
   async onSaveEmail() {
     const email = this.form.value.email;
-    if (!email || !this.isNewEmailDifferent(email)) {
+    if (!this.canUpdateEmail() || !email || !this.isEmailValid()) {
+      this.snackbarService.show("You can't update your email", "error");
       return;
     }
 
@@ -281,14 +284,14 @@ export class Settings implements OnDestroy {
   }
 
   async onSaveAvatar() {
-    const avatarUrl = this.avatarUrl();
-    if (!avatarUrl || avatarUrl === this.user?.avatarUrl) {
+    if (!this.canUpdateAvatar() || !this.isAvatarValid()) {
+      this.snackbarService.show("You can't update your avatar", "error");
       return;
     }
 
     try {
       this.loadingAvatar.set(true);
-      await this.userService.updateAvatar(avatarUrl);
+      await this.userService.updateAvatar(this.avatarUrl());
       this.snackbarService.show("Avatar updated successfully", "success", 3000);
     } catch (error) {
       console.error(error);
@@ -388,34 +391,6 @@ export class Settings implements OnDestroy {
     }
 
     return this.user.avatarUpdatedAt < this.thirtyDaysAgo();
-  }
-
-  totalDaysSinceLastUsernameUpdate(): number {
-    if (!this.user?.usernameUpdatedAt) {
-      return 0;
-    }
-
-    return this.totalDaysSinceLastUpdate(this.user.usernameUpdatedAt);
-  }
-
-  totalDaysSinceLastEmailUpdate(): number {
-    if (!this.user?.emailUpdatedAt) {
-      return 0;
-    }
-
-    return this.totalDaysSinceLastUpdate(this.user.emailUpdatedAt);
-  }
-
-  totalDaysSinceLastAvatarUpdate(): number {
-    if (!this.user?.avatarUpdatedAt) {
-      return 0;
-    }
-
-    return this.totalDaysSinceLastUpdate(this.user.avatarUpdatedAt);
-  }
-
-  private totalDaysSinceLastUpdate(date: Date): number {
-    return moment().diff(moment(date), "days");
   }
 
   private thirtyDaysAgo(): Date {

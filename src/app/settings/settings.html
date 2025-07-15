@@ -68,11 +68,7 @@ cancelText="Cancel"
             </div>
             @if(!canUpdateUsername()) {
               <div class="mt-2 flex items-center gap-x-2">
-                <p class="text-sm text-red-600">You updated your username <ng-container [ngPlural]="totalDaysSinceLastUsernameUpdate()">
-                  <ng-template ngPluralCase="=0">today</ng-template>
-                  <ng-template ngPluralCase="=1">yesterday</ng-template>
-                  <ng-template ngPluralCase="other">{{totalDaysSinceLastUsernameUpdate()}} days ago</ng-template>
-                </ng-container>.</p>
+                <p class="text-sm text-red-600">You updated your username {{user?.usernameUpdatedAt | daysAgo}}.</p>
               </div>
             }
           </div>
@@ -90,11 +86,7 @@ cancelText="Cancel"
             </div>
             @if(!canUpdateEmail()) {
               <div class="mt-2 flex items-center gap-x-2">
-                <p class="text-sm text-red-600">You updated your email <ng-container [ngPlural]="totalDaysSinceLastEmailUpdate()">
-                  <ng-template ngPluralCase="=0">today</ng-template>
-                  <ng-template ngPluralCase="=1">yesterday</ng-template>
-                  <ng-template ngPluralCase="other">{{totalDaysSinceLastEmailUpdate()}} days ago</ng-template>
-                </ng-container>.</p>
+                <p class="text-sm text-red-600">You updated your email {{user?.emailUpdatedAt | daysAgo}}.</p>
               </div>
             }
           </div>
@@ -132,11 +124,7 @@ cancelText="Cancel"
             </div>
             @if(!canUpdateAvatar()) {
               <div class="mt-2 flex items-center gap-x-2">
-                <p class="text-sm text-red-600">You updated your avatar <ng-container [ngPlural]="totalDaysSinceLastAvatarUpdate()">
-                  <ng-template ngPluralCase="=0">today</ng-template>
-                  <ng-template ngPluralCase="=1">yesterday</ng-template>
-                  <ng-template ngPluralCase="other">{{totalDaysSinceLastAvatarUpdate()}} days ago</ng-template>
-                </ng-container>.</p>
+                  <p class="text-sm text-red-600">You updated your avatar {{user?.avatarUpdatedAt | daysAgo}}.</p>
               </div>
             }
           </div>

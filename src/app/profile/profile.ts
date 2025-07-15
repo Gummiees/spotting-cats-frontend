@@ -1,6 +1,6 @@
-import { Component, computed, OnDestroy, OnInit, signal } from "@angular/core";
-import { CommonModule } from "@angular/common";
-import { ActivatedRoute } from "@angular/router";
+import { Component, OnDestroy, OnInit, signal } from "@angular/core";
+import { CommonModule, DatePipe } from "@angular/common";
+import { ActivatedRoute, RouterLink } from "@angular/router";
 import { AuthStateService } from "@shared/services/auth-state.service";
 import { Modal } from "@shared/components/modal/modal";
 import { Header } from "@shared/components/header/header";
@@ -18,7 +18,8 @@ import {
   isAdminOrSuperadmin,
 } from "@shared/utils/role-permissions";
 import { Subscription } from "rxjs";
-import { UserService, NotFoundException } from "@shared/services/user.service";
+import { UserService } from "@shared/services/user.service";
+import { DaysAgoPipe } from "@shared/pipes/days-ago.pipe";
 
 @Component({
   selector: "app-profile",
@@ -33,6 +34,9 @@ import { UserService, NotFoundException } from "@shared/services/user.service";
     ModalContentSimple,
     NotFound,
     PrimaryButton,
+    DaysAgoPipe,
+    RouterLink,
+    DatePipe,
   ],
 })
 export class Profile implements OnInit, OnDestroy {
@@ -87,12 +91,8 @@ export class Profile implements OnInit, OnDestroy {
     this.isMakeModeratorModalOpen.set(true);
   }
 
-  async onConfirmBanOrUnban() {
-    if (this.user()?.isBanned) {
-      await this.onConfirmUnban();
-    } else {
-      await this.onConfirmBan();
-    }
+  get isUserBanned(): boolean {
+    return this.user()?.isBanned || false;
   }
 
   onCancelModal() {
@@ -120,9 +120,18 @@ export class Profile implements OnInit, OnDestroy {
     return isAdminOrSuperadmin(this.loggedInUser.role);
   }
 
+  async onConfirmBanOrUnban() {
+    if (this.isUserBanned) {
+      await this.onConfirmUnban();
+    } else {
+      await this.onConfirmBan();
+    }
+  }
+
   private async onConfirmBan() {
     const user = this.user();
     if (!user || !this.hasPermissionOverUser()) {
+      this.userActionWithoutPermission();
       return;
     }
 
@@ -144,9 +153,18 @@ export class Profile implements OnInit, OnDestroy {
     }
   }
 
+  private userActionWithoutPermission() {
+    this.snackbarService.show(
+      "You don't have permission to perform this action",
+      "error"
+    );
+    this.onCancelModal();
+  }
+
   private async onConfirmUnban() {
     const user = this.user();
-    if (!user) {
+    if (!user || !this.hasPermissionOverUser()) {
+      this.userActionWithoutPermission();
       return;
     }
 
@@ -179,6 +197,7 @@ export class Profile implements OnInit, OnDestroy {
   private async onConfirmMakeAdmin() {
     const user = this.user();
     if (!user || !this.hasPermissionOverUser()) {
+      this.userActionWithoutPermission();
       return;
     }
 
@@ -199,6 +218,7 @@ export class Profile implements OnInit, OnDestroy {
   private async onConfirmDemoteToUser() {
     const user = this.user();
     if (!user || !this.hasPermissionOverUser()) {
+      this.userActionWithoutPermission();
       return;
     }
 
@@ -233,6 +253,7 @@ export class Profile implements OnInit, OnDestroy {
   private async onConfirmMakeModerator() {
     const user = this.user();
     if (!user || !this.hasPermissionOverUser()) {
+      this.userActionWithoutPermission();
       return;
     }
 
@@ -284,11 +305,11 @@ export class Profile implements OnInit, OnDestroy {
   }
 
   get banButtonText() {
-    return this.user()?.isBanned ? "Unban user" : "Ban user";
+    return this.isUserBanned ? "Unban user" : "Ban user";
   }
 
   get banModalMessage() {
-    return this.user()?.isBanned
+    return this.isUserBanned
       ? "Are you sure you want to unban this user?"
       : "Please enter the reason for banning the user.";
   }
@@ -319,6 +340,19 @@ export class Profile implements OnInit, OnDestroy {
 
   get moderatorIcon() {
     return this.user()?.role === "user" ? "add_moderator" : "remove_moderator";
+  }
+
+  get isConfirmBanButtonDisabled(): boolean {
+    return this.banReasonInput.invalid || this.banReasonInput.pristine;
+  }
+
+  get loggedInUserHasElevatedRole(): boolean {
+    return (
+      !!this.loggedInUser &&
+      (this.loggedInUser.role === "admin" ||
+        this.loggedInUser.role === "moderator" ||
+        this.loggedInUser.role === "superadmin")
+    );
   }
 
   hasBadge(): boolean {

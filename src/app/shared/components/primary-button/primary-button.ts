@@ -21,23 +21,64 @@ export class PrimaryButton {
   buttonText = input.required<string>();
   onClick = output<void>();
   buttonType = input<PrimaryButtonType>("default");
+  buttonSize = input<"auto" | "full">("auto");
 
   onButtonClick() {
     this.onClick.emit();
   }
 
-  getColorButtonClass(): string {
+  getButtonClass(): string[] {
+    const classList = [];
     switch (this.buttonType()) {
       case "danger":
-        return "bg-red-600 enabled:hover:bg-red-700 enabled:outline-red-700 enabled:focus-visible:outline-red-700 enabled:active:bg-red-800";
+        classList.push(
+          "bg-red-600",
+          "enabled:hover:bg-red-700",
+          "enabled:outline-red-700",
+          "enabled:focus-visible:outline-red-700",
+          "enabled:active:bg-red-800"
+        );
+        break;
       case "success":
-        return "bg-green-500 enabled:hover:bg-green-600 enabled:outline-green-600 enabled:focus-visible:outline-green-600 enabled:active:bg-green-700";
+        classList.push(
+          "bg-green-500",
+          "enabled:hover:bg-green-600",
+          "enabled:outline-green-600",
+          "enabled:focus-visible:outline-green-600",
+          "enabled:active:bg-green-700"
+        );
+        break;
       case "info":
-        return "bg-blue-500 enabled:hover:bg-blue-600 enabled:outline-blue-600 enabled:focus-visible:outline-blue-600 enabled:active:bg-blue-700";
+        classList.push(
+          "bg-blue-500",
+          "enabled:hover:bg-blue-600",
+          "enabled:outline-blue-600",
+          "enabled:focus-visible:outline-blue-600",
+          "enabled:active:bg-blue-700"
+        );
+        break;
       case "warning":
-        return "bg-amber-500 enabled:hover:bg-amber-600 enabled:outline-amber-600 enabled:focus-visible:outline-amber-600 enabled:active:bg-amber-700";
+        classList.push(
+          "bg-amber-500",
+          "enabled:hover:bg-amber-600",
+          "enabled:outline-amber-600",
+          "enabled:focus-visible:outline-amber-600",
+          "enabled:active:bg-amber-700"
+        );
+        break;
       default:
-        return "bg-violet-500 enabled:hover:bg-violet-600 enabled:outline-violet-600 enabled:focus-visible:outline-violet-600 enabled:active:bg-violet-700";
+        classList.push(
+          "bg-violet-500",
+          "enabled:hover:bg-violet-600",
+          "enabled:outline-violet-600",
+          "enabled:focus-visible:outline-violet-600",
+          "enabled:active:bg-violet-700"
+        );
+        break;
     }
+    if (this.buttonSize() === "full") {
+      classList.push("w-full");
+    }
+    return classList;
   }
 }

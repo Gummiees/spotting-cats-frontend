@@ -20,10 +20,15 @@ export class Modal {
   confirmText = input.required<string>();
   confirmColor = input<ModalType>("default");
   cancelText = input.required<string>();
+  isDisabled = input<boolean>(false);
   onConfirm = output<void>();
   onCancel = output<void>();
 
   onConfirmClick() {
+    if (this.isDisabled()) {
+      return;
+    }
+
     this.onConfirm.emit();
   }
 

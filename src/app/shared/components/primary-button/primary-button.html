@@ -1,4 +1,4 @@
-<button [ngClass]="getColorButtonClass()" [disabled]="isDisabled() || isLoading()" class="sm:w-auto sm:mt-0 transition duration-200 ease-in-out rounded-md px-3 py-1.5 text-sm font-semibold text-white shadow-xs enabled:cursor-pointer enabled:focus-visible:outline-2 enabled:focus-visible:outline-offset-2  disabled:opacity-50 disabled:cursor-not-allowed" (click)="onButtonClick()">
+<button [ngClass]="getButtonClass()" [disabled]="isDisabled() || isLoading()" class="sm:w-auto sm:mt-0 transition duration-200 ease-in-out rounded-md px-3 py-1.5 text-sm font-semibold text-white shadow-xs enabled:cursor-pointer enabled:focus-visible:outline-2 enabled:focus-visible:outline-offset-2  disabled:opacity-50 disabled:cursor-not-allowed" (click)="onButtonClick()">
   <app-loading-button [loading]="isLoading()" [buttonText]="buttonText()">
     <ng-container prefix>
       <ng-content select="[prefix]"></ng-content>

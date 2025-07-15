@@ -1,7 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { environment } from "@environments/environment";
-import { firstValueFrom } from "rxjs";
+import { firstValueFrom, map } from "rxjs";
 import { StorageService } from "./storage.service";
 import { AuthStateService } from "./auth-state.service";
 import {
@@ -9,6 +9,7 @@ import {
   hasPermissionOverUser,
 } from "@shared/utils/role-permissions";
 import { UserRole } from "@models/user-roles";
+import { ExternalUser } from "@models/external-user";
 
 @Injectable({
   providedIn: "root",
@@ -40,7 +41,8 @@ export class AdminService {
         case 401:
           throw new UnauthorizedException(error.error.message);
         case 403:
-          return this.onForbiddenRequest(error);
+          this.onForbiddenRequest();
+          throw new ForbiddenException(error.error.message);
         default:
           throw new AdminServiceException(error.error.message);
       }
@@ -77,7 +79,8 @@ export class AdminService {
         case 401:
           throw new UnauthorizedException(error.error.message);
         case 403:
-          return this.onForbiddenRequest(error);
+          this.onForbiddenRequest();
+          throw new ForbiddenException(error.error.message);
         default:
           throw new AdminServiceException(error.error.message);
       }
@@ -95,7 +98,8 @@ export class AdminService {
         userRole: role,
       })
     ) {
-      return this.onForbiddenRequest("User is not an admin");
+      this.onForbiddenRequest();
+      throw new ForbiddenException("User is not an admin");
     }
 
     return firstValueFrom(
@@ -124,7 +128,8 @@ export class AdminService {
         case 401:
           throw new UnauthorizedException(error.error.message);
         case 403:
-          return this.onForbiddenRequest(error);
+          this.onForbiddenRequest();
+          throw new ForbiddenException(error.error.message);
         case 429:
           throw new RateLimitException(error.error.message);
         default:
@@ -144,7 +149,8 @@ export class AdminService {
         case 401:
           throw new UnauthorizedException(error.error.message);
         case 403:
-          return this.onForbiddenRequest(error);
+          this.onForbiddenRequest();
+          throw new ForbiddenException(error.error.message);
         case 404:
           throw new NotFoundException(error.error.message);
         default:
@@ -164,7 +170,8 @@ export class AdminService {
         case 401:
           throw new UnauthorizedException(error.error.message);
         case 403:
-          return this.onForbiddenRequest(error);
+          this.onForbiddenRequest();
+          throw new ForbiddenException(error.error.message);
         case 404:
           throw new NotFoundException(error.error.message);
         default:
@@ -173,10 +180,31 @@ export class AdminService {
     });
   }
 
-  private onForbiddenRequest(error: any) {
+  async getUserByUserId(id: string): Promise<ExternalUser> {
+    return firstValueFrom(
+      this.http
+        .get<{ user: ExternalUser }>(
+          `${environment.apiUrl}/v1/users/admin/users/id/${id}`
+        )
+        .pipe(map((user) => user.user))
+    ).catch((error) => {
+      switch (error.status) {
+        case 401:
+          throw new UnauthorizedException(error.error.message);
+        case 403:
+          this.onForbiddenRequest();
+          throw new ForbiddenException(error.error.message);
+        case 404:
+          throw new NotFoundException(error.error.message);
+        default:
+          throw new AdminServiceException(error.error.message);
+      }
+    });
+  }
+
+  private onForbiddenRequest() {
     this.authStateService.setUnauthenticated();
     this.storageService.clear();
-    throw new ForbiddenException(error.error.message);
   }
 }
 
