@@ -178,7 +178,6 @@ export class Settings implements OnDestroy {
     try {
       return await this.userService.checkUsernameAvailability(username);
     } catch (error) {
-      console.error(error);
       return false;
     }
   }
@@ -187,7 +186,6 @@ export class Settings implements OnDestroy {
     try {
       return await this.userService.checkEmailAvailability(email);
     } catch (error) {
-      console.error(error);
       return false;
     }
   }
@@ -196,7 +194,6 @@ export class Settings implements OnDestroy {
     const avatars: string[] = [];
     const baseUrl = "https://api.dicebear.com/9.x/bottts/svg";
 
-    // Generate 30 different avatars with various seeds
     for (let i = 0; i < 30; i++) {
       const seed = `avatar-${i}`;
       const avatarUrl = `${baseUrl}?seed=${seed}`;
@@ -249,7 +246,6 @@ export class Settings implements OnDestroy {
         3000
       );
     } catch (error) {
-      console.error(error);
       this.snackbarService.show("Failed to update username", "error");
     } finally {
       this.loadingUsername.set(false);
@@ -276,7 +272,6 @@ export class Settings implements OnDestroy {
       await this.userService.updateEmail(email);
       this.isVerifyEmailModalOpen.set(true);
     } catch (error) {
-      console.error(error);
       this.snackbarService.show("Failed to update email", "error");
     } finally {
       this.loadingEmail.set(false);
@@ -294,7 +289,6 @@ export class Settings implements OnDestroy {
       await this.userService.updateAvatar(this.avatarUrl());
       this.snackbarService.show("Avatar updated successfully", "success", 3000);
     } catch (error) {
-      console.error(error);
       this.snackbarService.show("Failed to update avatar", "error");
     } finally {
       this.loadingAvatar.set(false);
@@ -338,7 +332,6 @@ export class Settings implements OnDestroy {
         3000
       );
     } catch (error) {
-      console.error(error);
       this.snackbarService.show("Failed to deactivate account", "error");
     } finally {
       this.loadingService.setLoading(false);
@@ -361,7 +354,6 @@ export class Settings implements OnDestroy {
       if (error instanceof InvalidCodeException) {
         this.snackbarService.show(error.message, "error");
       } else {
-        console.error(error);
         this.snackbarService.show("Failed to verify email", "error");
       }
     } finally {

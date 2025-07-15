@@ -138,7 +138,6 @@ export class CatsComponent implements OnInit {
       const result = await this.catsService.getCats();
       return Array.isArray(result) ? result : [];
     } catch (error) {
-      console.error("Error fetching cats:", error);
       return [];
     }
   }

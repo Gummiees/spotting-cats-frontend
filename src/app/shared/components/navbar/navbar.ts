@@ -59,7 +59,6 @@ export class Navbar {
       this.loadingService.setLoading(false);
       this.router.navigate(["/"]);
     } catch (error) {
-      console.error(error);
       this.snackbarService.show("Failed to sign out", "error");
     } finally {
       this.loadingService.setLoading(false);

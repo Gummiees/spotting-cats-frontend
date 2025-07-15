@@ -146,7 +146,6 @@ export class Profile implements OnInit, OnDestroy {
       this.snackbarService.show("Account banned successfully", "success", 3000);
       this.getUserProfile();
     } catch (error) {
-      console.error(error);
       this.snackbarService.show("Failed to ban account", "error");
     } finally {
       this.loadingBan.set(false);
@@ -179,7 +178,6 @@ export class Profile implements OnInit, OnDestroy {
       );
       this.getUserProfile();
     } catch (error) {
-      console.error(error);
       this.snackbarService.show("Failed to unban account", "error");
     } finally {
       this.loadingBan.set(false);
@@ -208,7 +206,6 @@ export class Profile implements OnInit, OnDestroy {
       this.snackbarService.show("Admin made successfully", "success", 3000);
       this.getUserProfile();
     } catch (error) {
-      console.error(error);
       this.snackbarService.show("Failed to make admin", "error");
     } finally {
       this.loadingMakeAdmin.set(false);
@@ -234,7 +231,6 @@ export class Profile implements OnInit, OnDestroy {
       );
       this.getUserProfile();
     } catch (error) {
-      console.error(error);
       this.snackbarService.show("Failed to demote user", "error");
     } finally {
       this.loadingMakeAdmin.set(false);
@@ -264,7 +260,6 @@ export class Profile implements OnInit, OnDestroy {
       this.snackbarService.show("Moderator made successfully", "success", 3000);
       this.getUserProfile();
     } catch (error) {
-      console.error(error);
       this.snackbarService.show("Failed to make moderator", "error");
     } finally {
       this.loadingMakeModerator.set(false);
@@ -279,7 +274,6 @@ export class Profile implements OnInit, OnDestroy {
       );
       this.user.set(externalUser);
     } catch (error) {
-      console.error(error);
       this.snackbarService.show("Failed to get user profile", "error");
     } finally {
       this.loadingService.setLoading(false);
