@@ -6,6 +6,7 @@ import { OwnUser } from "@models/own-user";
 import { firstValueFrom, map, tap } from "rxjs";
 import { StorageService } from "./storage.service";
 import { AuthStateService } from "./auth-state.service";
+import { ForbiddenException } from "./admin.service";
 
 @Injectable({
   providedIn: "root",
@@ -32,6 +33,8 @@ export class UserService {
       switch (error.status) {
         case 400:
           throw new InvalidEmailException(error.error.message);
+        case 403:
+          throw new ForbiddenException(error.error.message);
         case 429:
           throw new RateLimitException(error.error.message);
         default:

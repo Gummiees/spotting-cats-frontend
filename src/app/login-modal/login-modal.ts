@@ -2,10 +2,10 @@ import { Component, input, output, signal } from "@angular/core";
 import { ModalContentSimple } from "@shared/components/modal-content-simple/modal-content-simple";
 import { Modal } from "@shared/components/modal/modal";
 import { FormControl, ReactiveFormsModule, Validators } from "@angular/forms";
-import { LoadingButton } from "@shared/components/loading-button/loading-button";
 import { CommonModule } from "@angular/common";
 import { UserService } from "@shared/services/user.service";
 import { SnackbarService } from "@shared/services/snackbar.service";
+import { ForbiddenException } from "@shared/services/admin.service";
 
 @Component({
   selector: "app-login-modal",
@@ -54,12 +54,15 @@ export class LoginModal {
       await this.userService.sendCode(email);
       this.email.set(email);
     } catch (error) {
+      if (error instanceof ForbiddenException) {
+        this.snackbarService.show(error.message, "error");
+        return;
+      }
       this.snackbarService.show(
         "An error occurred while sending the code",
         "error"
       );
       this.email.set(null);
-      console.error(error);
     } finally {
       this.loadingButton.set(false);
     }
@@ -78,7 +81,6 @@ export class LoginModal {
         "An error occurred while verifying the code",
         "error"
       );
-      console.error(error);
     } finally {
       this.loadingButton.set(false);
     }
