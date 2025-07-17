@@ -20,6 +20,4 @@ export interface ExternalUser {
   bannedAt?: Date;
   roleUpdatedAt?: Date;
   roleUpdatedBy?: string;
-  ipAddresses?: string[];
-  lastIpAddress?: string;
 }

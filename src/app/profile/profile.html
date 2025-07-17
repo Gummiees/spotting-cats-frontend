@@ -141,21 +141,6 @@ cancelText="Cancel"
                     Role updated by: <a class="text-violet-500 font-bold hover:underline" [routerLink]="['/user', user()!.roleUpdatedBy]">{{ user()?.roleUpdatedBy }}</a>
                   </div>
                 }
-                @if(!!userIpAddresses && userIpAddresses.length > 0) {
-                  <div class="text-sm text-gray-500">
-                    IP Addresses:
-                    <ul class="list-disc list-inside">
-                      @for(ip of userIpAddresses; track ip) {
-                        <li>{{ ip }}</li>
-                      }
-                    </ul>
-                  </div>
-                }
-                @if(!!countryEmoji()) {
-                  <div class="text-sm text-gray-500 flex items-center gap-1">
-                    <span>Last country:</span><span class="text-3xl">{{ countryEmoji() }}</span>
-                  </div>
-                }
               </div>
             }
           </div>
