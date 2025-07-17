@@ -10,6 +10,7 @@ import { routes } from "./app.routes";
 import { railwayResponseInterceptor } from "./shared/interceptors/railway-response.interceptor";
 import { credentialsInterceptor } from "./shared/interceptors/credentials.interceptor";
 import { profanityInterceptor } from "./shared/interceptors/profanity.interceptor";
+import { forbiddenInterceptor } from "./shared/interceptors/forbidden.interceptor";
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -21,6 +22,7 @@ export const appConfig: ApplicationConfig = {
         credentialsInterceptor,
         profanityInterceptor,
         railwayResponseInterceptor,
+        forbiddenInterceptor,
       ])
     ),
   ],

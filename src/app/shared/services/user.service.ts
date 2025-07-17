@@ -6,7 +6,7 @@ import { OwnUser } from "@models/own-user";
 import { firstValueFrom, map, tap } from "rxjs";
 import { StorageService } from "./storage.service";
 import { AuthStateService } from "./auth-state.service";
-import { ForbiddenException } from "./admin.service";
+import { ForbiddenException } from "../../admin/services/admin.service";
 
 @Injectable({
   providedIn: "root",
@@ -31,10 +31,6 @@ export class UserService {
         .pipe(tap((_) => this.storageService.setItem("email", email)))
     ).catch((error) => {
       switch (error.status) {
-        case 400:
-          throw new InvalidEmailException(error.error.message);
-        case 403:
-          throw new ForbiddenException(error.error.message);
         case 429:
           throw new RateLimitException(error.error.message);
         default:
@@ -92,16 +88,7 @@ export class UserService {
           this.storageService.clear();
         })
       )
-    ).catch((error) => {
-      switch (error.status) {
-        case 401:
-          this.authStateService.setUnauthenticated();
-          this.storageService.clear();
-          throw new UnauthorizedException(error.error.message);
-        default:
-          throw new UserServiceException(error.error.message);
-      }
-    });
+    );
   }
 
   async getProfile(): Promise<OwnUser> {
@@ -111,18 +98,7 @@ export class UserService {
 
     return firstValueFrom(
       this.http.get<OwnUser>(`${environment.apiUrl}/v1/users/profile`)
-    ).catch((error) => {
-      switch (error.status) {
-        case 401:
-          this.authStateService.setUnauthenticated();
-          this.storageService.clear();
-          throw new UnauthorizedException(error.error.message);
-        case 404:
-          throw new NotFoundException(error.error.message);
-        default:
-          throw new UserServiceException(error.error.message);
-      }
-    });
+    );
   }
 
   async getUserByUsername(username: string): Promise<ExternalUser> {
@@ -132,16 +108,7 @@ export class UserService {
           `${environment.apiUrl}/v1/users/${username}`
         )
         .pipe(map((response) => response.user))
-    ).catch((error) => {
-      switch (error.status) {
-        case 400:
-          throw new InvalidUsernameException(error.error.message);
-        case 404:
-          throw new NotFoundException(error.error.message);
-        default:
-          throw new UserServiceException(error.error.message);
-      }
-    });
+    );
   }
 
   async updateUsername(username: string): Promise<void> {
@@ -153,18 +120,7 @@ export class UserService {
       this.http.put<void>(`${environment.apiUrl}/v1/users/username`, {
         username,
       })
-    ).catch((error) => {
-      switch (error.status) {
-        case 400:
-          throw new InvalidUsernameException(error.error.message);
-        case 401:
-          this.authStateService.setUnauthenticated();
-          this.storageService.clear();
-          throw new UnauthorizedException(error.error.message);
-        default:
-          throw new UserServiceException(error.error.message);
-      }
-    });
+    );
 
     await this.authStateService.checkAuthStatus();
   }
@@ -192,12 +148,6 @@ export class UserService {
         )
     ).catch((error) => {
       switch (error.status) {
-        case 400:
-          throw new InvalidEmailException(error.error.message);
-        case 401:
-          this.authStateService.setUnauthenticated();
-          this.storageService.clear();
-          throw new UnauthorizedException(error.error.message);
         case 429:
           throw new RateLimitException(error.error.message);
         default:
@@ -217,18 +167,7 @@ export class UserService {
       this.http.post<void>(`${environment.apiUrl}/v1/users/email/verify`, {
         code,
       })
-    ).catch((error) => {
-      switch (error.status) {
-        case 400:
-          throw new InvalidCodeException(error.error.message);
-        case 401:
-          this.authStateService.setUnauthenticated();
-          this.storageService.clear();
-          throw new UnauthorizedException(error.error.message);
-        default:
-          throw new UserServiceException(error.error.message);
-      }
-    });
+    );
 
     await this.authStateService.checkAuthStatus();
   }
@@ -242,18 +181,7 @@ export class UserService {
       this.http.put<void>(`${environment.apiUrl}/v1/users/avatar`, {
         avatarUrl,
       })
-    ).catch((error) => {
-      switch (error.status) {
-        case 400:
-          throw new InvalidAvatarException(error.error.message);
-        case 401:
-          this.authStateService.setUnauthenticated();
-          this.storageService.clear();
-          throw new UnauthorizedException(error.error.message);
-        default:
-          throw new UserServiceException(error.error.message);
-      }
-    });
+    );
 
     await this.authStateService.checkAuthStatus();
   }
@@ -272,14 +200,7 @@ export class UserService {
             this.storageService.clear();
           })
         )
-    ).catch((error) => {
-      switch (error.status) {
-        case 401:
-          throw new UnauthorizedException(error.error.message);
-        default:
-          throw new UserServiceException(error.error.message);
-      }
-    });
+    );
   }
 
   async checkUsernameAvailability(username: string): Promise<boolean> {
@@ -293,14 +214,7 @@ export class UserService {
           }
         )
         .pipe(map((response) => response.available))
-    ).catch((error) => {
-      switch (error.status) {
-        case 400:
-          throw new InvalidUsernameException(error.error.message);
-        default:
-          throw new UserServiceException(error.error.message);
-      }
-    });
+    );
   }
 
   async checkEmailAvailability(email: string): Promise<boolean> {
@@ -358,14 +272,4 @@ export class EmailSameAsCurrentException extends UserServiceException {}
 
 export class EmailAlreadyTakenException extends UserServiceException {}
 
-export class InvalidUsernameException extends UserServiceException {}
-
-export class InvalidAvatarException extends UserServiceException {}
-
-export class InvalidCodeException extends UserServiceException {}
-
 export class RateLimitException extends UserServiceException {}
-
-export class UnauthorizedException extends UserServiceException {}
-
-export class NotFoundException extends UserServiceException {}

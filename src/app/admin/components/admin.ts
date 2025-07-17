@@ -1,14 +1,12 @@
 import { Component } from "@angular/core";
-import { CommonModule } from "@angular/common";
-import { AdminService } from "@shared/services/admin.service";
+import { AdminService } from "src/app/admin/services/admin.service";
 import { AuthStateService } from "@shared/services/auth-state.service";
+import { isPrivilegedRole } from "@shared/utils/role-permissions";
 
 @Component({
   selector: "app-admin",
   templateUrl: "./admin.html",
-  standalone: true,
-  imports: [CommonModule],
-  providers: [AdminService],
+  standalone: false,
 })
 export class Admin {
   get user() {
@@ -23,4 +21,8 @@ export class Admin {
     private authStateService: AuthStateService,
     private adminService: AdminService
   ) {}
+
+  get userHasElevatedRole(): boolean {
+    return !!this.user && isPrivilegedRole(this.user.role);
+  }
 }

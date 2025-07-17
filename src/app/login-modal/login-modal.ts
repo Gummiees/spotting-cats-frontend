@@ -8,7 +8,7 @@ import { SnackbarService } from "@shared/services/snackbar.service";
 import {
   ForbiddenException,
   RateLimitException,
-} from "@shared/services/admin.service";
+} from "src/app/admin/services/admin.service";
 import { PrimaryButton } from "@shared/components/primary-button/primary-button";
 
 @Component({

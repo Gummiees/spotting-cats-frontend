@@ -1,0 +1,10 @@
+@if(!userHasElevatedRole) {
+  <app-not-found />
+} @else {
+<app-header title="Admin panel" />
+<main>
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+  </div>
+  <router-outlet></router-outlet>
+</main>
+}

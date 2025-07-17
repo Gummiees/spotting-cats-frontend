@@ -2,8 +2,8 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { environment } from "@environments/environment";
 import { firstValueFrom, map } from "rxjs";
-import { StorageService } from "./storage.service";
-import { AuthStateService } from "./auth-state.service";
+import { StorageService } from "../../shared/services/storage.service";
+import { AuthStateService } from "../../shared/services/auth-state.service";
 import {
   isAdminOrSuperadmin,
   hasPermissionOverUser,
@@ -11,9 +11,7 @@ import {
 import { UserRole } from "@models/user-roles";
 import { ExternalUser } from "@models/external-user";
 
-@Injectable({
-  providedIn: "root",
-})
+@Injectable()
 export class AdminService {
   constructor(
     private http: HttpClient,
@@ -41,7 +39,6 @@ export class AdminService {
         case 401:
           throw new UnauthorizedException(error.error.message);
         case 403:
-          this.onForbiddenRequest();
           throw new ForbiddenException(error.error.message);
         default:
           throw new AdminServiceException(error.error.message);
@@ -69,7 +66,6 @@ export class AdminService {
         case 401:
           throw new UnauthorizedException(error.error.message);
         case 403:
-          this.onForbiddenRequest();
           throw new ForbiddenException(error.error.message);
         default:
           throw new AdminServiceException(error.error.message);
@@ -92,8 +88,6 @@ export class AdminService {
         case 401:
           throw new UnauthorizedException(error.error.message);
         case 403:
-          this.authStateService.setUnauthenticated();
-          this.storageService.clear();
           throw new ForbiddenException(error.error.message);
         default:
           throw new AdminServiceException(error.error.message);
@@ -121,7 +115,6 @@ export class AdminService {
         case 401:
           throw new UnauthorizedException(error.error.message);
         case 403:
-          this.onForbiddenRequest();
           throw new ForbiddenException(error.error.message);
         default:
           throw new AdminServiceException(error.error.message);
@@ -144,7 +137,6 @@ export class AdminService {
         case 401:
           throw new UnauthorizedException(error.error.message);
         case 403:
-          this.onForbiddenRequest();
           throw new ForbiddenException(error.error.message);
         default:
           throw new AdminServiceException(error.error.message);
@@ -160,7 +152,6 @@ export class AdminService {
         case 401:
           throw new UnauthorizedException(error.error.message);
         case 403:
-          this.onForbiddenRequest();
           throw new ForbiddenException(error.error.message);
         case 429:
           throw new RateLimitException(error.error.message);
@@ -186,7 +177,6 @@ export class AdminService {
         case 401:
           throw new UnauthorizedException(error.error.message);
         case 403:
-          this.onForbiddenRequest();
           throw new ForbiddenException(error.error.message);
         case 404:
           throw new NotFoundException(error.error.message);
@@ -212,7 +202,6 @@ export class AdminService {
         case 401:
           throw new UnauthorizedException(error.error.message);
         case 403:
-          this.onForbiddenRequest();
           throw new ForbiddenException(error.error.message);
         case 404:
           throw new NotFoundException(error.error.message);
@@ -234,7 +223,6 @@ export class AdminService {
         case 401:
           throw new UnauthorizedException(error.error.message);
         case 403:
-          this.onForbiddenRequest();
           throw new ForbiddenException(error.error.message);
         case 404:
           throw new NotFoundException(error.error.message);

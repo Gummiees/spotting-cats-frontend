@@ -1,0 +1,207 @@
+<app-modal
+confirmText="Confirm"
+cancelText="Cancel"
+confirmColor="danger"
+[isOpen]="isBanModalOpen()"
+[isLoading]="loadingBan()"
+[isDisabled]="isConfirmBanButtonDisabled"
+(onConfirm)="onConfirmBanOrUnban()"
+(onCancel)="onCancelModal()"
+>
+  <content>
+    <app-modal-content-simple
+      [title]="banButtonText"
+      [message]="banModalMessage"
+      [fullWidth]="true"
+      modalType="danger"
+      icon="gavel"
+    >
+    @if(!isUserBanned) {
+      <div class="mt-2">
+        <textarea 
+        name="input"
+        class="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-violet-600 sm:text-sm sm:leading-6"
+        autocomplete="ban-reason"
+        placeholder="Enter reason" 
+        rows="4"
+        [formControl]="banReasonInput"
+        ></textarea>
+      </div>
+    }
+    </app-modal-content-simple>
+  </content>
+</app-modal>
+<app-modal
+confirmText="Confirm"
+cancelText="Cancel"
+confirmColor="danger"
+[isOpen]="isBanIpModalOpen()"
+[isLoading]="loadingBanIp()"
+[isDisabled]="isConfirmIpBanButtonDisabled"
+(onConfirm)="onConfirmIpBanOrUnban()"
+(onCancel)="onCancelModal()"
+>
+  <content>
+    <app-modal-content-simple
+      [title]="banIpButtonText"
+      [message]="banIpModalMessage"
+      [fullWidth]="true"
+      modalType="danger"
+      icon="gavel"
+    >
+    @if(!isUserIpBanned) {
+      <div class="mt-2">
+        <textarea 
+        name="input"
+        class="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-violet-600 sm:text-sm sm:leading-6"
+        autocomplete="ban-reason"
+        placeholder="Enter reason" 
+        rows="4"
+        [formControl]="banIpReasonInput"
+        ></textarea>
+      </div>
+    }
+    </app-modal-content-simple>
+  </content>
+</app-modal>
+<app-modal
+confirmText="Confirm"
+cancelText="Cancel"
+[isOpen]="isMakeAdminModalOpen()"
+[isLoading]="loadingMakeAdmin()"
+(onConfirm)="onConfirmMakeOrRemoveAdmin()"
+(onCancel)="onCancelModal()"
+>
+  <content>
+    <app-modal-content-simple
+      [title]="adminButtonText"
+      [message]="adminModalMessage"
+      [icon]="adminIcon"
+    />
+  </content>
+</app-modal>
+<app-modal
+confirmText="Confirm"
+cancelText="Cancel"
+[isOpen]="isMakeModeratorModalOpen()"
+[isLoading]="loadingMakeModerator()"
+(onConfirm)="onConfirmMakeOrRemoveModerator()"
+(onCancel)="onCancelModal()"
+>
+  <content>
+    <app-modal-content-simple
+      [title]="moderatorButtonText"
+      [message]="moderatorModalMessage"
+      [icon]="moderatorIcon"
+    />
+  </content>
+</app-modal>
+
+@if(userNotFound() || ((isUserBanned || user()?.isInactive) && !loggedInUserHasElevatedRole)) {
+  <app-not-found />
+} @else {
+<app-header title="Profile" />
+<main>
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="border-b border-gray-900/10 pt-2 pb-3 flex flex-col gap-y-2">
+        <div class="flex items-center gap-3">
+          <img class="size-16 text-gray-300 w-16 h-16" [src]="user()?.avatarUrl" aria-hidden="true" data-slot="icon"/>
+          <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
+            <div class="flex flex-col justify-center gap-1">
+              <div class="text-lg font-bold text-violet-600">
+                {{ user()?.username }}
+              </div>
+              @if(hasBadge()) {
+                <div class="flex items-center gap-x-2">
+                  @if(user()?.role === "superadmin") {
+                    <app-badge type="superadmin" />
+                  }
+                  @if(user()?.role === "admin") {
+                    <app-badge type="admin" />
+                  }
+                  @if(user()?.role === "moderator") {
+                    <app-badge type="moderator" />
+                  }
+                  @if(isUserBanned) {
+                    <app-badge type="banned" />
+                  }
+                  @if(isUserIpBanned) {
+                    <app-badge type="ip-banned" />
+                  }
+                  @if(user()?.isInactive) {
+                    <app-badge type="inactive" />
+                    }
+                </div>
+              }
+            </div>
+            <div class="flex flex-col justify-center gap-1">
+              <div class="text-sm text-gray-500">
+                Last seen: {{ user()?.lastLoginAt | daysAgo }}
+              </div>
+              <div class="text-sm text-gray-500">
+                Joined: {{ user()?.createdAt | daysAgo }}
+              </div>
+            </div>  
+            @if(loggedInUserHasElevatedRole) {
+              <div class="flex flex-col justify-center gap-1">
+                @if(user()?.isBanned) {
+                  <div class="text-sm text-gray-500">
+                    Banned at: {{ user()?.bannedAt | date: "yyyy-MM-dd HH:mm:ss" }}
+                  </div>
+                  <div class="text-sm text-gray-500">
+                    Reason: <span class="italic">{{ user()?.banReason }}</span>
+                  </div>
+                  <div class="text-sm text-gray-500">
+                    Banned by: <a class="text-violet-500 font-bold hover:underline" [routerLink]="['/user', user()!.bannedBy]">{{ user()?.bannedBy }}</a>
+                  </div>
+                } @else if(user()?.isInactive) {
+                  <div class="text-sm text-gray-500">
+                    Inactive at: {{ user()?.deactivatedAt | date: "yyyy-MM-dd HH:mm:ss" }}
+                  </div>
+                }
+                @if(!!user()?.roleUpdatedAt) {
+                  <div class="text-sm text-gray-500">
+                    Role updated at: {{ user()?.roleUpdatedAt | date: "yyyy-MM-dd HH:mm:ss" }}
+                  </div>
+                  <div class="text-sm text-gray-500">
+                    Role updated by: <a class="text-violet-500 font-bold hover:underline" [routerLink]="['/user', user()!.roleUpdatedBy]">{{ user()?.roleUpdatedBy }}</a>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+      @if(hasPermissionOverUser()) {
+      <div class="mt-6">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+          <app-primary-button [buttonText]="banButtonText" buttonType="danger" buttonSize="full" (onClick)="onOpenBanModal()">
+            <ng-container prefix>
+              <span class="material-symbols-outlined text-white !text-[16px] leading-none align-middle">gavel</span>
+            </ng-container>
+          </app-primary-button>
+          <app-primary-button [buttonText]="banIpButtonText" buttonType="danger" buttonSize="full" (onClick)="onOpenBanIpModal()">
+            <ng-container prefix>
+              <span class="material-symbols-outlined text-white !text-[16px] leading-none align-middle">gavel</span>
+            </ng-container>
+          </app-primary-button>
+          @if(shouldDisplayModeratorButton) {
+            <app-primary-button [buttonText]="moderatorButtonText" buttonType="info" buttonSize="full" (onClick)="onOpenMakeModeratorModal()">
+              <ng-container prefix>
+                <span class="material-symbols-outlined text-white !text-[16px] leading-none align-middle">{{moderatorIcon}}</span>
+              </ng-container>
+            </app-primary-button>
+          }
+          @if(shouldDisplayAdminButton) {
+              <app-primary-button [buttonText]="adminButtonText" buttonType="warning" buttonSize="full" (onClick)="onOpenMakeAdminModal()">
+                <ng-container prefix>
+                  <span class="material-symbols-outlined text-white !text-[16px] leading-none align-middle">{{adminIcon}}</span>
+                </ng-container>
+              </app-primary-button>
+          }
+        </div>
+      </div>
+      }
+  </div>
+</main>
+}
