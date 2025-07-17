@@ -5,7 +5,6 @@ import { AuthStateService } from "@shared/services/auth-state.service";
 import {
   EmailAlreadyTakenException,
   EmailSameAsCurrentException,
-  InvalidCodeException,
   InvalidEmailException,
   RateLimitException,
   UserService,
@@ -363,7 +362,7 @@ export class Settings implements OnDestroy {
       this.isVerifyEmailModalOpen.set(false);
       this.snackbarService.show("Email verified successfully", "success", 3000);
     } catch (error) {
-      if (error instanceof InvalidCodeException) {
+      if (error instanceof InvalidEmailException) {
         this.snackbarService.show(error.message, "error");
       } else {
         this.snackbarService.show("Failed to verify email", "error");

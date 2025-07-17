@@ -6,7 +6,6 @@ import { OwnUser } from "@models/own-user";
 import { firstValueFrom, map, tap } from "rxjs";
 import { StorageService } from "./storage.service";
 import { AuthStateService } from "./auth-state.service";
-import { ForbiddenException } from "../../admin/services/admin.service";
 
 @Injectable({
   providedIn: "root",
@@ -108,7 +107,14 @@ export class UserService {
           `${environment.apiUrl}/v1/users/${username}`
         )
         .pipe(map((response) => response.user))
-    );
+    ).catch((error) => {
+      switch (error.status) {
+        case 404:
+          throw new NotFoundException(error.error.message);
+        default:
+          throw new UserServiceException(error.error.message);
+      }
+    });
   }
 
   async updateUsername(username: string): Promise<void> {
@@ -273,3 +279,5 @@ export class EmailSameAsCurrentException extends UserServiceException {}
 export class EmailAlreadyTakenException extends UserServiceException {}
 
 export class RateLimitException extends UserServiceException {}
+
+export class NotFoundException extends UserServiceException {}
