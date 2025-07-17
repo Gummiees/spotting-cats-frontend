@@ -10,6 +10,7 @@ import {
 } from "@shared/utils/role-permissions";
 import { UserRole } from "@models/user-roles";
 import { ExternalUser } from "@models/external-user";
+import { AdminProfileUser } from "@models/admin-profile-user";
 
 @Injectable()
 export class AdminService {
@@ -34,16 +35,7 @@ export class AdminService {
         `${environment.apiUrl}/v1/users/admin/ensure-avatars`,
         {}
       )
-    ).catch((error) => {
-      switch (error.status) {
-        case 401:
-          throw new UnauthorizedException(error.error.message);
-        case 403:
-          throw new ForbiddenException(error.error.message);
-        default:
-          throw new AdminServiceException(error.error.message);
-      }
-    });
+    );
   }
 
   async banUser(
@@ -61,16 +53,7 @@ export class AdminService {
         username,
         reason,
       })
-    ).catch((error) => {
-      switch (error.status) {
-        case 401:
-          throw new UnauthorizedException(error.error.message);
-        case 403:
-          throw new ForbiddenException(error.error.message);
-        default:
-          throw new AdminServiceException(error.error.message);
-      }
-    });
+    );
   }
 
   async unbanUser(username: string, role: UserRole): Promise<void> {
@@ -83,16 +66,7 @@ export class AdminService {
       this.http.post<void>(`${environment.apiUrl}/v1/users/unban`, {
         username,
       })
-    ).catch((error) => {
-      switch (error.status) {
-        case 401:
-          throw new UnauthorizedException(error.error.message);
-        case 403:
-          throw new ForbiddenException(error.error.message);
-        default:
-          throw new AdminServiceException(error.error.message);
-      }
-    });
+    );
   }
 
   async banIp(
@@ -110,16 +84,7 @@ export class AdminService {
         username,
         reason,
       })
-    ).catch((error) => {
-      switch (error.status) {
-        case 401:
-          throw new UnauthorizedException(error.error.message);
-        case 403:
-          throw new ForbiddenException(error.error.message);
-        default:
-          throw new AdminServiceException(error.error.message);
-      }
-    });
+    );
   }
 
   async unbanIp(username: string, role: UserRole): Promise<void> {
@@ -132,16 +97,7 @@ export class AdminService {
       this.http.post<void>(`${environment.apiUrl}/v1/users/unban-ip`, {
         username,
       })
-    ).catch((error) => {
-      switch (error.status) {
-        case 401:
-          throw new UnauthorizedException(error.error.message);
-        case 403:
-          throw new ForbiddenException(error.error.message);
-        default:
-          throw new AdminServiceException(error.error.message);
-      }
-    });
+    );
   }
 
   async cleanup(): Promise<void> {
@@ -149,10 +105,6 @@ export class AdminService {
       this.http.post<void>(`${environment.apiUrl}/v1/users/admin/cleanup`, {})
     ).catch((error) => {
       switch (error.status) {
-        case 401:
-          throw new UnauthorizedException(error.error.message);
-        case 403:
-          throw new ForbiddenException(error.error.message);
         case 429:
           throw new RateLimitException(error.error.message);
         default:
@@ -174,10 +126,6 @@ export class AdminService {
       })
     ).catch((error) => {
       switch (error.status) {
-        case 401:
-          throw new UnauthorizedException(error.error.message);
-        case 403:
-          throw new ForbiddenException(error.error.message);
         case 404:
           throw new NotFoundException(error.error.message);
         default:
@@ -199,10 +147,6 @@ export class AdminService {
       })
     ).catch((error) => {
       switch (error.status) {
-        case 401:
-          throw new UnauthorizedException(error.error.message);
-        case 403:
-          throw new ForbiddenException(error.error.message);
         case 404:
           throw new NotFoundException(error.error.message);
         default:
@@ -211,19 +155,15 @@ export class AdminService {
     });
   }
 
-  async getUserByUserId(id: string): Promise<ExternalUser> {
+  async getAdminProfileUser(username: string): Promise<AdminProfileUser> {
     return firstValueFrom(
       this.http
-        .get<{ user: ExternalUser }>(
-          `${environment.apiUrl}/v1/users/admin/users/id/${id}`
+        .get<{ user: AdminProfileUser }>(
+          `${environment.apiUrl}/v1/users/admin/${username}`
         )
         .pipe(map((user) => user.user))
     ).catch((error) => {
       switch (error.status) {
-        case 401:
-          throw new UnauthorizedException(error.error.message);
-        case 403:
-          throw new ForbiddenException(error.error.message);
         case 404:
           throw new NotFoundException(error.error.message);
         default:

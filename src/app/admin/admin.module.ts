@@ -16,6 +16,7 @@ import { DaysAgoPipe } from "@shared/pipes/days-ago.pipe";
 import { RouterLink } from "@angular/router";
 import { DatePipe } from "@angular/common";
 import { AdminProfileResolverService } from "./services/admin-profile.service";
+import { Timeline } from "@shared/components/timeline/timeline";
 
 @NgModule({
   declarations: [Admin, AdminProfile],
@@ -36,6 +37,7 @@ import { AdminProfileResolverService } from "./services/admin-profile.service";
     DaysAgoPipe,
     RouterLink,
     DatePipe,
+    Timeline,
   ],
   providers: [AdminService, AdminProfileResolverService],
 })

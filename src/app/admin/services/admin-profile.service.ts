@@ -7,13 +7,14 @@ import {
 import { UserService, NotFoundException } from "@shared/services/user.service";
 import { LoadingService } from "@shared/services/loading.service";
 import { AdminProfileUser } from "../../../models/admin-profile-user";
+import { AdminService } from "./admin.service";
 
 @Injectable()
 export class AdminProfileResolverService
   implements Resolve<AdminProfileUser | null>
 {
   constructor(
-    private userService: UserService,
+    private adminService: AdminService,
     private loadingService: LoadingService
   ) {}
 
@@ -25,7 +26,7 @@ export class AdminProfileResolverService
 
     try {
       this.loadingService.setRouteLoading(true);
-      return await this.userService.getUserByUsername(username);
+      return await this.adminService.getAdminProfileUser(username);
     } catch (error) {
       if (error instanceof NotFoundException) {
         return null;

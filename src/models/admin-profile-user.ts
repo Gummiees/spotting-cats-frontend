@@ -1,5 +1,6 @@
 import { BanType } from "@models/ban-types";
 import { UserRole } from "@models/user-roles";
+import { Note } from "./note";
 
 export interface AdminProfileUser {
   username: string;
@@ -20,4 +21,5 @@ export interface AdminProfileUser {
   bannedAt?: Date;
   roleUpdatedAt?: Date;
   roleUpdatedBy?: string;
+  notes?: Note[];
 }

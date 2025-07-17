@@ -5,15 +5,14 @@ import { FormControl, Validators } from "@angular/forms";
 import { SnackbarService } from "@shared/services/snackbar.service";
 import { LoadingService } from "@shared/services/loading.service";
 import { AdminService } from "src/app/admin/services/admin.service";
-import { ExternalUser } from "@models/external-user";
 import {
   hasPermissionOverUser,
   isAdminOrSuperadmin,
   isPrivilegedRole,
 } from "@shared/utils/role-permissions";
 import { Subscription } from "rxjs";
-import { UserService } from "@shared/services/user.service";
 import { AdminProfileUser } from "../../../../models/admin-profile-user";
+import { TimelineItem } from "@shared/components/timeline/timeline";
 
 @Component({
   selector: "app-admin-profile",
@@ -40,12 +39,146 @@ export class AdminProfile implements OnInit, OnDestroy {
     return this.authStateService.user();
   }
 
+  get timelineItems(): TimelineItem[] {
+    const user = this.user();
+    if (!user) {
+      return [];
+    }
+    return this.transformUserToTimelineItem(user);
+  }
+
+  private transformUserToTimelineItem(user: AdminProfileUser): TimelineItem[] {
+    const items: TimelineItem[] = [
+      {
+        id: "create-account",
+        type: "create-account",
+        username: user.username,
+        avatarUrl: user.avatarUrl,
+        date: user.createdAt,
+      },
+    ];
+    if (user.isBanned && !!user.bannedAt) {
+      switch (user.banType) {
+        case "ip":
+          items.push({
+            id: "ban-ip",
+            type: "ban-ip",
+            username: user.username,
+            avatarUrl: user.avatarUrl,
+            date: user.bannedAt!,
+            doneBy: user.bannedBy,
+            text: user.banReason,
+          });
+          break;
+        default:
+          items.push({
+            id: "ban",
+            type: "ban",
+            username: user.username,
+            avatarUrl: user.avatarUrl,
+            date: user.bannedAt!,
+            text: user.banReason,
+            doneBy: user.bannedBy,
+          });
+          break;
+      }
+    }
+    if (user.isInactive && !!user.deactivatedAt) {
+      items.push({
+        id: "inactive",
+        type: "inactive",
+        username: user.username,
+        avatarUrl: user.avatarUrl,
+        date: user.deactivatedAt,
+      });
+    }
+    if (!!user.roleUpdatedAt) {
+      if (user.role === "admin") {
+        items.push({
+          id: "promote-to-admin",
+          type: "promote-to-admin",
+          username: user.username,
+          avatarUrl: user.avatarUrl,
+          date: user.roleUpdatedAt!,
+          doneBy: user.roleUpdatedBy,
+        });
+      }
+      if (user.role === "moderator") {
+        items.push({
+          id: "promote-to-moderator",
+          type: "promote-to-moderator",
+          username: user.username,
+          avatarUrl: user.avatarUrl,
+          date: user.roleUpdatedAt!,
+          doneBy: user.roleUpdatedBy,
+        });
+      }
+      if (user.role === "superadmin") {
+        items.push({
+          id: "promote-to-superadmin",
+          type: "promote-to-superadmin",
+          username: user.username,
+          avatarUrl: user.avatarUrl,
+          date: user.roleUpdatedAt!,
+          doneBy: user.roleUpdatedBy,
+        });
+      } else {
+        items.push({
+          id: "demote-to-user",
+          type: "demote-to-user",
+          username: user.username,
+          avatarUrl: user.avatarUrl,
+          date: user.roleUpdatedAt!,
+          doneBy: user.roleUpdatedBy,
+        });
+      }
+    }
+    if (user.updatedAt) {
+      if (user.avatarUpdatedAt) {
+        items.push({
+          id: "update-avatar",
+          type: "update-avatar",
+          username: user.username,
+          avatarUrl: user.avatarUrl,
+          date: user.avatarUpdatedAt,
+        });
+      }
+      if (user.emailUpdatedAt) {
+        items.push({
+          id: "update-email",
+          type: "update-email",
+          username: user.username,
+          avatarUrl: user.avatarUrl,
+          date: user.emailUpdatedAt,
+        });
+      }
+      if (user.usernameUpdatedAt) {
+        items.push({
+          id: "update-username",
+          type: "update-username",
+          username: user.username,
+          avatarUrl: user.avatarUrl,
+          date: user.usernameUpdatedAt,
+        });
+      } else {
+        items.push({
+          id: "update-profile",
+          type: "update-profile",
+          username: user.username,
+          avatarUrl: user.avatarUrl,
+          date: user.updatedAt,
+        });
+      }
+    }
+
+    return items;
+  }
+
   constructor(
     private authStateService: AuthStateService,
     private route: ActivatedRoute,
     private snackbarService: SnackbarService,
     private adminService: AdminService,
-    private userService: UserService,
     private loadingService: LoadingService
   ) {}
 
@@ -53,7 +186,7 @@ export class AdminProfile implements OnInit, OnDestroy {
     this.username = this.route.snapshot.params["username"];
     this.userSubscription = this.route.data.subscribe({
       next: (data) => {
-        const user = data["user"] as ExternalUser | null;
+        const user = data["user"] as AdminProfileUser | null;
         this.user.set(user);
         this.userNotFound.set(user === null);
       },
@@ -314,10 +447,8 @@ export class AdminProfile implements OnInit, OnDestroy {
   private async getUserProfile() {
     try {
       this.loadingService.setLoading(true);
-      const externalUser = await this.userService.getUserByUsername(
-        this.username
-      );
-      this.user.set(externalUser);
+      const user = await this.adminService.getAdminProfileUser(this.username);
+      this.user.set(user);
     } catch (error) {
       this.snackbarService.show("Failed to get user profile", "error");
     } finally {

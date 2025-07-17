@@ -111,6 +111,9 @@ cancelText="Cancel"
               <div class="text-lg font-bold text-violet-600">
                 {{ user()?.username }}
               </div>
+              <div class="text-sm text-gray-500">
+                Last seen: {{ user()?.lastLoginAt | date: "yyyy-MM-dd HH:mm:ss" }}
+              </div>
               @if(hasBadge()) {
                 <div class="flex items-center gap-x-2">
                   @if(user()?.role === "superadmin") {
@@ -134,43 +137,11 @@ cancelText="Cancel"
                 </div>
               }
             </div>
-            <div class="flex flex-col justify-center gap-1">
-              <div class="text-sm text-gray-500">
-                Last seen: {{ user()?.lastLoginAt | daysAgo }}
-              </div>
-              <div class="text-sm text-gray-500">
-                Joined: {{ user()?.createdAt | daysAgo }}
-              </div>
-            </div>  
-            @if(loggedInUserHasElevatedRole) {
-              <div class="flex flex-col justify-center gap-1">
-                @if(user()?.isBanned) {
-                  <div class="text-sm text-gray-500">
-                    Banned at: {{ user()?.bannedAt | date: "yyyy-MM-dd HH:mm:ss" }}
-                  </div>
-                  <div class="text-sm text-gray-500">
-                    Reason: <span class="italic">{{ user()?.banReason }}</span>
-                  </div>
-                  <div class="text-sm text-gray-500">
-                    Banned by: <a class="text-violet-500 font-bold hover:underline" [routerLink]="['/user', user()!.bannedBy]">{{ user()?.bannedBy }}</a>
-                  </div>
-                } @else if(user()?.isInactive) {
-                  <div class="text-sm text-gray-500">
-                    Inactive at: {{ user()?.deactivatedAt | date: "yyyy-MM-dd HH:mm:ss" }}
-                  </div>
-                }
-                @if(!!user()?.roleUpdatedAt) {
-                  <div class="text-sm text-gray-500">
-                    Role updated at: {{ user()?.roleUpdatedAt | date: "yyyy-MM-dd HH:mm:ss" }}
-                  </div>
-                  <div class="text-sm text-gray-500">
-                    Role updated by: <a class="text-violet-500 font-bold hover:underline" [routerLink]="['/user', user()!.roleUpdatedBy]">{{ user()?.roleUpdatedBy }}</a>
-                  </div>
-                }
-              </div>
-            }
           </div>
         </div>
+      </div>
+      <div class="mt-6">
+        <app-timeline [items]="timelineItems" />
       </div>
       @if(hasPermissionOverUser()) {
       <div class="mt-6">

@@ -1,4 +1,3 @@
-import { BanType } from "./ban-types";
 import { UserRole } from "./user-roles";
 
 export interface ExternalUser {
