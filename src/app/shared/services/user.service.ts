@@ -175,9 +175,21 @@ export class UserService {
     }
 
     await firstValueFrom(
-      this.http.put<void>(`${environment.apiUrl}/v1/users/email`, {
-        email,
-      })
+      this.http
+        .put<{ success: boolean; errorCode?: string }>(
+          `${environment.apiUrl}/v1/users/email`,
+          {
+            email,
+          }
+        )
+        .pipe(
+          map((response) => {
+            if (response.errorCode === "EMAIL_CHANGE_RATE_LIMITED") {
+              throw new RateLimitException("Email change rate limited");
+            }
+            return response.success;
+          })
+        )
     ).catch((error) => {
       switch (error.status) {
         case 400:

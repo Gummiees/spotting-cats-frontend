@@ -154,6 +154,7 @@ export class Settings implements OnDestroy {
       .get("email")
       ?.valueChanges.pipe(
         tap(() => {
+          this.emailError.set(null);
           this.isCheckingEmail.set(true);
           this.isEmailAvailable.set(null);
         }),
@@ -182,7 +183,6 @@ export class Settings implements OnDestroy {
   }
 
   private async checkEmailAvailability(email: string): Promise<boolean> {
-    this.emailError.set(null);
     try {
       return await this.userService.checkEmailAvailability(email);
     } catch (error) {
@@ -277,10 +277,10 @@ export class Settings implements OnDestroy {
       this.isVerifyEmailModalOpen.set(true);
     } catch (error) {
       if (error instanceof EmailSameAsCurrentException) {
-        this.snackbarService.show(error.message, "error");
+        this.emailError.set(error.message);
         return;
       } else if (error instanceof RateLimitException) {
-        this.snackbarService.show(error.message, "error");
+        this.emailError.set(error.message);
         return;
       }
 
