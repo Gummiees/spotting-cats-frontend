@@ -3,8 +3,10 @@ import { CommonModule } from "@angular/common";
 import { Router } from "@angular/router";
 import { AuthStateService } from "@shared/services/auth-state.service";
 import {
+  EmailAlreadyTakenException,
   EmailSameAsCurrentException,
   InvalidCodeException,
+  InvalidEmailException,
   RateLimitException,
   UserService,
 } from "@shared/services/user.service";
@@ -63,6 +65,7 @@ export class Settings implements OnDestroy {
   isVerifyEmailModalOpen = signal(false);
   isUsernameAvailable = signal<boolean | null>(null);
   isEmailAvailable = signal<boolean | null>(null);
+  emailError = signal<string | null>(null);
   subUntilDestroyed$ = new Subject<void>();
   private isCheckingUsername = signal(false);
   private isCheckingEmail = signal(false);
@@ -179,9 +182,19 @@ export class Settings implements OnDestroy {
   }
 
   private async checkEmailAvailability(email: string): Promise<boolean> {
+    this.emailError.set(null);
     try {
       return await this.userService.checkEmailAvailability(email);
     } catch (error) {
+      if (
+        error instanceof EmailAlreadyTakenException ||
+        error instanceof InvalidEmailException ||
+        error instanceof EmailSameAsCurrentException
+      ) {
+        this.emailError.set(error.message);
+      } else {
+        this.emailError.set("Failed to check email availability");
+      }
       return false;
     }
   }

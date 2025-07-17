@@ -54,18 +54,8 @@ export class AdminService {
     reason: string | null,
     role: UserRole
   ): Promise<void> {
-    const loggedInUser = this.authStateService.user();
-    if (!loggedInUser) {
-      throw new UnauthorizedException("User not logged in");
-    }
-    if (
-      !hasPermissionOverUser({
-        loggedInUserRole: loggedInUser.role,
-        userRole: role,
-      })
-    ) {
-      this.authStateService.setUnauthenticated();
-      this.storageService.clear();
+    if (!this.loggedInUserHasPermissionsOverUser(role)) {
+      this.onForbiddenRequest();
       throw new ForbiddenException("User is not an admin");
     }
 
@@ -88,16 +78,7 @@ export class AdminService {
   }
 
   async unbanUser(username: string, role: UserRole): Promise<void> {
-    const loggedInUser = this.authStateService.user();
-    if (!loggedInUser) {
-      throw new UnauthorizedException("User not logged in");
-    }
-    if (
-      !hasPermissionOverUser({
-        loggedInUserRole: loggedInUser.role,
-        userRole: role,
-      })
-    ) {
+    if (!this.loggedInUserHasPermissionsOverUser(role)) {
       this.onForbiddenRequest();
       throw new ForbiddenException("User is not an admin");
     }
@@ -113,6 +94,57 @@ export class AdminService {
         case 403:
           this.authStateService.setUnauthenticated();
           this.storageService.clear();
+          throw new ForbiddenException(error.error.message);
+        default:
+          throw new AdminServiceException(error.error.message);
+      }
+    });
+  }
+
+  async banIp(
+    username: string,
+    reason: string | null,
+    role: UserRole
+  ): Promise<void> {
+    if (!this.loggedInUserHasPermissionsOverUser(role)) {
+      this.onForbiddenRequest();
+      throw new ForbiddenException("User is not an admin");
+    }
+
+    return firstValueFrom(
+      this.http.post<void>(`${environment.apiUrl}/v1/users/ban-ip`, {
+        username,
+        reason,
+      })
+    ).catch((error) => {
+      switch (error.status) {
+        case 401:
+          throw new UnauthorizedException(error.error.message);
+        case 403:
+          this.onForbiddenRequest();
+          throw new ForbiddenException(error.error.message);
+        default:
+          throw new AdminServiceException(error.error.message);
+      }
+    });
+  }
+
+  async unbanIp(username: string, role: UserRole): Promise<void> {
+    if (!this.loggedInUserHasPermissionsOverUser(role)) {
+      this.onForbiddenRequest();
+      throw new ForbiddenException("User is not an admin");
+    }
+
+    return firstValueFrom(
+      this.http.post<void>(`${environment.apiUrl}/v1/users/unban-ip`, {
+        username,
+      })
+    ).catch((error) => {
+      switch (error.status) {
+        case 401:
+          throw new UnauthorizedException(error.error.message);
+        case 403:
+          this.onForbiddenRequest();
           throw new ForbiddenException(error.error.message);
         default:
           throw new AdminServiceException(error.error.message);
@@ -139,6 +171,11 @@ export class AdminService {
   }
 
   async updateRole(username: string, role: UserRole): Promise<void> {
+    if (!this.loggedInUserHasPermissionsOverUser(role)) {
+      this.onForbiddenRequest();
+      throw new ForbiddenException("User is not an admin");
+    }
+
     return firstValueFrom(
       this.http.put<void>(`${environment.apiUrl}/v1/users/role`, {
         username,
@@ -159,7 +196,12 @@ export class AdminService {
     });
   }
 
-  async demoteToUser(username: string): Promise<void> {
+  async demoteToUser(username: string, role: UserRole): Promise<void> {
+    if (!this.loggedInUserHasPermissionsOverUser(role)) {
+      this.onForbiddenRequest();
+      throw new ForbiddenException("User is not an admin");
+    }
+
     return firstValueFrom(
       this.http.put<void>(`${environment.apiUrl}/v1/users/role`, {
         username,
@@ -205,6 +247,17 @@ export class AdminService {
   private onForbiddenRequest() {
     this.authStateService.setUnauthenticated();
     this.storageService.clear();
+  }
+
+  private loggedInUserHasPermissionsOverUser(role: UserRole): boolean {
+    const loggedInUser = this.authStateService.user();
+    if (!loggedInUser) {
+      throw new UnauthorizedException("User not logged in");
+    }
+    return hasPermissionOverUser({
+      loggedInUserRole: loggedInUser.role,
+      userRole: role,
+    });
   }
 }
 

@@ -186,9 +186,6 @@ export class UserService {
           this.authStateService.setUnauthenticated();
           this.storageService.clear();
           throw new UnauthorizedException(error.error.message);
-        case "EMAIL_SAME_AS_CURRENT":
-          throw new EmailSameAsCurrentException(error.error.message);
-        case "EMAIL_CHANGE_RATE_LIMITED":
         case 429:
           throw new RateLimitException(error.error.message);
         default:
@@ -297,14 +294,32 @@ export class UserService {
   async checkEmailAvailability(email: string): Promise<boolean> {
     return firstValueFrom(
       this.http
-        .get<{ available: boolean }>(
+        .get<{ available: boolean; statusCode?: string }>(
           `${environment.apiUrl}/v1/users/check-email`,
           {
             params: { email },
           }
         )
-        .pipe(map((response) => response.available))
+        .pipe(
+          map((response) => {
+            if (response.statusCode === "EMAIL_SAME_AS_CURRENT") {
+              throw new EmailSameAsCurrentException(
+                "Email is the same as current"
+              );
+            } else if (response.statusCode === "INVALID_EMAIL_FORMAT") {
+              throw new InvalidEmailException("Invalid email format");
+            } else if (response.statusCode === "EMAIL_ALREADY_IN_USE") {
+              throw new EmailAlreadyTakenException("Email already taken");
+            }
+
+            return response.available;
+          })
+        )
     ).catch((error) => {
+      if (error instanceof UserServiceException) {
+        throw error;
+      }
+
       switch (error.status) {
         case 400:
           throw new InvalidEmailException(error.error.message);
@@ -328,6 +343,8 @@ export class UserServiceException extends Error {
 export class InvalidEmailException extends UserServiceException {}
 
 export class EmailSameAsCurrentException extends UserServiceException {}
+
+export class EmailAlreadyTakenException extends UserServiceException {}
 
 export class InvalidUsernameException extends UserServiceException {}
 

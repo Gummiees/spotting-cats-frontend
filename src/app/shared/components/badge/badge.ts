@@ -5,6 +5,7 @@ export type BadgeType =
   | "superadmin"
   | "admin"
   | "banned"
+  | "ip-banned"
   | "moderator"
   | "inactive";
 

@@ -1,3 +1,4 @@
+import { BanType } from "./ban-types";
 import { UserRole } from "./user-roles";
 
 export interface ExternalUser {
@@ -7,6 +8,7 @@ export interface ExternalUser {
   role: UserRole;
   isInactive: boolean;
   isBanned: boolean;
+  banType?: BanType;
   banReason?: string;
   bannedBy?: string;
   lastLoginAt: Date;

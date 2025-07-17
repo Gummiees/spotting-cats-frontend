@@ -41,12 +41,15 @@ import { DaysAgoPipe } from "@shared/pipes/days-ago.pipe";
 })
 export class Profile implements OnInit, OnDestroy {
   loadingBan = signal(false);
+  loadingBanIp = signal(false);
   loadingMakeAdmin = signal(false);
   loadingMakeModerator = signal(false);
   isBanModalOpen = signal(false);
+  isBanIpModalOpen = signal(false);
   isMakeAdminModalOpen = signal(false);
   isMakeModeratorModalOpen = signal(false);
   banReasonInput = new FormControl("", [Validators.required]);
+  banIpReasonInput = new FormControl("", [Validators.required]);
   user = signal<ExternalUser | null>(null);
   userNotFound = signal(false);
   private userSubscription!: Subscription;
@@ -83,6 +86,10 @@ export class Profile implements OnInit, OnDestroy {
     this.isBanModalOpen.set(true);
   }
 
+  onOpenBanIpModal() {
+    this.isBanIpModalOpen.set(true);
+  }
+
   onOpenMakeAdminModal() {
     this.isMakeAdminModalOpen.set(true);
   }
@@ -95,8 +102,13 @@ export class Profile implements OnInit, OnDestroy {
     return this.user()?.isBanned || false;
   }
 
+  get isUserIpBanned(): boolean {
+    return this.user()?.banType === "ip" || false;
+  }
+
   onCancelModal() {
     this.isBanModalOpen.set(false);
+    this.isBanIpModalOpen.set(false);
     this.isMakeAdminModalOpen.set(false);
     this.isMakeModeratorModalOpen.set(false);
   }
@@ -184,6 +196,58 @@ export class Profile implements OnInit, OnDestroy {
     }
   }
 
+  async onConfirmIpBanOrUnban() {
+    if (this.isUserIpBanned) {
+      await this.onConfirmIpUnban();
+    } else {
+      await this.onConfirmIpBan();
+    }
+  }
+
+  private async onConfirmIpBan() {
+    const user = this.user();
+    if (!user || !this.hasPermissionOverUser()) {
+      this.userActionWithoutPermission();
+      return;
+    }
+
+    try {
+      this.loadingBanIp.set(true);
+      await this.adminService.banIp(
+        user.username,
+        this.banIpReasonInput.value,
+        user.role
+      );
+      this.isBanIpModalOpen.set(false);
+      this.snackbarService.show("IP banned successfully", "success", 3000);
+      this.getUserProfile();
+    } catch (error) {
+      this.snackbarService.show("Failed to ban IP", "error");
+    } finally {
+      this.loadingBanIp.set(false);
+    }
+  }
+
+  private async onConfirmIpUnban() {
+    const user = this.user();
+    if (!user || !this.hasPermissionOverUser()) {
+      this.userActionWithoutPermission();
+      return;
+    }
+
+    try {
+      this.loadingBanIp.set(true);
+      await this.adminService.unbanIp(user.username, user.role);
+      this.isBanIpModalOpen.set(false);
+      this.snackbarService.show("IP unbanned successfully", "success", 3000);
+      this.getUserProfile();
+    } catch (error) {
+      this.snackbarService.show("Failed to unban IP", "error");
+    } finally {
+      this.loadingBanIp.set(false);
+    }
+  }
+
   async onConfirmMakeOrRemoveAdmin() {
     if (this.user()?.role === "user") {
       await this.onConfirmMakeAdmin();
@@ -222,7 +286,7 @@ export class Profile implements OnInit, OnDestroy {
     try {
       this.loadingMakeAdmin.set(true);
       this.loadingMakeModerator.set(true);
-      await this.adminService.demoteToUser(user.username);
+      await this.adminService.demoteToUser(user.username, user.role);
       this.onCancelModal();
       this.snackbarService.show(
         "User demoted to user successfully",
@@ -308,6 +372,16 @@ export class Profile implements OnInit, OnDestroy {
       : "Please enter the reason for banning the user.";
   }
 
+  get banIpButtonText() {
+    return this.isUserIpBanned ? "Unban IP" : "Ban IP";
+  }
+
+  get banIpModalMessage() {
+    return this.isUserIpBanned
+      ? "Are you sure you want to unban this IP?"
+      : "Please enter the reason for banning the IP.";
+  }
+
   get adminButtonText() {
     return this.user()?.role === "user" ? "Make admin" : "Remove admin";
   }
@@ -338,6 +412,10 @@ export class Profile implements OnInit, OnDestroy {
 
   get isConfirmBanButtonDisabled(): boolean {
     return this.banReasonInput.invalid || this.banReasonInput.pristine;
+  }
+
+  get isConfirmIpBanButtonDisabled(): boolean {
+    return this.banIpReasonInput.invalid || this.banIpReasonInput.pristine;
   }
 
   get loggedInUserHasElevatedRole(): boolean {

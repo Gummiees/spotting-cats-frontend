@@ -34,6 +34,39 @@ confirmColor="danger"
 <app-modal
 confirmText="Confirm"
 cancelText="Cancel"
+confirmColor="danger"
+[isOpen]="isBanIpModalOpen()"
+[isLoading]="loadingBanIp()"
+[isDisabled]="isConfirmIpBanButtonDisabled"
+(onConfirm)="onConfirmIpBanOrUnban()"
+(onCancel)="onCancelModal()"
+>
+  <content>
+    <app-modal-content-simple
+      [title]="banIpButtonText"
+      [message]="banIpModalMessage"
+      [fullWidth]="true"
+      modalType="danger"
+      icon="gavel"
+    >
+    @if(!isUserIpBanned) {
+      <div class="mt-2">
+        <textarea 
+        name="input"
+        class="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-violet-600 sm:text-sm sm:leading-6"
+        autocomplete="ban-reason"
+        placeholder="Enter reason" 
+        rows="4"
+        [formControl]="banIpReasonInput"
+        ></textarea>
+      </div>
+    }
+    </app-modal-content-simple>
+  </content>
+</app-modal>
+<app-modal
+confirmText="Confirm"
+cancelText="Cancel"
 [isOpen]="isMakeAdminModalOpen()"
 [isLoading]="loadingMakeAdmin()"
 (onConfirm)="onConfirmMakeOrRemoveAdmin()"
@@ -92,6 +125,9 @@ cancelText="Cancel"
                   @if(isUserBanned) {
                     <app-badge type="banned" />
                   }
+                  @if(isUserIpBanned) {
+                    <app-badge type="ip-banned" />
+                  }
                   @if(user()?.isInactive) {
                     <app-badge type="inactive" />
                     }
@@ -140,6 +176,11 @@ cancelText="Cancel"
       <div class="mt-6">
         <div class="flex flex-col sm:flex-row sm:items-center gap-2">
           <app-primary-button [buttonText]="banButtonText" buttonType="danger" buttonSize="full" (onClick)="onOpenBanModal()">
+            <ng-container prefix>
+              <span class="material-symbols-outlined text-white !text-[16px] leading-none align-middle">gavel</span>
+            </ng-container>
+          </app-primary-button>
+          <app-primary-button [buttonText]="banIpButtonText" buttonType="danger" buttonSize="full" (onClick)="onOpenBanIpModal()">
             <ng-container prefix>
               <span class="material-symbols-outlined text-white !text-[16px] leading-none align-middle">gavel</span>
             </ng-container>
