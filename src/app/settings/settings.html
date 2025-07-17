@@ -75,6 +75,11 @@ cancelText="Cancel"
                 <p class="text-sm text-red-600">You updated your username {{user?.usernameUpdatedAt | daysAgo}}.</p>
               </div>
             }
+            @if(isUsernameAvailable() === false) {
+              <div class="mt-2 flex items-center gap-x-2">
+                <p class="text-sm text-red-600">Username is already taken.</p>
+              </div>
+            }
           </div>
               
           <div class="col-span-full">

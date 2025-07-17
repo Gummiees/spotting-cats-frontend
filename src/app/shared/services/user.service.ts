@@ -186,6 +186,11 @@ export class UserService {
           this.authStateService.setUnauthenticated();
           this.storageService.clear();
           throw new UnauthorizedException(error.error.message);
+        case "EMAIL_SAME_AS_CURRENT":
+          throw new EmailSameAsCurrentException(error.error.message);
+        case "EMAIL_CHANGE_RATE_LIMITED":
+        case 429:
+          throw new RateLimitException(error.error.message);
         default:
           throw new UserServiceException(error.error.message);
       }
@@ -321,6 +326,8 @@ export class UserServiceException extends Error {
 }
 
 export class InvalidEmailException extends UserServiceException {}
+
+export class EmailSameAsCurrentException extends UserServiceException {}
 
 export class InvalidUsernameException extends UserServiceException {}
 

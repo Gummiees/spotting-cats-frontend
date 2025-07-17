@@ -3,7 +3,9 @@ import { CommonModule } from "@angular/common";
 import { Router } from "@angular/router";
 import { AuthStateService } from "@shared/services/auth-state.service";
 import {
+  EmailSameAsCurrentException,
   InvalidCodeException,
+  RateLimitException,
   UserService,
 } from "@shared/services/user.service";
 import { Modal } from "@shared/components/modal/modal";
@@ -106,7 +108,6 @@ export class Settings implements OnDestroy {
       this.form.patchValue(
         {
           username: this.user?.username,
-          email: this.user?.email,
         },
         { emitEvent: false }
       );
@@ -153,12 +154,7 @@ export class Settings implements OnDestroy {
           this.isCheckingEmail.set(true);
           this.isEmailAvailable.set(null);
         }),
-        filter(
-          (email) =>
-            !!email &&
-            this.form.get("email")!.valid &&
-            this.isNewEmailDifferent(email)
-        ),
+        filter((email) => !!email && this.form.get("email")!.valid),
         distinctUntilChanged(),
         debounceTime(500),
         takeUntil(this.subUntilDestroyed$),
@@ -220,7 +216,6 @@ export class Settings implements OnDestroy {
     return (
       !!this.email &&
       this.email.valid &&
-      this.email.value !== this.user?.email &&
       this.isEmailAvailable() === true &&
       !this.isCheckingEmail()
     );
@@ -256,10 +251,6 @@ export class Settings implements OnDestroy {
     return username !== this.user?.username;
   }
 
-  private isNewEmailDifferent(email: string): boolean {
-    return email !== this.user?.email;
-  }
-
   async onSaveEmail() {
     const email = this.form.value.email;
     if (!this.canUpdateEmail() || !email || !this.isEmailValid()) {
@@ -272,6 +263,14 @@ export class Settings implements OnDestroy {
       await this.userService.updateEmail(email);
       this.isVerifyEmailModalOpen.set(true);
     } catch (error) {
+      if (error instanceof EmailSameAsCurrentException) {
+        this.snackbarService.show(error.message, "error");
+        return;
+      } else if (error instanceof RateLimitException) {
+        this.snackbarService.show(error.message, "error");
+        return;
+      }
+
       this.snackbarService.show("Failed to update email", "error");
     } finally {
       this.loadingEmail.set(false);
