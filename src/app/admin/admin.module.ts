@@ -1,5 +1,5 @@
 import { NgModule } from "@angular/core";
-import { Admin } from "./components/admin";
+import { Admin } from "./views/admin/admin";
 import { RouterModule } from "@angular/router";
 import { Header } from "@shared/components/header/header";
 import { NotFound } from "../not-found/not-found";
@@ -17,22 +17,20 @@ import { RouterLink } from "@angular/router";
 import { DatePipe } from "@angular/common";
 import { AdminProfileResolverService } from "./services/admin-profile.service";
 import { Timeline } from "@shared/components/timeline/timeline";
+import { NotesForm } from "./components/notes-form/notes-form";
 
 @NgModule({
-  declarations: [Admin, AdminProfile],
+  declarations: [Admin, AdminProfile, NotesForm],
   imports: [
     CommonModule,
     RouterModule,
     Header,
     NotFound,
     AdminRoutesModule,
-    CommonModule,
     Modal,
-    Header,
     Badge,
     ReactiveFormsModule,
     ModalContentSimple,
-    NotFound,
     PrimaryButton,
     DaysAgoPipe,
     RouterLink,

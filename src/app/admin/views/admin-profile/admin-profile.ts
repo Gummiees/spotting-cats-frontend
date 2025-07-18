@@ -24,6 +24,7 @@ export class AdminProfile implements OnInit, OnDestroy {
   loadingBanIp = signal(false);
   loadingMakeAdmin = signal(false);
   loadingMakeModerator = signal(false);
+  isNotesFormOpen = signal(false);
   isBanModalOpen = signal(false);
   isBanIpModalOpen = signal(false);
   isMakeAdminModalOpen = signal(false);
@@ -190,10 +191,12 @@ export class AdminProfile implements OnInit, OnDestroy {
         this.user.set(user);
         this.userNotFound.set(user === null);
       },
-      error: (_) => {
-        this.userNotFound.set(true);
-      },
+      error: (_) => this.userNotFound.set(true),
     });
+  }
+
+  onOpenNotesForm() {
+    this.isNotesFormOpen.set(true);
   }
 
   onOpenBanModal() {

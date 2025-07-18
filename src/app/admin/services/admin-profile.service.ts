@@ -4,10 +4,9 @@ import {
   ActivatedRouteSnapshot,
   RouterStateSnapshot,
 } from "@angular/router";
-import { UserService, NotFoundException } from "@shared/services/user.service";
 import { LoadingService } from "@shared/services/loading.service";
 import { AdminProfileUser } from "../../../models/admin-profile-user";
-import { AdminService } from "./admin.service";
+import { AdminService, NotFoundException } from "./admin.service";
 
 @Injectable()
 export class AdminProfileResolverService
@@ -20,13 +19,15 @@ export class AdminProfileResolverService
 
   async resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
     const username = route.paramMap.get("username");
+
     if (!username) {
       throw new Error("Username parameter is required");
     }
 
     try {
       this.loadingService.setRouteLoading(true);
-      return await this.adminService.getAdminProfileUser(username);
+      const result = await this.adminService.getAdminProfileUser(username);
+      return result;
     } catch (error) {
       if (error instanceof NotFoundException) {
         return null;

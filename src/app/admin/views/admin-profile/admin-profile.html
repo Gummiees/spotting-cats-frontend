@@ -140,39 +140,44 @@ cancelText="Cancel"
           </div>
         </div>
       </div>
+      @if(hasPermissionOverUser()) {
+        <div class="mt-6">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+            <app-primary-button buttonText="Add note" buttonSize="full" (onClick)="onOpenNotesForm()">
+              <ng-container prefix>
+                <span class="material-symbols-outlined text-white !text-[16px] leading-none align-middle">note_add</span>
+              </ng-container>
+            </app-primary-button>
+            <app-primary-button [buttonText]="banButtonText" buttonType="danger" buttonSize="full" (onClick)="onOpenBanModal()">
+              <ng-container prefix>
+                <span class="material-symbols-outlined text-white !text-[16px] leading-none align-middle">gavel</span>
+              </ng-container>
+            </app-primary-button>
+            <app-primary-button [buttonText]="banIpButtonText" buttonType="danger" buttonSize="full" (onClick)="onOpenBanIpModal()">
+              <ng-container prefix>
+                <span class="material-symbols-outlined text-white !text-[16px] leading-none align-middle">gavel</span>
+              </ng-container>
+            </app-primary-button>
+            @if(shouldDisplayModeratorButton) {
+              <app-primary-button [buttonText]="moderatorButtonText" buttonType="info" buttonSize="full" (onClick)="onOpenMakeModeratorModal()">
+                <ng-container prefix>
+                  <span class="material-symbols-outlined text-white !text-[16px] leading-none align-middle">{{moderatorIcon}}</span>
+                </ng-container>
+              </app-primary-button>
+            }
+            @if(shouldDisplayAdminButton) {
+                <app-primary-button [buttonText]="adminButtonText" buttonType="warning" buttonSize="full" (onClick)="onOpenMakeAdminModal()">
+                  <ng-container prefix>
+                    <span class="material-symbols-outlined text-white !text-[16px] leading-none align-middle">{{adminIcon}}</span>
+                  </ng-container>
+                </app-primary-button>
+            }
+          </div>
+        </div>
+      }
       <div class="mt-6">
         <app-timeline [items]="timelineItems" />
       </div>
-      @if(hasPermissionOverUser()) {
-      <div class="mt-6">
-        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-          <app-primary-button [buttonText]="banButtonText" buttonType="danger" buttonSize="full" (onClick)="onOpenBanModal()">
-            <ng-container prefix>
-              <span class="material-symbols-outlined text-white !text-[16px] leading-none align-middle">gavel</span>
-            </ng-container>
-          </app-primary-button>
-          <app-primary-button [buttonText]="banIpButtonText" buttonType="danger" buttonSize="full" (onClick)="onOpenBanIpModal()">
-            <ng-container prefix>
-              <span class="material-symbols-outlined text-white !text-[16px] leading-none align-middle">gavel</span>
-            </ng-container>
-          </app-primary-button>
-          @if(shouldDisplayModeratorButton) {
-            <app-primary-button [buttonText]="moderatorButtonText" buttonType="info" buttonSize="full" (onClick)="onOpenMakeModeratorModal()">
-              <ng-container prefix>
-                <span class="material-symbols-outlined text-white !text-[16px] leading-none align-middle">{{moderatorIcon}}</span>
-              </ng-container>
-            </app-primary-button>
-          }
-          @if(shouldDisplayAdminButton) {
-              <app-primary-button [buttonText]="adminButtonText" buttonType="warning" buttonSize="full" (onClick)="onOpenMakeAdminModal()">
-                <ng-container prefix>
-                  <span class="material-symbols-outlined text-white !text-[16px] leading-none align-middle">{{adminIcon}}</span>
-                </ng-container>
-              </app-primary-button>
-          }
-        </div>
-      </div>
-      }
   </div>
 </main>
 }
