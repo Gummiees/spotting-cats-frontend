@@ -3,7 +3,7 @@ import { Injectable } from "@angular/core";
 import { firstValueFrom } from "rxjs";
 
 import { environment } from "@environments/environment";
-import { Note } from "../../../models/note";
+import { Note } from "@models/note";
 
 @Injectable()
 export class NotesService {
@@ -15,19 +15,19 @@ export class NotesService {
     );
   }
 
-  async addNote(forUser: string, note: Note): Promise<void> {
+  async addNote(note: Note): Promise<void> {
     return firstValueFrom(
       this.http.post<void>(
-        `${environment.apiUrl}/v1/notes/user/${forUser}`,
+        `${environment.apiUrl}/v1/notes/user/${note.forUser}`,
         note
       )
     );
   }
 
-  async updateNote(id: string, forUser: string, note: Note): Promise<void> {
+  async updateNote(note: Note): Promise<void> {
     return firstValueFrom(
       this.http.put<void>(
-        `${environment.apiUrl}/v1/notes/user/${forUser}/${id}`,
+        `${environment.apiUrl}/v1/notes/user/${note.forUser}/${note.id}`,
         note
       )
     );

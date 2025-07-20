@@ -18,6 +18,8 @@ import { DatePipe } from "@angular/common";
 import { AdminProfileResolverService } from "./services/admin-profile.service";
 import { Timeline } from "@shared/components/timeline/timeline";
 import { NotesForm } from "./components/notes-form/notes-form";
+import { IconButton } from "@shared/components/icon-button/icon-button";
+import { NotesService } from "./services/notes.service";
 
 @NgModule({
   declarations: [Admin, AdminProfile, NotesForm],
@@ -36,7 +38,8 @@ import { NotesForm } from "./components/notes-form/notes-form";
     RouterLink,
     DatePipe,
     Timeline,
+    IconButton,
   ],
-  providers: [AdminService, AdminProfileResolverService],
+  providers: [AdminService, AdminProfileResolverService, NotesService],
 })
 export class AdminModule {}

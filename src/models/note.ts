@@ -1,7 +1,7 @@
 export interface Note {
   id: string;
   forUser: string;
-  byUser: string;
+  fromUser?: string;
   note: string;
   createdAt: Date;
   updatedAt?: Date;

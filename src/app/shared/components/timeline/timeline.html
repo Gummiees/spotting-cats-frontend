@@ -52,15 +52,27 @@
                       <span>{{ item.username }} updated their avatar</span>
                     }
                   }
-                  @if(item.type !== "note" && item.doneBy) {
-                    <span>
-                      by <a class="text-violet-500 font-bold hover:underline" [routerLink]="['/admin/user', item.doneBy]">{{ item.doneBy }}</a>
-                    </span>
-                  } @else if(item.type === "note") {
-                    <span>
-                      <a class="text-violet-500 font-bold hover:underline" [routerLink]="['/admin/user', item.doneBy]">{{ item.doneBy }}</a> added a note
-                    </span>
-                  }
+                  @if(isDeletedUser(item.doneBy)) {
+                    @if(item.type === "note") {
+                      <span>
+                        [deleted user] added a note
+                      </span>
+                    } @else {
+                      <span>
+                        by [deleted user]
+                      </span>
+                    }
+                  } @else if(!!item.doneBy) {
+                    @if(item.type === "note") {
+                      <span>
+                        <a class="text-violet-500 font-bold hover:underline" [routerLink]="['/admin/user', item.doneBy]">{{ item.doneBy }}</a> added a note
+                      </span>
+                    } @else {
+                      <span>
+                        by <a class="text-violet-500 font-bold hover:underline" [routerLink]="['/admin/user', item.doneBy]">{{ item.doneBy }}</a>
+                      </span>
+                    }
+                  } 
                 </div>
             </div>
             @if(item.text) {

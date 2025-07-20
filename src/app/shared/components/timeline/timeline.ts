@@ -31,6 +31,8 @@ export interface TimelineItem {
   doneBy?: string;
 }
 
+export const DELETED_USER = "deleted-user";
+
 export function transformUserToTimelineItem(
   user: AdminProfileUser
 ): TimelineItem[] {
@@ -52,7 +54,7 @@ export function transformUserToTimelineItem(
           username: user.username,
           avatarUrl: user.avatarUrl,
           date: user.bannedAt!,
-          doneBy: user.bannedBy,
+          doneBy: user.bannedBy ?? DELETED_USER,
           text: user.banReason,
         });
         break;
@@ -64,7 +66,7 @@ export function transformUserToTimelineItem(
           avatarUrl: user.avatarUrl,
           date: user.bannedAt!,
           text: user.banReason,
-          doneBy: user.bannedBy,
+          doneBy: user.bannedBy ?? DELETED_USER,
         });
         break;
     }
@@ -86,7 +88,7 @@ export function transformUserToTimelineItem(
         username: user.username,
         avatarUrl: user.avatarUrl,
         date: user.roleUpdatedAt!,
-        doneBy: user.roleUpdatedBy,
+        doneBy: user.roleUpdatedBy ?? DELETED_USER,
       });
     }
     if (user.role === "moderator") {
@@ -96,7 +98,7 @@ export function transformUserToTimelineItem(
         username: user.username,
         avatarUrl: user.avatarUrl,
         date: user.roleUpdatedAt!,
-        doneBy: user.roleUpdatedBy,
+        doneBy: user.roleUpdatedBy ?? DELETED_USER,
       });
     }
     if (user.role === "superadmin") {
@@ -106,7 +108,7 @@ export function transformUserToTimelineItem(
         username: user.username,
         avatarUrl: user.avatarUrl,
         date: user.roleUpdatedAt!,
-        doneBy: user.roleUpdatedBy,
+        doneBy: user.roleUpdatedBy ?? DELETED_USER,
       });
     } else {
       items.push({
@@ -115,7 +117,7 @@ export function transformUserToTimelineItem(
         username: user.username,
         avatarUrl: user.avatarUrl,
         date: user.roleUpdatedAt!,
-        doneBy: user.roleUpdatedBy,
+        doneBy: user.roleUpdatedBy ?? DELETED_USER,
       });
     }
   }
@@ -165,7 +167,7 @@ export function transformUserToTimelineItem(
         avatarUrl: user.avatarUrl,
         date: note.createdAt,
         text: note.note,
-        doneBy: note.byUser,
+        doneBy: note.fromUser ?? DELETED_USER,
       });
     });
   }
@@ -179,7 +181,7 @@ export function transformUserToTimelineItem(
   standalone: true,
   imports: [CommonModule, RouterLink],
 })
-export class Timeline implements OnInit {
+export class Timeline {
   items = input.required<TimelineItem[]>();
 
   sortedItems = computed(() => {
@@ -188,5 +190,7 @@ export class Timeline implements OnInit {
     );
   });
 
-  ngOnInit(): void {}
+  isDeletedUser(doneBy: string | undefined): boolean {
+    return doneBy === DELETED_USER;
+  }
 }

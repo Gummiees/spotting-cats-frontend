@@ -11,8 +11,14 @@ import {
   isPrivilegedRole,
 } from "@shared/utils/role-permissions";
 import { Subscription } from "rxjs";
-import { AdminProfileUser } from "../../../../models/admin-profile-user";
-import { TimelineItem } from "@shared/components/timeline/timeline";
+import { AdminProfileUser } from "@models/admin-profile-user";
+import {
+  TimelineItem,
+  transformUserToTimelineItem,
+} from "@shared/components/timeline/timeline";
+import { NotesService } from "../../services/notes.service";
+import { v4 as uuidv4 } from "uuid";
+import { Note } from "@models/note";
 
 @Component({
   selector: "app-admin-profile",
@@ -20,17 +26,15 @@ import { TimelineItem } from "@shared/components/timeline/timeline";
   standalone: false,
 })
 export class AdminProfile implements OnInit, OnDestroy {
-  loadingBan = signal(false);
-  loadingBanIp = signal(false);
-  loadingMakeAdmin = signal(false);
-  loadingMakeModerator = signal(false);
   isNotesFormOpen = signal(false);
   isBanModalOpen = signal(false);
   isBanIpModalOpen = signal(false);
   isMakeAdminModalOpen = signal(false);
   isMakeModeratorModalOpen = signal(false);
+  isDeleteNoteModalOpen = signal(false);
   banReasonInput = new FormControl("", [Validators.required]);
   banIpReasonInput = new FormControl("", [Validators.required]);
+  currentNote = signal<Note | null>(null);
   user = signal<AdminProfileUser | null>(null);
   userNotFound = signal(false);
   private userSubscription!: Subscription;
@@ -45,134 +49,7 @@ export class AdminProfile implements OnInit, OnDestroy {
     if (!user) {
       return [];
     }
-    return this.transformUserToTimelineItem(user);
-  }
-
-  private transformUserToTimelineItem(user: AdminProfileUser): TimelineItem[] {
-    const items: TimelineItem[] = [
-      {
-        id: "create-account",
-        type: "create-account",
-        username: user.username,
-        avatarUrl: user.avatarUrl,
-        date: user.createdAt,
-      },
-    ];
-    if (user.isBanned && !!user.bannedAt) {
-      switch (user.banType) {
-        case "ip":
-          items.push({
-            id: "ban-ip",
-            type: "ban-ip",
-            username: user.username,
-            avatarUrl: user.avatarUrl,
-            date: user.bannedAt!,
-            doneBy: user.bannedBy,
-            text: user.banReason,
-          });
-          break;
-        default:
-          items.push({
-            id: "ban",
-            type: "ban",
-            username: user.username,
-            avatarUrl: user.avatarUrl,
-            date: user.bannedAt!,
-            text: user.banReason,
-            doneBy: user.bannedBy,
-          });
-          break;
-      }
-    }
-    if (user.isInactive && !!user.deactivatedAt) {
-      items.push({
-        id: "inactive",
-        type: "inactive",
-        username: user.username,
-        avatarUrl: user.avatarUrl,
-        date: user.deactivatedAt,
-      });
-    }
-    if (!!user.roleUpdatedAt) {
-      if (user.role === "admin") {
-        items.push({
-          id: "promote-to-admin",
-          type: "promote-to-admin",
-          username: user.username,
-          avatarUrl: user.avatarUrl,
-          date: user.roleUpdatedAt!,
-          doneBy: user.roleUpdatedBy,
-        });
-      }
-      if (user.role === "moderator") {
-        items.push({
-          id: "promote-to-moderator",
-          type: "promote-to-moderator",
-          username: user.username,
-          avatarUrl: user.avatarUrl,
-          date: user.roleUpdatedAt!,
-          doneBy: user.roleUpdatedBy,
-        });
-      }
-      if (user.role === "superadmin") {
-        items.push({
-          id: "promote-to-superadmin",
-          type: "promote-to-superadmin",
-          username: user.username,
-          avatarUrl: user.avatarUrl,
-          date: user.roleUpdatedAt!,
-          doneBy: user.roleUpdatedBy,
-        });
-      } else {
-        items.push({
-          id: "demote-to-user",
-          type: "demote-to-user",
-          username: user.username,
-          avatarUrl: user.avatarUrl,
-          date: user.roleUpdatedAt!,
-          doneBy: user.roleUpdatedBy,
-        });
-      }
-    }
-    if (user.updatedAt) {
-      if (user.avatarUpdatedAt) {
-        items.push({
-          id: "update-avatar",
-          type: "update-avatar",
-          username: user.username,
-          avatarUrl: user.avatarUrl,
-          date: user.avatarUpdatedAt,
-        });
-      }
-      if (user.emailUpdatedAt) {
-        items.push({
-          id: "update-email",
-          type: "update-email",
-          username: user.username,
-          avatarUrl: user.avatarUrl,
-          date: user.emailUpdatedAt,
-        });
-      }
-      if (user.usernameUpdatedAt) {
-        items.push({
-          id: "update-username",
-          type: "update-username",
-          username: user.username,
-          avatarUrl: user.avatarUrl,
-          date: user.usernameUpdatedAt,
-        });
-      } else {
-        items.push({
-          id: "update-profile",
-          type: "update-profile",
-          username: user.username,
-          avatarUrl: user.avatarUrl,
-          date: user.updatedAt,
-        });
-      }
-    }
-
-    return items;
+    return transformUserToTimelineItem(user);
   }
 
   constructor(
@@ -180,6 +57,7 @@ export class AdminProfile implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private snackbarService: SnackbarService,
     private adminService: AdminService,
+    private notesService: NotesService,
     private loadingService: LoadingService
   ) {}
 
@@ -195,8 +73,8 @@ export class AdminProfile implements OnInit, OnDestroy {
     });
   }
 
-  onOpenNotesForm() {
-    this.isNotesFormOpen.set(true);
+  onSwitchNotesForm() {
+    this.isNotesFormOpen.set(!this.isNotesFormOpen());
   }
 
   onOpenBanModal() {
@@ -215,6 +93,10 @@ export class AdminProfile implements OnInit, OnDestroy {
     this.isMakeModeratorModalOpen.set(true);
   }
 
+  onOpenDeleteNoteModal() {
+    this.isDeleteNoteModalOpen.set(true);
+  }
+
   get isUserBanned(): boolean {
     return this.user()?.isBanned || false;
   }
@@ -228,6 +110,7 @@ export class AdminProfile implements OnInit, OnDestroy {
     this.isBanIpModalOpen.set(false);
     this.isMakeAdminModalOpen.set(false);
     this.isMakeModeratorModalOpen.set(false);
+    this.isDeleteNoteModalOpen.set(false);
   }
 
   hasPermissionOverUser(): boolean {
@@ -265,7 +148,7 @@ export class AdminProfile implements OnInit, OnDestroy {
     }
 
     try {
-      this.loadingBan.set(true);
+      this.loadingService.setLoading(true);
       await this.adminService.banUser(
         user.username,
         this.banReasonInput.value,
@@ -277,7 +160,7 @@ export class AdminProfile implements OnInit, OnDestroy {
     } catch (error) {
       this.snackbarService.show("Failed to ban account", "error");
     } finally {
-      this.loadingBan.set(false);
+      this.loadingService.setLoading(false);
     }
   }
 
@@ -296,7 +179,7 @@ export class AdminProfile implements OnInit, OnDestroy {
       return;
     }
 
-    this.loadingBan.set(true);
+    this.loadingService.setLoading(true);
     try {
       await this.adminService.unbanUser(user.username, user.role);
       this.onCancelModal();
@@ -309,7 +192,7 @@ export class AdminProfile implements OnInit, OnDestroy {
     } catch (error) {
       this.snackbarService.show("Failed to unban account", "error");
     } finally {
-      this.loadingBan.set(false);
+      this.loadingService.setLoading(false);
     }
   }
 
@@ -329,7 +212,7 @@ export class AdminProfile implements OnInit, OnDestroy {
     }
 
     try {
-      this.loadingBanIp.set(true);
+      this.loadingService.setLoading(true);
       await this.adminService.banIp(
         user.username,
         this.banIpReasonInput.value,
@@ -341,7 +224,7 @@ export class AdminProfile implements OnInit, OnDestroy {
     } catch (error) {
       this.snackbarService.show("Failed to ban IP", "error");
     } finally {
-      this.loadingBanIp.set(false);
+      this.loadingService.setLoading(false);
     }
   }
 
@@ -353,7 +236,7 @@ export class AdminProfile implements OnInit, OnDestroy {
     }
 
     try {
-      this.loadingBanIp.set(true);
+      this.loadingService.setLoading(true);
       await this.adminService.unbanIp(user.username, user.role);
       this.isBanIpModalOpen.set(false);
       this.snackbarService.show("IP unbanned successfully", "success", 3000);
@@ -361,7 +244,7 @@ export class AdminProfile implements OnInit, OnDestroy {
     } catch (error) {
       this.snackbarService.show("Failed to unban IP", "error");
     } finally {
-      this.loadingBanIp.set(false);
+      this.loadingService.setLoading(false);
     }
   }
 
@@ -381,7 +264,7 @@ export class AdminProfile implements OnInit, OnDestroy {
     }
 
     try {
-      this.loadingMakeAdmin.set(true);
+      this.loadingService.setLoading(true);
       await this.adminService.updateRole(user.username, "admin");
       this.onCancelModal();
       this.snackbarService.show("Admin made successfully", "success", 3000);
@@ -389,7 +272,7 @@ export class AdminProfile implements OnInit, OnDestroy {
     } catch (error) {
       this.snackbarService.show("Failed to make admin", "error");
     } finally {
-      this.loadingMakeAdmin.set(false);
+      this.loadingService.setLoading(false);
     }
   }
 
@@ -401,8 +284,7 @@ export class AdminProfile implements OnInit, OnDestroy {
     }
 
     try {
-      this.loadingMakeAdmin.set(true);
-      this.loadingMakeModerator.set(true);
+      this.loadingService.setLoading(true);
       await this.adminService.demoteToUser(user.username, user.role);
       this.onCancelModal();
       this.snackbarService.show(
@@ -414,8 +296,7 @@ export class AdminProfile implements OnInit, OnDestroy {
     } catch (error) {
       this.snackbarService.show("Failed to demote user", "error");
     } finally {
-      this.loadingMakeAdmin.set(false);
-      this.loadingMakeModerator.set(false);
+      this.loadingService.setLoading(false);
     }
   }
 
@@ -435,7 +316,7 @@ export class AdminProfile implements OnInit, OnDestroy {
     }
 
     try {
-      this.loadingMakeModerator.set(true);
+      this.loadingService.setLoading(true);
       await this.adminService.updateRole(user.username, "moderator");
       this.onCancelModal();
       this.snackbarService.show("Moderator made successfully", "success", 3000);
@@ -443,7 +324,7 @@ export class AdminProfile implements OnInit, OnDestroy {
     } catch (error) {
       this.snackbarService.show("Failed to make moderator", "error");
     } finally {
-      this.loadingMakeModerator.set(false);
+      this.loadingService.setLoading(false);
     }
   }
 
@@ -454,6 +335,98 @@ export class AdminProfile implements OnInit, OnDestroy {
       this.user.set(user);
     } catch (error) {
       this.snackbarService.show("Failed to get user profile", "error");
+    } finally {
+      this.loadingService.setLoading(false);
+    }
+  }
+
+  async onSaveNote(note: string) {
+    const user = this.user();
+    const loggedInUser = this.loggedInUser;
+    if (!user || !loggedInUser || !this.loggedInUserHasElevatedRole) {
+      this.userActionWithoutPermission();
+      return;
+    }
+    const currentNote = this.currentNote();
+    if (currentNote) {
+      await this.updateNote({
+        ...currentNote,
+        note,
+      });
+    } else {
+      await this.addNote({
+        id: uuidv4(),
+        forUser: user.username,
+        fromUser: loggedInUser.username,
+        note,
+        createdAt: new Date(),
+      });
+    }
+  }
+
+  private async addNote(note: Note) {
+    try {
+      this.loadingService.setLoading(true);
+      await this.notesService.addNote(note);
+      this.isNotesFormOpen.set(false);
+      this.currentNote.set(null);
+      this.snackbarService.show("Note saved successfully", "success", 3000);
+      this.getUserProfile();
+    } catch (error) {
+      this.snackbarService.show("Failed to save note", "error");
+    } finally {
+      this.loadingService.setLoading(false);
+    }
+  }
+
+  private async updateNote(note: Note) {
+    if (note.fromUser && note.fromUser !== this.loggedInUser?.username) {
+      this.snackbarService.show("You can only update your own notes", "error");
+      return;
+    }
+
+    try {
+      this.loadingService.setLoading(true);
+      await this.notesService.updateNote(note);
+      this.isNotesFormOpen.set(false);
+      this.currentNote.set(null);
+      this.snackbarService.show("Note updated successfully", "success", 3000);
+      this.getUserProfile();
+    } catch (error) {
+      this.snackbarService.show("Failed to update note", "error");
+    } finally {
+      this.loadingService.setLoading(false);
+    }
+  }
+
+  async onConfirmDeleteNote() {
+    const note = this.currentNote();
+    if (!note) {
+      this.snackbarService.show("Note not found", "error");
+      return;
+    }
+
+    const user = this.user();
+    const loggedInUser = this.loggedInUser;
+    if (!user || !loggedInUser || !this.loggedInUserHasElevatedRole) {
+      this.userActionWithoutPermission();
+      return;
+    }
+
+    if (note.fromUser && note.fromUser !== loggedInUser.username) {
+      this.snackbarService.show("You can only delete your own notes", "error");
+      return;
+    }
+
+    try {
+      this.loadingService.setLoading(true);
+      await this.notesService.deleteNote(note.id, note.forUser);
+      this.isDeleteNoteModalOpen.set(false);
+      this.currentNote.set(null);
+      this.snackbarService.show("Note deleted successfully", "success", 3000);
+      this.getUserProfile();
+    } catch (error) {
+      this.snackbarService.show("Failed to delete note", "error");
     } finally {
       this.loadingService.setLoading(false);
     }
@@ -535,6 +508,10 @@ export class AdminProfile implements OnInit, OnDestroy {
 
   get loggedInUserHasElevatedRole(): boolean {
     return !!this.loggedInUser && isPrivilegedRole(this.loggedInUser.role);
+  }
+
+  get currentNoteText(): string | null {
+    return this.currentNote()?.note ?? null;
   }
 
   countryCodeToEmoji(countryCode: string): string {

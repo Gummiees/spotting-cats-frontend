@@ -5,7 +5,7 @@ import {
   RouterStateSnapshot,
 } from "@angular/router";
 import { LoadingService } from "@shared/services/loading.service";
-import { AdminProfileUser } from "../../../models/admin-profile-user";
+import { AdminProfileUser } from "@models/admin-profile-user";
 import { AdminService, NotFoundException } from "./admin.service";
 
 @Injectable()
