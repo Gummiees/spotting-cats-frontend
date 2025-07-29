@@ -6,8 +6,7 @@
         </span>
         <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-xs">
             <div [ngClass]="{'mb-3': !!item.text}" class="items-center justify-between sm:flex">
-                <time class="mb-1 text-xs font-normal text-gray-400 sm:order-last sm:mb-0">{{ item.date | date: "yyyy-MM-dd HH:mm:ss" }}</time>
-                <div class="text-sm font-normal text-gray-500 lex">
+                <div class="text-sm font-normal text-gray-500 flex">
                   @switch(item.type) {
                     @case("ban") {
                       <span>{{ item.username }} was banned</span>
@@ -73,6 +72,15 @@
                       </span>
                     }
                   } 
+                </div>
+                <div class="flex items-center gap-2">
+                  <time class="mb-1 text-xs font-normal text-gray-400 sm:order-last sm:mb-0">{{ item.date | date: "yyyy-MM-dd HH:mm:ss" }}</time>
+                  @if(item.isEditable) {
+                    <div class="flex items-center gap-1">
+                      <app-icon-button icon="edit" ariaLabel="Edit" (onClick)="onEditClick(item)" />
+                      <app-icon-button icon="delete" ariaLabel="Delete" (onClick)="onDeleteClick(item)" />
+                    </div>
+                  }
                 </div>
             </div>
             @if(item.text) {

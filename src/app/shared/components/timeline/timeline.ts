@@ -1,7 +1,9 @@
 import { CommonModule } from "@angular/common";
-import { Component, input, OnInit, computed } from "@angular/core";
+import { Component, input, computed, output } from "@angular/core";
 import { RouterLink } from "@angular/router";
 import { AdminProfileUser } from "@models/admin-profile-user";
+import { IconButton } from "../icon-button/icon-button";
+import { v4 as uuidv4 } from "uuid";
 
 export type TimelineItemType =
   | "ban"
@@ -29,16 +31,18 @@ export interface TimelineItem {
   date: Date;
   text?: string;
   doneBy?: string;
+  isEditable?: boolean;
 }
 
 export const DELETED_USER = "deleted-user";
 
 export function transformUserToTimelineItem(
-  user: AdminProfileUser
+  user: AdminProfileUser,
+  loggedInUser?: string
 ): TimelineItem[] {
   const items: TimelineItem[] = [
     {
-      id: "create-account",
+      id: uuidv4(),
       type: "create-account",
       username: user.username,
       avatarUrl: user.avatarUrl,
@@ -49,7 +53,7 @@ export function transformUserToTimelineItem(
     switch (user.banType) {
       case "ip":
         items.push({
-          id: "ban-ip",
+          id: uuidv4(),
           type: "ban-ip",
           username: user.username,
           avatarUrl: user.avatarUrl,
@@ -60,7 +64,7 @@ export function transformUserToTimelineItem(
         break;
       default:
         items.push({
-          id: "ban",
+          id: uuidv4(),
           type: "ban",
           username: user.username,
           avatarUrl: user.avatarUrl,
@@ -73,7 +77,7 @@ export function transformUserToTimelineItem(
   }
   if (user.isInactive && !!user.deactivatedAt) {
     items.push({
-      id: "inactive",
+      id: uuidv4(),
       type: "inactive",
       username: user.username,
       avatarUrl: user.avatarUrl,
@@ -83,7 +87,7 @@ export function transformUserToTimelineItem(
   if (!!user.roleUpdatedAt) {
     if (user.role === "admin") {
       items.push({
-        id: "promote-to-admin",
+        id: uuidv4(),
         type: "promote-to-admin",
         username: user.username,
         avatarUrl: user.avatarUrl,
@@ -93,7 +97,7 @@ export function transformUserToTimelineItem(
     }
     if (user.role === "moderator") {
       items.push({
-        id: "promote-to-moderator",
+        id: uuidv4(),
         type: "promote-to-moderator",
         username: user.username,
         avatarUrl: user.avatarUrl,
@@ -103,7 +107,7 @@ export function transformUserToTimelineItem(
     }
     if (user.role === "superadmin") {
       items.push({
-        id: "promote-to-superadmin",
+        id: uuidv4(),
         type: "promote-to-superadmin",
         username: user.username,
         avatarUrl: user.avatarUrl,
@@ -112,7 +116,7 @@ export function transformUserToTimelineItem(
       });
     } else {
       items.push({
-        id: "demote-to-user",
+        id: uuidv4(),
         type: "demote-to-user",
         username: user.username,
         avatarUrl: user.avatarUrl,
@@ -124,7 +128,7 @@ export function transformUserToTimelineItem(
   if (!!user.updatedAt) {
     if (user.avatarUpdatedAt) {
       items.push({
-        id: "update-avatar",
+        id: uuidv4(),
         type: "update-avatar",
         username: user.username,
         avatarUrl: user.avatarUrl,
@@ -133,7 +137,7 @@ export function transformUserToTimelineItem(
     }
     if (user.emailUpdatedAt) {
       items.push({
-        id: "update-email",
+        id: uuidv4(),
         type: "update-email",
         username: user.username,
         avatarUrl: user.avatarUrl,
@@ -142,7 +146,7 @@ export function transformUserToTimelineItem(
     }
     if (user.usernameUpdatedAt) {
       items.push({
-        id: "update-username",
+        id: uuidv4(),
         type: "update-username",
         username: user.username,
         avatarUrl: user.avatarUrl,
@@ -150,7 +154,7 @@ export function transformUserToTimelineItem(
       });
     } else {
       items.push({
-        id: "update-profile",
+        id: uuidv4(),
         type: "update-profile",
         username: user.username,
         avatarUrl: user.avatarUrl,
@@ -161,13 +165,14 @@ export function transformUserToTimelineItem(
   if (!!user.notes) {
     user.notes.forEach((note) => {
       items.push({
-        id: `note-${note.id}`,
+        id: note.id,
         type: "note",
         username: user.username,
         avatarUrl: user.avatarUrl,
         date: note.createdAt,
         text: note.note,
         doneBy: note.fromUser ?? DELETED_USER,
+        isEditable: !!note.fromUser && note.fromUser === loggedInUser,
       });
     });
   }
@@ -179,10 +184,12 @@ export function transformUserToTimelineItem(
   selector: "app-timeline",
   templateUrl: "./timeline.html",
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, IconButton],
 })
 export class Timeline {
   items = input.required<TimelineItem[]>();
+  onDelete = output<TimelineItem>();
+  onEdit = output<TimelineItem>();
 
   sortedItems = computed(() => {
     return this.items().sort(
@@ -192,5 +199,13 @@ export class Timeline {
 
   isDeletedUser(doneBy: string | undefined): boolean {
     return doneBy === DELETED_USER;
+  }
+
+  onEditClick(item: TimelineItem) {
+    this.onEdit.emit(item);
+  }
+
+  onDeleteClick(item: TimelineItem) {
+    this.onDelete.emit(item);
   }
 }

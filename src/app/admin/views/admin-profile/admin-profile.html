@@ -155,7 +155,7 @@ cancelText="Cancel"
         [ngClass]="isNotesFormOpen() ? 'mt-6 opacity-100 scale-100 max-h-screen' : 'mt-0 opacity-0 scale-95 max-h-0 overflow-hidden'" 
         class="transition-all duration-300 ease-in-out transform origin-top"
       >
-        <app-notes-form [note]="currentNoteText" (onClose)="onSwitchNotesForm()" (onSave)="onSaveNote($event)" />
+        <app-notes-form [(note)]="noteText" (onClose)="onSwitchNotesForm()" (onSave)="onSaveNote($event)" />
       </div>
       @if(hasPermissionOverUser()) {
         <div class="mt-6">
@@ -193,7 +193,7 @@ cancelText="Cancel"
         </div>
       }
       <div class="mt-6">
-        <app-timeline [items]="timelineItems" />
+        <app-timeline [items]="timelineItems" (onDelete)="onDeleteTimelineItem($event)" (onEdit)="onEditTimelineItem($event)" />
       </div>
   </div>
 </main>

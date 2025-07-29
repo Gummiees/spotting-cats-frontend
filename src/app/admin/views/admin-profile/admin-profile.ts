@@ -1,4 +1,11 @@
-import { Component, OnDestroy, OnInit, signal } from "@angular/core";
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  signal,
+  computed,
+  Signal,
+} from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { AuthStateService } from "@shared/services/auth-state.service";
 import { FormControl, Validators } from "@angular/forms";
@@ -34,9 +41,10 @@ export class AdminProfile implements OnInit, OnDestroy {
   isDeleteNoteModalOpen = signal(false);
   banReasonInput = new FormControl("", [Validators.required]);
   banIpReasonInput = new FormControl("", [Validators.required]);
-  currentNote = signal<Note | null>(null);
   user = signal<AdminProfileUser | null>(null);
   userNotFound = signal(false);
+  editingNoteText = signal<string>("");
+  private currentNote = signal<Note | null>(null);
   private userSubscription!: Subscription;
   private username!: string;
 
@@ -49,7 +57,7 @@ export class AdminProfile implements OnInit, OnDestroy {
     if (!user) {
       return [];
     }
-    return transformUserToTimelineItem(user);
+    return transformUserToTimelineItem(user, this.loggedInUser?.username);
   }
 
   constructor(
@@ -74,6 +82,8 @@ export class AdminProfile implements OnInit, OnDestroy {
   }
 
   onSwitchNotesForm() {
+    this.currentNote.set(null);
+    this.editingNoteText.set("");
     this.isNotesFormOpen.set(!this.isNotesFormOpen());
   }
 
@@ -340,6 +350,54 @@ export class AdminProfile implements OnInit, OnDestroy {
     }
   }
 
+  async onDeleteTimelineItem(item: TimelineItem) {
+    const note = this.getNoteFromTimelineItem(item);
+    if (!note) {
+      this.snackbarService.show("Note not found", "error");
+      return;
+    }
+
+    if (!this.canWorkOnNote(note)) {
+      this.userActionWithoutPermission();
+      return;
+    }
+
+    this.currentNote.set(note);
+    this.isDeleteNoteModalOpen.set(true);
+  }
+
+  private canWorkOnNote(note: Note): boolean {
+    return !!note.fromUser && note.fromUser === this.loggedInUser?.username;
+  }
+
+  private getNoteFromTimelineItem(item: TimelineItem): Note | null {
+    const user = this.user();
+    return user?.notes?.find((note) => note.id === item.id) ?? null;
+  }
+
+  async onEditTimelineItem(item: TimelineItem) {
+    const note = this.getNoteFromTimelineItem(item);
+    if (!note) {
+      this.snackbarService.show("Note not found", "error");
+      return;
+    }
+
+    if (!this.canWorkOnNote(note)) {
+      this.userActionWithoutPermission();
+      return;
+    }
+
+    this.currentNote.set({
+      id: item.id,
+      forUser: item.username,
+      fromUser: item.doneBy,
+      note: item.text ?? "",
+      createdAt: item.date,
+    });
+    this.editingNoteText.set(item.text ?? "");
+    this.isNotesFormOpen.set(true);
+  }
+
   async onSaveNote(note: string) {
     const user = this.user();
     const loggedInUser = this.loggedInUser;
@@ -347,6 +405,7 @@ export class AdminProfile implements OnInit, OnDestroy {
       this.userActionWithoutPermission();
       return;
     }
+    this.editingNoteText.set(note);
     const currentNote = this.currentNote();
     if (currentNote) {
       await this.updateNote({
@@ -368,10 +427,8 @@ export class AdminProfile implements OnInit, OnDestroy {
     try {
       this.loadingService.setLoading(true);
       await this.notesService.addNote(note);
-      this.isNotesFormOpen.set(false);
-      this.currentNote.set(null);
+      this.afterSuccessfulNoteOperation();
       this.snackbarService.show("Note saved successfully", "success", 3000);
-      this.getUserProfile();
     } catch (error) {
       this.snackbarService.show("Failed to save note", "error");
     } finally {
@@ -379,19 +436,24 @@ export class AdminProfile implements OnInit, OnDestroy {
     }
   }
 
+  private afterSuccessfulNoteOperation() {
+    this.isDeleteNoteModalOpen.set(false);
+    this.currentNote.set(null);
+    this.editingNoteText.set("");
+    this.getUserProfile();
+  }
+
   private async updateNote(note: Note) {
-    if (note.fromUser && note.fromUser !== this.loggedInUser?.username) {
-      this.snackbarService.show("You can only update your own notes", "error");
+    if (!this.canWorkOnNote(note)) {
+      this.userActionWithoutPermission();
       return;
     }
 
     try {
       this.loadingService.setLoading(true);
       await this.notesService.updateNote(note);
-      this.isNotesFormOpen.set(false);
-      this.currentNote.set(null);
+      this.afterSuccessfulNoteOperation();
       this.snackbarService.show("Note updated successfully", "success", 3000);
-      this.getUserProfile();
     } catch (error) {
       this.snackbarService.show("Failed to update note", "error");
     } finally {
@@ -408,23 +470,21 @@ export class AdminProfile implements OnInit, OnDestroy {
 
     const user = this.user();
     const loggedInUser = this.loggedInUser;
-    if (!user || !loggedInUser || !this.loggedInUserHasElevatedRole) {
+    if (
+      !user ||
+      !loggedInUser ||
+      !this.loggedInUserHasElevatedRole ||
+      !this.canWorkOnNote(note)
+    ) {
       this.userActionWithoutPermission();
-      return;
-    }
-
-    if (note.fromUser && note.fromUser !== loggedInUser.username) {
-      this.snackbarService.show("You can only delete your own notes", "error");
       return;
     }
 
     try {
       this.loadingService.setLoading(true);
       await this.notesService.deleteNote(note.id, note.forUser);
-      this.isDeleteNoteModalOpen.set(false);
-      this.currentNote.set(null);
+      this.afterSuccessfulNoteOperation();
       this.snackbarService.show("Note deleted successfully", "success", 3000);
-      this.getUserProfile();
     } catch (error) {
       this.snackbarService.show("Failed to delete note", "error");
     } finally {
@@ -510,8 +570,11 @@ export class AdminProfile implements OnInit, OnDestroy {
     return !!this.loggedInUser && isPrivilegedRole(this.loggedInUser.role);
   }
 
-  get currentNoteText(): string | null {
-    return this.currentNote()?.note ?? null;
+  get noteText(): string {
+    return this.editingNoteText();
+  }
+  set noteText(text: string) {
+    this.editingNoteText.set(text);
   }
 
   countryCodeToEmoji(countryCode: string): string {
