@@ -63,7 +63,7 @@ export class CatsService {
     });
   }
 
-  async addCat(cat: NewCat): Promise<Cat> {
+  async addCat(cat: Cat): Promise<Cat> {
     return firstValueFrom(
       this.http.post<Cat>(`${environment.apiUrl}/v1/cats`, cat)
     ).catch((error) => {
@@ -111,22 +111,6 @@ export class CatsService {
       }
     });
   }
-}
-
-export interface NewCat {
-  name: string;
-  age: number;
-  xCoordinate: number;
-  yCoordinate: number;
-  isDomestic: boolean;
-  isMale: boolean;
-  isSterilized: boolean;
-  isFriendly: boolean;
-  protectorId?: string;
-  colonyId?: string;
-  breed?: string;
-  imageUrls: string[];
-  extraInfo?: string;
 }
 
 export class CatsFilter {

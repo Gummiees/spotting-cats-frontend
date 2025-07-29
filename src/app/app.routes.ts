@@ -1,7 +1,7 @@
 import { Routes } from "@angular/router";
 import { AuthGuard } from "@shared/guards/auth.guard";
 import { AdminGuard } from "@shared/guards/admin.guard";
-import { CatsComponent } from "./cats/component/cats.component";
+import { CatsComponent } from "./cats/cats";
 import { Settings } from "./settings/settings";
 import { NotFound } from "./not-found/not-found";
 import { Profile } from "./profile/profile";
