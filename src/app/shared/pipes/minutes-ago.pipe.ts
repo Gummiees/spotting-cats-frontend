@@ -2,10 +2,10 @@ import { Pipe, PipeTransform } from "@angular/core";
 import moment from "moment";
 
 @Pipe({
-  name: "daysAgo",
+  name: "minutesAgo",
   standalone: true,
 })
-export class DaysAgoPipe implements PipeTransform {
+export class MinutesAgoPipe implements PipeTransform {
   transform(date: Date | null | undefined): string {
     if (!date) {
       return "Unknown";

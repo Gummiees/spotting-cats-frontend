@@ -4,12 +4,13 @@ import { Cat } from "@models/cat";
 import { Carousel, CarouselItem } from "@shared/components/carousel/carousel";
 import { CatBadges } from "../cat-badges/cat-badges";
 import { RouterLink } from "@angular/router";
+import { MinutesAgoPipe } from "@shared/pipes/minutes-ago.pipe";
 
 @Component({
   selector: "app-cat-card",
   templateUrl: "./cat-card.html",
   standalone: true,
-  imports: [CommonModule, Carousel, CatBadges, RouterLink],
+  imports: [CommonModule, Carousel, CatBadges, RouterLink, MinutesAgoPipe],
 })
 export class CatCard {
   cat = input.required<Cat>();
