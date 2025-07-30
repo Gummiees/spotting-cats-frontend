@@ -3,7 +3,10 @@ import { CommonModule } from "@angular/common";
 import { Router } from "@angular/router";
 import { AuthStateService } from "@shared/services/auth-state.service";
 import {
-  InvalidCodeException,
+  EmailAlreadyTakenException,
+  EmailSameAsCurrentException,
+  InvalidEmailException,
+  RateLimitException,
   UserService,
 } from "@shared/services/user.service";
 import { Modal } from "@shared/components/modal/modal";
@@ -61,6 +64,7 @@ export class Settings implements OnDestroy {
   isVerifyEmailModalOpen = signal(false);
   isUsernameAvailable = signal<boolean | null>(null);
   isEmailAvailable = signal<boolean | null>(null);
+  emailError = signal<string | null>(null);
   subUntilDestroyed$ = new Subject<void>();
   private isCheckingUsername = signal(false);
   private isCheckingEmail = signal(false);
@@ -106,7 +110,6 @@ export class Settings implements OnDestroy {
       this.form.patchValue(
         {
           username: this.user?.username,
-          email: this.user?.email,
         },
         { emitEvent: false }
       );
@@ -150,15 +153,11 @@ export class Settings implements OnDestroy {
       .get("email")
       ?.valueChanges.pipe(
         tap(() => {
+          this.emailError.set(null);
           this.isCheckingEmail.set(true);
           this.isEmailAvailable.set(null);
         }),
-        filter(
-          (email) =>
-            !!email &&
-            this.form.get("email")!.valid &&
-            this.isNewEmailDifferent(email)
-        ),
+        filter((email) => !!email && this.form.get("email")!.valid),
         distinctUntilChanged(),
         debounceTime(500),
         takeUntil(this.subUntilDestroyed$),
@@ -186,6 +185,15 @@ export class Settings implements OnDestroy {
     try {
       return await this.userService.checkEmailAvailability(email);
     } catch (error) {
+      if (
+        error instanceof EmailAlreadyTakenException ||
+        error instanceof InvalidEmailException ||
+        error instanceof EmailSameAsCurrentException
+      ) {
+        this.emailError.set(error.message);
+      } else {
+        this.emailError.set("Failed to check email availability");
+      }
       return false;
     }
   }
@@ -220,7 +228,6 @@ export class Settings implements OnDestroy {
     return (
       !!this.email &&
       this.email.valid &&
-      this.email.value !== this.user?.email &&
       this.isEmailAvailable() === true &&
       !this.isCheckingEmail()
     );
@@ -256,10 +263,6 @@ export class Settings implements OnDestroy {
     return username !== this.user?.username;
   }
 
-  private isNewEmailDifferent(email: string): boolean {
-    return email !== this.user?.email;
-  }
-
   async onSaveEmail() {
     const email = this.form.value.email;
     if (!this.canUpdateEmail() || !email || !this.isEmailValid()) {
@@ -272,6 +275,14 @@ export class Settings implements OnDestroy {
       await this.userService.updateEmail(email);
       this.isVerifyEmailModalOpen.set(true);
     } catch (error) {
+      if (error instanceof EmailSameAsCurrentException) {
+        this.emailError.set(error.message);
+        return;
+      } else if (error instanceof RateLimitException) {
+        this.emailError.set(error.message);
+        return;
+      }
+
       this.snackbarService.show("Failed to update email", "error");
     } finally {
       this.loadingEmail.set(false);
@@ -351,7 +362,7 @@ export class Settings implements OnDestroy {
       this.isVerifyEmailModalOpen.set(false);
       this.snackbarService.show("Email verified successfully", "success", 3000);
     } catch (error) {
-      if (error instanceof InvalidCodeException) {
+      if (error instanceof InvalidEmailException) {
         this.snackbarService.show(error.message, "error");
       } else {
         this.snackbarService.show("Failed to verify email", "error");

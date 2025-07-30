@@ -18,7 +18,7 @@ export type PrimaryButtonType =
 export class PrimaryButton {
   isDisabled = input<boolean>(false);
   isLoading = input<boolean>(false);
-  buttonText = input.required<string>();
+  buttonText = input<string>("");
   onClick = output<void>();
   buttonType = input<PrimaryButtonType>("default");
   buttonSize = input<"auto" | "full">("auto");

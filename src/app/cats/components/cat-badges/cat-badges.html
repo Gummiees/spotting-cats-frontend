@@ -1,0 +1,9 @@
+
+<div class="flex items-center gap-1 flex-wrap">
+  @for(badge of getBadges(); track badge.label) {
+    <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset gap-x-1 {{badge.bgColor}} {{badge.textColor}} {{badge.ringColor}}">
+      <span class="material-symbols-outlined {{badge.iconColor}} !text-[16px] leading-none align-middle">{{badge.icon}}</span>
+      <span>{{badge.label}}</span>
+    </span>
+  }
+</div>

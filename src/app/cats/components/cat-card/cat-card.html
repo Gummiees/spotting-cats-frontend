@@ -1,0 +1,25 @@
+<div class="flex flex-col gap-y-2 bg-white px-4 py-3 border border-gray-200 rounded-lg shadow-xs cursor-pointer transition-all duration-200 ease-in-out hover:shadow-md hover:rotate-1" [routerLink]="['/cat', cat().id]">
+  <div class="flex flex-col gap-y-2">
+    <div class="flex justify-between items-center">
+      <div class="flex items-center gap-x-2">
+        <h3 class="text-lg font-medium">{{ cat().name }}</h3>
+      @if(cat().isUserOwner === true) {
+        <span class="material-symbols-outlined text-violet-500 !text-[18px]">verified</span>
+      }
+      </div>
+
+      <div class="flex items-center gap-x-1">
+        <span>{{ cat().totalLikes }}</span>
+        <span class="material-symbols-outlined">favorite</span>
+      </div>
+    </div>
+    <app-cat-badges [cat]="cat()" />
+    <div class="flex-1 min-h-0">
+      <app-carousel [items]="carouselItems()" />
+    </div>
+    <div class="flex items-center justify-between gap-x-2">
+      <span class="text-xs text-gray-500">{{ cat().username }}</span>
+      <span class="text-xs text-gray-500">{{ cat().createdAt | minutesAgo }}</span>
+    </div>
+  </div>
+</div>

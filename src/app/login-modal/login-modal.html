@@ -28,8 +28,8 @@
     </app-modal-content-simple>
   </content>
   <footer>
-    <!-- @if(shouldDisplayResendButton) { -->
+    @if(shouldDisplayResendButton) {
       <app-primary-button buttonType="info" [isDisabled]="isResendButtonDisabled" [isLoading]="loadingButton()" [buttonText]="resendButtonText" (onClick)="onResendCode()" />
-    <!-- } -->
+    }
   </footer>
 </app-modal>

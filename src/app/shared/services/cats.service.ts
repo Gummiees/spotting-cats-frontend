@@ -5,7 +5,11 @@ import { firstValueFrom } from "rxjs";
 import { environment } from "@environments/environment";
 import { Cat } from "@models/cat";
 
-@Injectable()
+export const MAX_CATS_PER_PAGE = 12;
+
+@Injectable({
+  providedIn: "root",
+})
 export class CatsService {
   constructor(private http: HttpClient) {}
 
@@ -23,11 +27,7 @@ export class CatsService {
   }
 
   async getCats(filter?: CatsFilter): Promise<Cat[]> {
-    let params = new HttpParams();
-
-    if (filter) {
-      params = this.convertFilterToParams(filter);
-    }
+    const params = this.buildFilterParams(filter);
 
     return firstValueFrom(
       this.http.get<Cat[]>(`${environment.apiUrl}/v1/cats`, {
@@ -36,14 +36,33 @@ export class CatsService {
     );
   }
 
-  private convertFilterToParams(filter: CatsFilter): HttpParams {
+  private buildFilterParams(filter?: CatsFilter): HttpParams {
     let params = new HttpParams();
 
-    Object.entries(filter)
-      .filter(([_, value]) => value !== undefined && value !== null)
-      .forEach(([key, value]) => {
+    const filterParams = {
+      protectorId: filter?.protectorId,
+      colonyId: filter?.colonyId,
+      age: filter?.age,
+      isDomestic: filter?.isDomestic,
+      isMale: filter?.isMale,
+      isSterilized: filter?.isSterilized,
+      isFriendly: filter?.isFriendly,
+      isUserOwner: filter?.isUserOwner,
+      page: filter?.page,
+    };
+
+    Object.entries(filterParams).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
         params = params.set(key, value.toString());
-      });
+      }
+    });
+
+    params = params.set(
+      "limit",
+      (filter?.limit ?? MAX_CATS_PER_PAGE).toString()
+    );
+    params = params.set("orderBy", filter?.orderBy?.field ?? "createdAt");
+    params = params.set("orderDirection", filter?.orderBy?.direction ?? "DESC");
 
     return params;
   }
@@ -63,7 +82,7 @@ export class CatsService {
     });
   }
 
-  async addCat(cat: NewCat): Promise<Cat> {
+  async addCat(cat: Cat): Promise<Cat> {
     return firstValueFrom(
       this.http.post<Cat>(`${environment.apiUrl}/v1/cats`, cat)
     ).catch((error) => {
@@ -113,23 +132,14 @@ export class CatsService {
   }
 }
 
-export interface NewCat {
-  name: string;
-  age: number;
-  xCoordinate: number;
-  yCoordinate: number;
-  isDomestic: boolean;
-  isMale: boolean;
-  isSterilized: boolean;
-  isFriendly: boolean;
-  protectorId?: string;
-  colonyId?: string;
-  breed?: string;
-  imageUrls: string[];
-  extraInfo?: string;
+export type OrderDirection = "ASC" | "DESC";
+
+export interface CatOrderBy {
+  field: "totalLikes" | "age" | "createdAt";
+  direction: OrderDirection;
 }
 
-export class CatsFilter {
+export interface CatsFilter {
   protectorId?: string;
   colonyId?: string;
   age?: number;
@@ -140,6 +150,7 @@ export class CatsFilter {
   isUserOwner?: boolean;
   limit?: number;
   page?: number;
+  orderBy?: CatOrderBy;
 }
 
 export class CatServiceException extends Error {

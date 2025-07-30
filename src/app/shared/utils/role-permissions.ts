@@ -1,5 +1,9 @@
 import { UserRole } from "@models/user-roles";
 
+export function isPrivilegedRole(role: UserRole): boolean {
+  return role === "admin" || role === "superadmin" || role === "moderator";
+}
+
 export function isAdminOrSuperadmin(role: UserRole): boolean {
   return role === "admin" || role === "superadmin";
 }

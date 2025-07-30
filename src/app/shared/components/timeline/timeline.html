@@ -1,0 +1,92 @@
+<ol class="relative border-s border-gray-200">
+  @for(item of sortedItems(); track item.id; let last = $last) {
+    <li [ngClass]="{'mb-10': !last}" class="ms-6">
+        <span class="absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 ring-8 ring-white">
+            <img class="rounded-full shadow-lg" [src]="item.avatarUrl" [alt]="item.username + '\'s avatar'" />
+        </span>
+        <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-xs">
+            <div [ngClass]="{'mb-3': !!item.text}" class="items-center justify-between sm:flex">
+                <div class="text-sm font-normal text-gray-500 flex">
+                  @switch(item.type) {
+                    @case("ban") {
+                      <span>{{ item.username }} was banned</span>
+                    }
+                    @case("ban-ip") {
+                      <span>{{ item.username }} was banned from IP</span>
+                    }
+                    @case("unban") {
+                      <span>{{ item.username }} was unbanned</span>
+                    }
+                    @case("unban-ip") {
+                      <span>{{ item.username }} was unbanned from IP</span>
+                    }
+                    @case("demote-to-user") {
+                      <span>{{ item.username }} was demoted to user</span>
+                    }
+                    @case("promote-to-admin") {
+                      <span>{{ item.username }} was promoted to admin</span>
+                    }
+                    @case("promote-to-moderator") {
+                      <span>{{ item.username }} was promoted to moderator</span>
+                    }
+                    @case("promote-to-superadmin") {
+                      <span>{{ item.username }} was promoted to superadmin</span>
+                    }
+                    @case("inactive") {
+                      <span>{{ item.username }} was set to inactive</span>
+                    }
+                    @case("activate") {
+                      <span>{{ item.username }} was set to active</span>
+                    }
+                    @case("create-account") {
+                      <span>{{ item.username }} created an account</span>
+                    }
+                    @case("update-email") {
+                      <span>{{ item.username }} updated their email</span>
+                    }
+                    @case("update-username") {
+                      <span>{{ item.username }} updated their username</span>
+                    }
+                    @case("update-avatar") {
+                      <span>{{ item.username }} updated their avatar</span>
+                    }
+                  }
+                  @if(isDeletedUser(item.doneBy)) {
+                    @if(item.type === "note") {
+                      <span>
+                        [deleted user] added a note
+                      </span>
+                    } @else {
+                      <span>
+                        by [deleted user]
+                      </span>
+                    }
+                  } @else if(!!item.doneBy) {
+                    @if(item.type === "note") {
+                      <span>
+                        <a class="text-violet-500 font-bold hover:underline" [routerLink]="['/admin/user', item.doneBy]">{{ item.doneBy }}</a> added a note
+                      </span>
+                    } @else {
+                      <span>
+                        by <a class="text-violet-500 font-bold hover:underline" [routerLink]="['/admin/user', item.doneBy]">{{ item.doneBy }}</a>
+                      </span>
+                    }
+                  } 
+                </div>
+                <div class="flex items-center gap-2">
+                  <time class="mb-1 text-xs font-normal text-gray-400 sm:order-last sm:mb-0">{{ item.date | date: "yyyy-MM-dd HH:mm:ss" }}</time>
+                  @if(item.isEditable) {
+                    <div class="flex items-center gap-1">
+                      <app-icon-button icon="edit" ariaLabel="Edit" (onClick)="onEditClick(item)" />
+                      <app-icon-button icon="delete" ariaLabel="Delete" (onClick)="onDeleteClick(item)" />
+                    </div>
+                  }
+                </div>
+            </div>
+            @if(item.text) {
+            <div class="p-3 text-xs italic font-normal text-gray-500 border border-gray-200 rounded-lg bg-gray-50">{{ item.text }}</div>
+            }
+        </div>
+    </li>
+  }
+</ol>

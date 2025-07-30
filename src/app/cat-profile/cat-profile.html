@@ -1,0 +1,9 @@
+
+@if(catNotFound() || (isOwnerBanned() && !loggedInUserHasElevatedRole())) {
+  <app-not-found />
+} @else {
+<app-header title="Cat" />
+<main>
+  Cat profile
+</main>
+}

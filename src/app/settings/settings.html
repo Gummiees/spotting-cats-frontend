@@ -75,10 +75,15 @@ cancelText="Cancel"
                 <p class="text-sm text-red-600">You updated your username {{user?.usernameUpdatedAt | daysAgo}}.</p>
               </div>
             }
+            @if(isUsernameAvailable() === false) {
+              <div class="mt-2 flex items-center gap-x-2">
+                <p class="text-sm text-red-600">Username is already taken.</p>
+              </div>
+            }
           </div>
               
           <div class="col-span-full">
-            <label for="email" class="block text-sm/6 font-medium text-gray-900">Email address</label>
+            <label for="email" class="block text-sm/6 font-medium text-gray-900">New email address</label>
             <div class="mt-2 flex items-center gap-x-2">
               <div class="flex items-center rounded-md bg-white pl-3 outline-1 outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-violet-500 flex-1">
                 <input id="email" name="email" type="email" autocomplete="email" formControlName="email" class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm/6 disabled:opacity-50 disabled:cursor-not-allowed" />
@@ -91,6 +96,11 @@ cancelText="Cancel"
             @if(!canUpdateEmail()) {
               <div class="mt-2 flex items-center gap-x-2">
                 <p class="text-sm text-red-600">You updated your email {{user?.emailUpdatedAt | daysAgo}}.</p>
+              </div>
+            }
+            @if(emailError()) {
+              <div class="mt-2 flex items-center gap-x-2">
+                <p class="text-sm text-red-600">{{emailError()}}</p>
               </div>
             }
           </div>

@@ -2,7 +2,6 @@ import { UserRole } from "./user-roles";
 
 export interface OwnUser {
   id: string;
-  email: string;
   username: string;
   avatarUrl: string;
   role: UserRole;
