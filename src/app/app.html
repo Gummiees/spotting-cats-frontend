@@ -1,6 +1,6 @@
 <app-login-modal [isOpen]="isLoginModalOpen()" (onSuccessfulLogin)="closeLoginModal()" (onCancel)="closeLoginModal()" />
 <div class="min-h-full">
-  <app-navbar (onLogin)="openLoginModal()" />
+  <app-navbar />
   @if(isLoading || isLoadingRoute) {
     
     <app-spinner />

@@ -1,4 +1,4 @@
-import { Component, output, signal } from "@angular/core";
+import { Component, signal } from "@angular/core";
 import { Router, RouterLink, RouterLinkActive } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import { AuthStateService } from "@shared/services/auth-state.service";
@@ -6,6 +6,7 @@ import { Badge } from "@shared/components/badge/badge";
 import { UserService } from "@shared/services/user.service";
 import { SnackbarService } from "@shared/services/snackbar.service";
 import { LoadingService } from "@shared/services/loading.service";
+import { LoginModalService } from "@shared/services/login-modal.service";
 import { PrimaryButton } from "../primary-button/primary-button";
 import { isAdminOrSuperadmin } from "@shared/utils/role-permissions";
 
@@ -18,7 +19,6 @@ import { isAdminOrSuperadmin } from "@shared/utils/role-permissions";
 export class Navbar {
   isMenuOpen = signal(false);
   userMenuOpen = signal(false);
-  onLogin = output<void>();
 
   get user() {
     return this.authStateService.user();
@@ -29,7 +29,8 @@ export class Navbar {
     private userService: UserService,
     private router: Router,
     private snackbarService: SnackbarService,
-    private loadingService: LoadingService
+    private loadingService: LoadingService,
+    private loginModalService: LoginModalService
   ) {}
 
   isAdminOrSuperadmin() {
@@ -66,6 +67,6 @@ export class Navbar {
   }
 
   onLoginClick() {
-    this.onLogin.emit();
+    this.loginModalService.openModal();
   }
 }

@@ -10,7 +10,7 @@
           <app-cat-card [cat]="cat" />
         }
         @for (item of emptyItems(); track $index) {
-          <app-empty-cat-card />
+          <app-empty-cat-card (click)="onAddDefaultCat()" />
         }
       </div>
       @if(hasMoreCats()) {

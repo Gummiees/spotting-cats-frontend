@@ -17,6 +17,7 @@ import { CatCard } from "./components/cat-card/cat-card";
 import { CatsFilter, CatsService } from "@shared/services/cats.service";
 import { EmptyCatCard } from "./components/empty-cat-card/empty-cat-card";
 import { MAX_CATS_PER_PAGE } from "@shared/services/cats.service";
+import { LoginModalService } from "@shared/services/login-modal.service";
 
 @Component({
   selector: "app-cats",
@@ -33,10 +34,6 @@ import { MAX_CATS_PER_PAGE } from "@shared/services/cats.service";
 export class CatsComponent implements OnInit {
   cats = signal<Cat[]>([]);
   loading = signal<boolean>(false);
-  showForm = false;
-  editingCat: Cat | null = null;
-  catToDelete: Cat | null = null;
-  showDeleteDialog = false;
   emptyItems: Signal<null[]> = computed(() => {
     const items: null[] = [];
     const catsCount = this.cats().length;
@@ -71,7 +68,8 @@ export class CatsComponent implements OnInit {
   constructor(
     private catsService: CatsService,
     private snackbarService: SnackbarService,
-    private authStateService: AuthStateService
+    private authStateService: AuthStateService,
+    private loginModalService: LoginModalService
   ) {}
 
   @HostListener("window:resize")
@@ -115,9 +113,18 @@ export class CatsComponent implements OnInit {
     }
   }
 
+  async onAddCat() {
+    if (!this.user) {
+      this.loginModalService.openModal();
+      return;
+    }
+
+    this.loading.set(true);
+  }
+
   async onAddDefaultCat() {
     if (!this.user) {
-      this.snackbarService.show("Please login to add a cat", "error");
+      this.loginModalService.openModal();
       return;
     }
 

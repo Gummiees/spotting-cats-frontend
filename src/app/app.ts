@@ -1,10 +1,10 @@
-import { AfterViewInit, Component, signal, ViewChild } from "@angular/core";
+import { AfterViewInit, Component, ViewChild } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
 import { Navbar } from "@shared/components/navbar/navbar";
-import { AuthStateService } from "@shared/services/auth-state.service";
 import { Snackbar } from "@shared/components/snackbar/snackbar";
 import { SnackbarService } from "@shared/services/snackbar.service";
 import { LoadingService } from "@shared/services/loading.service";
+import { LoginModalService } from "@shared/services/login-modal.service";
 import { Spinner } from "@shared/components/spinner/spinner";
 import { ReactiveFormsModule } from "@angular/forms";
 import { LoginModal } from "./login-modal/login-modal";
@@ -23,8 +23,6 @@ import { LoginModal } from "./login-modal/login-modal";
   styleUrl: "./app.scss",
 })
 export class App implements AfterViewInit {
-  isLoginModalOpen = signal(false);
-
   @ViewChild("snackbar") snackbarComponent!: Snackbar;
 
   get isLoading() {
@@ -35,10 +33,14 @@ export class App implements AfterViewInit {
     return this.loadingService.routeLoading;
   }
 
+  get isLoginModalOpen() {
+    return this.loginModalService.isOpen;
+  }
+
   constructor(
-    private authStateService: AuthStateService,
     private snackbarService: SnackbarService,
-    private loadingService: LoadingService
+    private loadingService: LoadingService,
+    private loginModalService: LoginModalService
   ) {}
 
   ngAfterViewInit() {
@@ -46,10 +48,6 @@ export class App implements AfterViewInit {
   }
 
   closeLoginModal() {
-    this.isLoginModalOpen.set(false);
-  }
-
-  openLoginModal() {
-    this.isLoginModalOpen.set(true);
+    this.loginModalService.closeModal();
   }
 }
