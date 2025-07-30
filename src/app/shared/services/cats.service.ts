@@ -5,6 +5,8 @@ import { firstValueFrom } from "rxjs";
 import { environment } from "@environments/environment";
 import { Cat } from "@models/cat";
 
+export const MAX_CATS_PER_PAGE = 12;
+
 @Injectable({
   providedIn: "root",
 })
@@ -27,8 +29,13 @@ export class CatsService {
   async getCats(filter?: CatsFilter): Promise<Cat[]> {
     let params = new HttpParams();
 
-    if (filter) {
-      params = this.convertFilterToParams(filter);
+    const filterWithDefaults = {
+      ...filter,
+      limit: filter?.limit ?? MAX_CATS_PER_PAGE,
+    };
+
+    if (filterWithDefaults) {
+      params = this.convertFilterToParams(filterWithDefaults);
     }
 
     return firstValueFrom(
