@@ -20,12 +20,14 @@ export class Carousel {
     return this.items()[this.currentIndex()];
   }
 
-  next() {
+  next(event: Event) {
+    event.stopPropagation();
     const len = this.items().length;
     this.currentIndex.set((this.currentIndex() + 1) % len);
   }
 
-  previous() {
+  previous(event: Event) {
+    event.stopPropagation();
     const len = this.items().length;
     this.currentIndex.set((this.currentIndex() - 1 + len) % len);
   }

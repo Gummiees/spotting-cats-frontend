@@ -1,9 +1,9 @@
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { firstValueFrom } from "rxjs";
+import { firstValueFrom, map } from "rxjs";
 
 import { environment } from "@environments/environment";
-import { Cat } from "@models/cat";
+import { Cat, CreateCat, UpdateCat } from "@models/cat";
 
 export const MAX_CATS_PER_PAGE = 12;
 
@@ -82,12 +82,18 @@ export class CatsService {
     });
   }
 
-  async addCat(cat: Cat): Promise<Cat> {
+  async addCat(cat: CreateCat, images: File[]): Promise<Cat> {
     return firstValueFrom(
-      this.http.post<Cat>(`${environment.apiUrl}/v1/cats`, cat)
+      this.http.post<Cat>(
+        `${environment.apiUrl}/v1/cats`,
+        this.buildFormData(cat, images)
+      )
     ).catch((error) => {
       switch (error.status) {
         case 400:
+          if (error.error.details.errorCode === "NSFW_CONTENT_DETECTED") {
+            throw new NsfwContentDetectedException("NSFW content detected");
+          }
           throw new InvalidCatException(error.error.message);
         case 401:
           throw new UnauthorizedException(error.error.message);
@@ -97,11 +103,66 @@ export class CatsService {
     });
   }
 
-  async updateCat(id: string, cat: Cat): Promise<void> {
+  private buildFormData(cat: CreateCat | UpdateCat, images?: File[]): FormData {
+    const formData = new FormData();
+
+    // Add each cat field individually
+    formData.append("xCoordinate", cat.xCoordinate.toString());
+    formData.append("yCoordinate", cat.yCoordinate.toString());
+    if (cat.protectorId !== undefined && cat.protectorId !== null) {
+      formData.append("protectorId", cat.protectorId);
+    }
+    if (cat.colonyId !== undefined && cat.colonyId !== null) {
+      formData.append("colonyId", cat.colonyId);
+    }
+    if (cat.name !== undefined && cat.name !== null) {
+      formData.append("name", cat.name);
+    }
+    if (cat.age !== undefined && cat.age !== null) {
+      formData.append("age", cat.age.toString());
+    }
+    if (cat.breed !== undefined && cat.breed !== null) {
+      formData.append("breed", cat.breed);
+    }
+    if (cat.extraInfo !== undefined && cat.extraInfo !== null) {
+      formData.append("extraInfo", cat.extraInfo);
+    }
+    if (cat.isDomestic !== undefined && cat.isDomestic !== null) {
+      formData.append("isDomestic", cat.isDomestic.toString());
+    }
+    if (cat.isMale !== undefined && cat.isMale !== null) {
+      formData.append("isMale", cat.isMale.toString());
+    }
+    if (cat.isSterilized !== undefined && cat.isSterilized !== null) {
+      formData.append("isSterilized", cat.isSterilized.toString());
+    }
+    if (cat.isFriendly !== undefined && cat.isFriendly !== null) {
+      formData.append("isFriendly", cat.isFriendly.toString());
+    }
+
+    // Add images if provided
+    if (images && images.length > 0) {
+      images.forEach((image, _) => {
+        formData.append(`images`, image);
+      });
+    }
+
+    return formData;
+  }
+
+  async updateCat(id: string, cat: UpdateCat, images?: File[]): Promise<void> {
     return firstValueFrom(
-      this.http.put<void>(`${environment.apiUrl}/v1/cats/${id}`, cat)
+      this.http.put<void>(
+        `${environment.apiUrl}/v1/cats/${id}`,
+        this.buildFormData(cat, images)
+      )
     ).catch((error) => {
       switch (error.status) {
+        case 400:
+          if (error.error.details.errorCode === "NSFW_CONTENT_DETECTED") {
+            throw new NsfwContentDetectedException("NSFW content detected");
+          }
+          throw new InvalidCatException(error.error.message);
         case 401:
           throw new UnauthorizedException(error.error.message);
         case 403:
@@ -158,6 +219,8 @@ export class CatServiceException extends Error {
     super(message);
   }
 }
+
+export class NsfwContentDetectedException extends CatServiceException {}
 
 export class InvalidCatException extends CatServiceException {}
 

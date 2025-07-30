@@ -14,7 +14,11 @@ import { PrimaryButton } from "@shared/components/primary-button/primary-button"
 import { SnackbarService } from "@shared/services/snackbar.service";
 import { AuthStateService } from "@shared/services/auth-state.service";
 import { CatCard } from "./components/cat-card/cat-card";
-import { CatsFilter, CatsService } from "@shared/services/cats.service";
+import {
+  CatsFilter,
+  CatsService,
+  NsfwContentDetectedException,
+} from "@shared/services/cats.service";
 import { EmptyCatCard } from "./components/empty-cat-card/empty-cat-card";
 import { MAX_CATS_PER_PAGE } from "@shared/services/cats.service";
 import { LoginModalService } from "@shared/services/login-modal.service";
@@ -98,14 +102,22 @@ export class CatsComponent implements OnInit {
     }
   }
 
-  private async loadCats(filter?: CatsFilter) {
+  private async loadCats(
+    { filter, isReload }: { filter?: CatsFilter; isReload?: boolean } = {
+      isReload: false,
+    }
+  ) {
     this.loading.set(true);
     try {
       const newCats = await this.catsService.getCats(filter);
       const filteredCats = this.cats().filter(
         (cat) => !newCats.some((c) => c.id === cat.id)
       );
-      this.cats.set([...filteredCats, ...newCats]);
+      if (isReload) {
+        this.cats.set(newCats);
+      } else {
+        this.cats.set([...filteredCats, ...newCats]);
+      }
     } catch (error) {
       this.snackbarService.show("Error loading cats", "error");
     } finally {
@@ -122,7 +134,16 @@ export class CatsComponent implements OnInit {
     this.loading.set(true);
   }
 
-  async onAddDefaultCat() {
+  onFileSelected(event: Event) {
+    const target = event.target as HTMLInputElement;
+    const files = target.files;
+
+    if (files && files.length > 0) {
+      this.uploadCatWithImages(Array.from(files));
+    }
+  }
+
+  private async uploadCatWithImages(images: File[]) {
     if (!this.user) {
       this.loginModalService.openModal();
       return;
@@ -130,37 +151,41 @@ export class CatsComponent implements OnInit {
 
     this.loading.set(true);
     try {
-      await this.catsService.addCat({
-        id: "",
-        totalLikes: 3,
-        imageUrls: [
-          "https://cdn2.thecatapi.com/images/h5.jpg",
-          "https://cdn2.thecatapi.com/images/a6q.jpg",
-          "https://cdn2.thecatapi.com/images/bmh.jpg",
-        ],
-        xCoordinate: 40.925908,
-        yCoordinate: -0.06771,
-        isUserOwner: true,
-        name: "Default Cat",
-        age: 4,
-        breed: "Tuxedo",
-        extraInfo: "Lovely cat",
-        isMale: false,
-        isSterilized: true,
-        isFriendly: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        confirmedOwnerAt: new Date(),
-      });
-      this.onLoadMoreCats();
+      await this.catsService.addCat(
+        {
+          xCoordinate: 40.925908,
+          yCoordinate: -0.06771,
+          name: "Cat with Photos",
+          age: 3,
+          breed: "Mixed",
+          extraInfo: "Cat uploaded with photos",
+          isMale: true,
+          isSterilized: false,
+          isFriendly: true,
+        },
+        images
+      );
+      this.onReloadCats();
+      this.snackbarService.show(
+        "Cat uploaded successfully with photos!",
+        "success"
+      );
     } catch (error) {
-      this.snackbarService.show("Error adding cat", "error");
+      if (error instanceof NsfwContentDetectedException) {
+        this.snackbarService.show("NSFW content detected", "error");
+        return;
+      }
+      this.snackbarService.show("Error uploading cat with photos", "error");
     } finally {
       this.loading.set(false);
     }
   }
 
   onLoadMoreCats() {
-    this.loadCats({ page: this.currentPage });
+    this.loadCats({ filter: { page: this.currentPage } });
+  }
+
+  onReloadCats() {
+    this.loadCats({ isReload: true });
   }
 }

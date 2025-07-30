@@ -2,7 +2,21 @@
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
       <div class="border-b border-gray-900/10 pt-2 pb-3 flex flex-col gap-y-2">
         <div class="flex items-center gap-3">
-          <app-primary-button buttonText="Add default cat" [isLoading]="loading()" (onClick)="onAddDefaultCat()" />
+          <div class="flex items-center gap-2">
+            <input 
+              type="file" 
+              multiple 
+              accept=".jpg,.jpeg,.png,.webp" 
+              class="hidden" 
+              #fileInput
+              (change)="onFileSelected($event)"
+            />
+            <app-primary-button 
+              buttonText="Upload Photos" 
+              [isLoading]="loading()" 
+              (onClick)="fileInput.click()" 
+            />
+          </div>
         </div>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -10,7 +24,7 @@
           <app-cat-card [cat]="cat" />
         }
         @for (item of emptyItems(); track $index) {
-          <app-empty-cat-card (click)="onAddDefaultCat()" />
+          <app-empty-cat-card (click)="fileInput.click()" />
         }
       </div>
       @if(hasMoreCats()) {

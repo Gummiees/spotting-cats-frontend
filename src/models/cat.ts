@@ -1,11 +1,6 @@
-export interface Cat {
-  id: string;
-  totalLikes: number;
-  imageUrls: string[];
+interface BaseCat {
   xCoordinate: number;
   yCoordinate: number;
-  isUserOwner: boolean;
-  username?: string;
   protectorId?: string;
   colonyId?: string;
   name?: string;
@@ -16,7 +11,22 @@ export interface Cat {
   isMale?: boolean;
   isSterilized?: boolean;
   isFriendly?: boolean;
+}
+
+export interface Cat extends BaseCat {
+  id: string;
+  totalLikes: number;
+  imageUrls: string[];
+  isUserOwner: boolean;
+  username?: string;
   createdAt: Date;
   updatedAt?: Date;
   confirmedOwnerAt?: Date;
+}
+
+export interface CreateCat extends BaseCat {}
+
+export interface UpdateCat extends BaseCat {
+  replaceImages?: boolean;
+  keepImages?: string[];
 }

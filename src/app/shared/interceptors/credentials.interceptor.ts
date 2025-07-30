@@ -9,7 +9,9 @@ export const credentialsInterceptor: HttpInterceptorFn = (req, next) => {
   const modifiedReq = req.clone({
     withCredentials: true,
     headers:
-      req.body && !req.headers.has("Content-Type")
+      req.body &&
+      !req.headers.has("Content-Type") &&
+      !(req.body instanceof FormData)
         ? req.headers.set("Content-Type", "application/json")
         : req.headers,
   });
