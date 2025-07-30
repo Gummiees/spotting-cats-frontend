@@ -120,7 +120,7 @@ export class CatForm implements OnChanges, OnDestroy {
         this.cat()?.isFriendly ?? this.catForm.value.isFriendly ?? undefined,
       confirmedOwnerAt: this.cat()?.confirmedOwnerAt,
       updatedAt: this.cat()?.updatedAt,
-      userId: this.cat()?.userId ?? user.id,
+      username: this.cat()?.username ?? user.username,
       protectorId: this.cat()?.protectorId,
       colonyId: this.cat()?.colonyId,
       age: this.cat()?.age ?? this.catForm.value.age ?? undefined,

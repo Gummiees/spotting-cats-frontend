@@ -3,16 +3,15 @@ import { ReactiveFormsModule } from "@angular/forms";
 import { CommonModule } from "@angular/common";
 
 import { Cat } from "@models/cat";
-import { CatsService } from "../shared/services/cats.service";
 import { PrimaryButton } from "@shared/components/primary-button/primary-button";
 import { SnackbarService } from "@shared/services/snackbar.service";
 import { AuthStateService } from "@shared/services/auth-state.service";
 import { CatCard } from "./components/cat-card/cat-card";
+import { CatsService } from "@shared/services/cats.service";
 
 @Component({
   selector: "app-cats",
   templateUrl: "./cats.html",
-  providers: [CatsService],
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, PrimaryButton, CatCard],
 })
@@ -59,8 +58,7 @@ export class CatsComponent implements OnInit {
       age: 4,
       breed: "Tuxedo",
       extraInfo: "Lovely cat",
-      isDomestic: true,
-      isMale: true,
+      isMale: false,
       isSterilized: true,
       isFriendly: true,
       createdAt: new Date(),

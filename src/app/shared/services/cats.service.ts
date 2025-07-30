@@ -5,7 +5,9 @@ import { firstValueFrom } from "rxjs";
 import { environment } from "@environments/environment";
 import { Cat } from "@models/cat";
 
-@Injectable()
+@Injectable({
+  providedIn: "root",
+})
 export class CatsService {
   constructor(private http: HttpClient) {}
 

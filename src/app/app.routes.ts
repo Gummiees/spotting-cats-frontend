@@ -5,11 +5,18 @@ import { CatsComponent } from "./cats/cats";
 import { Settings } from "./settings/settings";
 import { NotFound } from "./not-found/not-found";
 import { Profile } from "./profile/profile";
-import { ProfileResolverService } from "./profile/profile.service";
+import { ProfileResolverService } from "./profile/profile-resolver.service";
+import { CatProfile } from "./cat-profile/cat-profile";
+import { CatProfileResolverService } from "@shared/services/cat-profile-resolver.service";
 
 export const routes: Routes = [
   { path: "", redirectTo: "/cats", pathMatch: "full" },
   { path: "cats", component: CatsComponent },
+  {
+    path: "cat/:id",
+    component: CatProfile,
+    resolve: { cat: CatProfileResolverService },
+  },
   {
     path: "admin",
     loadChildren: () =>

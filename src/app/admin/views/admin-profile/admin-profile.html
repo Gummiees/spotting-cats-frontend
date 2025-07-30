@@ -162,30 +162,30 @@ cancelText="Cancel"
           <div class="flex flex-col sm:flex-row sm:items-center gap-2">
             <app-primary-button buttonText="Add note" buttonSize="full" (onClick)="onSwitchNotesForm()">
               <ng-container prefix>
-                <span class="material-symbols-outlined text-white !text-[16px] leading-none align-middle">note_add</span>
+                <span class="material-symbols-outlined text-white !text-[16px]">note_add</span>
               </ng-container>
             </app-primary-button>
             <app-primary-button [buttonText]="banButtonText" buttonType="danger" buttonSize="full" (onClick)="onOpenBanModal()">
               <ng-container prefix>
-                <span class="material-symbols-outlined text-white !text-[16px] leading-none align-middle">gavel</span>
+                <span class="material-symbols-outlined text-white !text-[16px]">gavel</span>
               </ng-container>
             </app-primary-button>
             <app-primary-button [buttonText]="banIpButtonText" buttonType="danger" buttonSize="full" (onClick)="onOpenBanIpModal()">
               <ng-container prefix>
-                <span class="material-symbols-outlined text-white !text-[16px] leading-none align-middle">gavel</span>
+                <span class="material-symbols-outlined text-white !text-[16px]">gavel</span>
               </ng-container>
             </app-primary-button>
             @if(shouldDisplayModeratorButton) {
               <app-primary-button [buttonText]="moderatorButtonText" buttonType="info" buttonSize="full" (onClick)="onOpenMakeModeratorModal()">
                 <ng-container prefix>
-                  <span class="material-symbols-outlined text-white !text-[16px] leading-none align-middle">{{moderatorIcon}}</span>
+                  <span class="material-symbols-outlined text-white !text-[16px]">{{moderatorIcon}}</span>
                 </ng-container>
               </app-primary-button>
             }
             @if(shouldDisplayAdminButton) {
                 <app-primary-button [buttonText]="adminButtonText" buttonType="warning" buttonSize="full" (onClick)="onOpenMakeAdminModal()">
                   <ng-container prefix>
-                    <span class="material-symbols-outlined text-white !text-[16px] leading-none align-middle">{{adminIcon}}</span>
+                    <span class="material-symbols-outlined text-white !text-[16px]">{{adminIcon}}</span>
                   </ng-container>
                 </app-primary-button>
             }

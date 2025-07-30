@@ -5,7 +5,7 @@ export interface Cat {
   xCoordinate: number;
   yCoordinate: number;
   isUserOwner: boolean;
-  userId?: string;
+  username?: string;
   protectorId?: string;
   colonyId?: string;
   name?: string;

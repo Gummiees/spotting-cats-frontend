@@ -1,27 +1,27 @@
 <span [ngClass]="{ 'bg-yellow-50 text-yellow-800 ring-yellow-600/20': type() === 'admin', 'bg-red-50 text-red-800 ring-red-600/20': type() === 'banned' || type() === 'ip-banned', 'bg-blue-50 text-blue-800 ring-blue-600/20': type() === 'moderator', 'bg-green-50 text-green-800 ring-green-600/20': type() === 'superadmin', 'bg-gray-50 text-gray-800 ring-gray-600/20': type() === 'inactive'}" class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset gap-x-1">
   @switch(type()) {
     @case("superadmin") {
-      <span class="material-symbols-outlined text-green-500 !text-[16px] leading-none align-middle">shield_person</span>
+      <span class="material-symbols-outlined text-green-500 !text-[16px]">shield_person</span>
       <span>Superadmin</span>
     }
     @case("admin") {
-      <span class="material-symbols-outlined text-yellow-500 !text-[16px] leading-none align-middle">shield_person</span>
+      <span class="material-symbols-outlined text-yellow-500 !text-[16px]">shield_person</span>
       <span>Admin</span>
     }
     @case("moderator") {
-      <span class="material-symbols-outlined text-blue-500 !text-[16px] leading-none align-middle">person_shield</span>
+      <span class="material-symbols-outlined text-blue-500 !text-[16px]">person_shield</span>
       <span>Moderator</span>
     }
     @case("banned") {
-      <span class="material-symbols-outlined text-red-500 !text-[16px] leading-none align-middle">gavel</span>
+      <span class="material-symbols-outlined text-red-500 !text-[16px]">gavel</span>
       <span>Banned</span>
     }
     @case("ip-banned") {
-      <span class="material-symbols-outlined text-red-500 !text-[16px] leading-none align-middle">gavel</span>
+      <span class="material-symbols-outlined text-red-500 !text-[16px]">gavel</span>
       <span>IP Banned</span>
     }
     @case("inactive") {
-      <span class="material-symbols-outlined text-gray-500 !text-[16px] leading-none align-middle">account_circle_off</span>
+      <span class="material-symbols-outlined text-gray-500 !text-[16px]">account_circle_off</span>
       <span>Inactive</span>
     }
   }
