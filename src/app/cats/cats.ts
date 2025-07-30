@@ -123,7 +123,7 @@ export class CatsComponent implements OnInit {
 
     this.loading.set(true);
     try {
-      const newCat = await this.catsService.addCat({
+      await this.catsService.addCat({
         id: "",
         totalLikes: 3,
         imageUrls: [

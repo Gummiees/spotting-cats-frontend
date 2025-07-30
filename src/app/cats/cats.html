@@ -14,7 +14,7 @@
         }
       </div>
       @if(hasMoreCats()) {
-        <div class="border-b border-gray-900/10 flex items-center justify-center p-3">
+        <div class="flex items-center justify-center pt-4">
           <app-primary-button buttonText="Load more cats" [isLoading]="loading()" (onClick)="onLoadMoreCats()" />
         </div>
       }

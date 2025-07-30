@@ -27,16 +27,7 @@ export class CatsService {
   }
 
   async getCats(filter?: CatsFilter): Promise<Cat[]> {
-    let params = new HttpParams();
-
-    const filterWithDefaults = {
-      ...filter,
-      limit: filter?.limit ?? MAX_CATS_PER_PAGE,
-    };
-
-    if (filterWithDefaults) {
-      params = this.convertFilterToParams(filterWithDefaults);
-    }
+    const params = this.buildFilterParams(filter);
 
     return firstValueFrom(
       this.http.get<Cat[]>(`${environment.apiUrl}/v1/cats`, {
@@ -45,14 +36,33 @@ export class CatsService {
     );
   }
 
-  private convertFilterToParams(filter: CatsFilter): HttpParams {
+  private buildFilterParams(filter?: CatsFilter): HttpParams {
     let params = new HttpParams();
 
-    Object.entries(filter)
-      .filter(([_, value]) => value !== undefined && value !== null)
-      .forEach(([key, value]) => {
+    const filterParams = {
+      protectorId: filter?.protectorId,
+      colonyId: filter?.colonyId,
+      age: filter?.age,
+      isDomestic: filter?.isDomestic,
+      isMale: filter?.isMale,
+      isSterilized: filter?.isSterilized,
+      isFriendly: filter?.isFriendly,
+      isUserOwner: filter?.isUserOwner,
+      page: filter?.page,
+    };
+
+    Object.entries(filterParams).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
         params = params.set(key, value.toString());
-      });
+      }
+    });
+
+    params = params.set(
+      "limit",
+      (filter?.limit ?? MAX_CATS_PER_PAGE).toString()
+    );
+    params = params.set("orderBy", filter?.orderBy?.field ?? "createdAt");
+    params = params.set("orderDirection", filter?.orderBy?.direction ?? "DESC");
 
     return params;
   }
@@ -122,7 +132,14 @@ export class CatsService {
   }
 }
 
-export class CatsFilter {
+export type OrderDirection = "ASC" | "DESC";
+
+export interface CatOrderBy {
+  field: "totalLikes" | "age" | "createdAt";
+  direction: OrderDirection;
+}
+
+export interface CatsFilter {
   protectorId?: string;
   colonyId?: string;
   age?: number;
@@ -133,6 +150,7 @@ export class CatsFilter {
   isUserOwner?: boolean;
   limit?: number;
   page?: number;
+  orderBy?: CatOrderBy;
 }
 
 export class CatServiceException extends Error {
