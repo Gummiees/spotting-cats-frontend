@@ -191,6 +191,21 @@ export class CatsService {
       }
     });
   }
+
+  async likeCat(id: string): Promise<void> {
+    return firstValueFrom(
+      this.http.post<void>(`${environment.apiUrl}/v1/cats/${id}/like`, {})
+    ).catch((error) => {
+      switch (error.status) {
+        case 401:
+          throw new UnauthorizedException(error.error.message);
+        case 404:
+          throw new NotFoundException(error.error.message);
+        default:
+          throw new CatServiceException(error.error.message);
+      }
+    });
+  }
 }
 
 export type OrderDirection = "ASC" | "DESC";

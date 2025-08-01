@@ -9,7 +9,6 @@ import {
   hasPermissionOverUser,
 } from "@shared/utils/role-permissions";
 import { UserRole } from "@models/user-roles";
-import { ExternalUser } from "@models/external-user";
 import { AdminProfileUser } from "@models/admin-profile-user";
 
 @Injectable()
@@ -23,10 +22,12 @@ export class AdminService {
   async migrateAvatars(): Promise<void> {
     const user = this.authStateService.user();
     if (!user) {
+      this.onForbiddenRequest();
       throw new Error("User not found");
     }
 
     if (!isAdminOrSuperadmin(user.role)) {
+      this.onForbiddenRequest();
       throw new Error("User is not admin");
     }
 
@@ -101,6 +102,17 @@ export class AdminService {
   }
 
   async cleanup(): Promise<void> {
+    const user = this.authStateService.user();
+    if (!user) {
+      this.onForbiddenRequest();
+      throw new UnauthorizedException("User not logged in");
+    }
+
+    if (!isAdminOrSuperadmin(user.role)) {
+      this.onForbiddenRequest();
+      throw new ForbiddenException("User is not an admin");
+    }
+
     return firstValueFrom(
       this.http.post<void>(`${environment.apiUrl}/v1/users/admin/cleanup`, {})
     ).catch((error) => {
@@ -156,6 +168,12 @@ export class AdminService {
   }
 
   async getAdminProfileUser(username: string): Promise<AdminProfileUser> {
+    const user = this.authStateService.user();
+    if (!user) {
+      this.onForbiddenRequest();
+      throw new UnauthorizedException("User not logged in");
+    }
+
     return firstValueFrom(
       this.http
         .get<{ user: AdminProfileUser }>(
@@ -170,6 +188,23 @@ export class AdminService {
           throw new AdminServiceException(error.error.message);
       }
     });
+  }
+
+  async purgeCats() {
+    const user = this.authStateService.user();
+    if (!user) {
+      this.onForbiddenRequest();
+      throw new Error("User not found");
+    }
+
+    if (!isAdminOrSuperadmin(user.role)) {
+      this.onForbiddenRequest();
+      throw new Error("User is not admin");
+    }
+
+    return firstValueFrom(
+      this.http.delete<void>(`${environment.apiUrl}/v1/cats/admin/purge`, {})
+    );
   }
 
   private onForbiddenRequest() {

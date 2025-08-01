@@ -100,6 +100,7 @@ export class CatForm implements OnChanges, OnDestroy {
       id: this.cat()?.id ?? "",
       name: this.cat()?.name ?? this.catForm.value.name!,
       totalLikes: this.cat()?.totalLikes ?? 0,
+      isLiked: this.cat()?.isLiked ?? false,
       isUserOwner: this.cat()?.isUserOwner ?? false,
       createdAt: this.cat()?.createdAt ?? new Date(),
       imageUrls: this.cat()?.imageUrls ?? this.catForm.value.imageUrls ?? [],

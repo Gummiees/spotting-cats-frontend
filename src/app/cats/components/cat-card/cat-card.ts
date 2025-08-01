@@ -1,4 +1,11 @@
-import { Component, computed, input, Signal } from "@angular/core";
+import {
+  Component,
+  computed,
+  input,
+  output,
+  Signal,
+  signal,
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { Cat } from "@models/cat";
 import { Carousel, CarouselItem } from "@shared/components/carousel/carousel";
@@ -13,7 +20,9 @@ import { MinutesAgoPipe } from "@shared/pipes/minutes-ago.pipe";
   imports: [CommonModule, Carousel, CatBadges, RouterLink, MinutesAgoPipe],
 })
 export class CatCard {
+  loadingLike = input<boolean>(false);
   cat = input.required<Cat>();
+  likeClick = output<void>();
 
   get carouselItems(): Signal<CarouselItem[]> {
     return computed(() =>
@@ -22,5 +31,15 @@ export class CatCard {
         altText: this.cat().name ?? `Cat ${index + 1}`,
       }))
     );
+  }
+
+  async onLikeClick(event: MouseEvent) {
+    event.stopPropagation();
+
+    if (this.loadingLike()) {
+      return;
+    }
+
+    this.likeClick.emit();
   }
 }

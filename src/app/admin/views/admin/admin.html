@@ -3,7 +3,14 @@
 } @else {
 <app-header title="Admin panel" />
 <main>
-  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+  <div class="pt-4 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex gap-x-2">
+    @if(userIsAdminOrSuperadmin) {
+      <app-primary-button buttonText="User cleanup" buttonType="danger" (onClick)="onUserCleanup()" />
+      <app-primary-button buttonText="Purge cats" buttonType="danger" (onClick)="onPurgeCats()" />
+    }
+    @if(userIsSuperadmin) {
+      <app-primary-button buttonText="Flush cache" buttonType="danger" (onClick)="onFlushCache()" />
+    }
   </div>
   <router-outlet></router-outlet>
 </main>

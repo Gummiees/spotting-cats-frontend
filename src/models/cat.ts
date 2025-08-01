@@ -18,6 +18,7 @@ export interface Cat extends BaseCat {
   totalLikes: number;
   imageUrls: string[];
   isUserOwner: boolean;
+  isLiked: boolean;
   username?: string;
   createdAt: Date;
   updatedAt?: Date;

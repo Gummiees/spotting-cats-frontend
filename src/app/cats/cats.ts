@@ -40,6 +40,7 @@ import { LoginModalService } from "@shared/services/login-modal.service";
 export class CatsComponent implements OnInit {
   cats = signal<Cat[]>([]);
   loading = signal<boolean>(false);
+  loadingLike = signal<boolean>(false);
   triggerFileInput = signal<boolean>(false);
   emptyItems: Signal<null[]> = computed(() => {
     const items: null[] = [];
@@ -199,5 +200,42 @@ export class CatsComponent implements OnInit {
 
   onReloadCats() {
     this.loadCats({ isReload: true });
+  }
+
+  get isLoadingLike() {
+    return this.loadingLike();
+  }
+
+  async onLikeCat(catId: string) {
+    if (this.loadingLike()) {
+      return;
+    }
+
+    if (!this.authStateService.user()) {
+      this.loginModalService.openModal();
+      return;
+    }
+
+    this.loadingLike.set(true);
+    try {
+      await this.catsService.likeCat(catId);
+      this.cats.update((cats) =>
+        cats.map((cat) =>
+          cat.id === catId
+            ? {
+                ...cat,
+                isLiked: !cat.isLiked,
+                totalLikes: cat.isLiked
+                  ? cat.totalLikes - 1
+                  : cat.totalLikes + 1,
+              }
+            : cat
+        )
+      );
+    } catch (error) {
+      this.snackbarService.show("Failed to like cat", "error");
+    } finally {
+      this.loadingLike.set(false);
+    }
   }
 }

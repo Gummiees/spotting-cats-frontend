@@ -20,6 +20,7 @@ import { Timeline } from "@shared/components/timeline/timeline";
 import { NotesForm } from "./components/notes-form/notes-form";
 import { IconButton } from "@shared/components/icon-button/icon-button";
 import { NotesService } from "./services/notes.service";
+import { AdminCacheService } from "./services/admin-cache.service";
 
 @NgModule({
   declarations: [Admin, AdminProfile, NotesForm],
@@ -40,6 +41,11 @@ import { NotesService } from "./services/notes.service";
     Timeline,
     IconButton,
   ],
-  providers: [AdminService, AdminProfileResolverService, NotesService],
+  providers: [
+    AdminService,
+    AdminProfileResolverService,
+    NotesService,
+    AdminCacheService,
+  ],
 })
 export class AdminModule {}
