@@ -11,6 +11,7 @@ import { CommonModule } from "@angular/common";
 
 import { Cat } from "@models/cat";
 import { PrimaryButton } from "@shared/components/primary-button/primary-button";
+import { ImageInput } from "@shared/components/image-input/image-input";
 import { SnackbarService } from "@shared/services/snackbar.service";
 import { AuthStateService } from "@shared/services/auth-state.service";
 import { CatCard } from "./components/cat-card/cat-card";
@@ -31,6 +32,7 @@ import { LoginModalService } from "@shared/services/login-modal.service";
     CommonModule,
     ReactiveFormsModule,
     PrimaryButton,
+    ImageInput,
     CatCard,
     EmptyCatCard,
   ],
@@ -38,6 +40,7 @@ import { LoginModalService } from "@shared/services/login-modal.service";
 export class CatsComponent implements OnInit {
   cats = signal<Cat[]>([]);
   loading = signal<boolean>(false);
+  triggerFileInput = signal<boolean>(false);
   emptyItems: Signal<null[]> = computed(() => {
     const items: null[] = [];
     const catsCount = this.cats().length;
@@ -134,22 +137,31 @@ export class CatsComponent implements OnInit {
     this.loading.set(true);
   }
 
-  onFileSelected(event: Event) {
-    const target = event.target as HTMLInputElement;
-    const files = target.files;
-
-    if (files && files.length > 0) {
-      this.uploadCatWithImages(Array.from(files));
-    }
+  onUploadPhotosClick() {
+    this.triggerFileInput.set(true);
+    setTimeout(() => this.triggerFileInput.set(false), 100);
   }
 
-  private async uploadCatWithImages(images: File[]) {
+  async onFileSelected() {
     if (!this.user) {
       this.loginModalService.openModal();
       return;
     }
 
     this.loading.set(true);
+  }
+
+  onFileError(error: string) {
+    this.snackbarService.show(error, "error");
+    this.loading.set(false);
+  }
+
+  async onFileProcessed(files: File[]) {
+    if (!this.user) {
+      this.loginModalService.openModal();
+      return;
+    }
+
     try {
       await this.catsService.addCat(
         {
@@ -163,7 +175,7 @@ export class CatsComponent implements OnInit {
           isSterilized: false,
           isFriendly: true,
         },
-        images
+        files
       );
       this.onReloadCats();
       this.snackbarService.show(

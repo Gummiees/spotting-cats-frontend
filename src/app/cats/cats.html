@@ -3,18 +3,11 @@
       <div class="border-b border-gray-900/10 pt-2 pb-3 flex flex-col gap-y-2">
         <div class="flex items-center gap-3">
           <div class="flex items-center gap-2">
-            <input 
-              type="file" 
-              multiple 
-              accept=".jpg,.jpeg,.png,.webp" 
-              class="hidden" 
-              #fileInput
-              (change)="onFileSelected($event)"
-            />
+            <app-image-input [triggerClick]="triggerFileInput()" (selected)="onFileSelected()" (processed)="onFileProcessed($event)" (error)="onFileError($event)" />
             <app-primary-button 
               buttonText="Upload Photos" 
               [isLoading]="loading()" 
-              (onClick)="fileInput.click()" 
+              (onClick)="onUploadPhotosClick()" 
             />
           </div>
         </div>
@@ -24,7 +17,7 @@
           <app-cat-card [cat]="cat" />
         }
         @for (item of emptyItems(); track $index) {
-          <app-empty-cat-card (click)="fileInput.click()" />
+          <app-empty-cat-card (click)="onUploadPhotosClick()" />
         }
       </div>
       @if(hasMoreCats()) {
