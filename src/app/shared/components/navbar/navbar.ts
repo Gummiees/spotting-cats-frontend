@@ -54,6 +54,10 @@ export class Navbar {
   }
 
   async onLogout() {
+    if (!this.isMenuOpen()) {
+      return;
+    }
+
     this.loadingService.setLoading(true);
     try {
       await this.userService.logout();
