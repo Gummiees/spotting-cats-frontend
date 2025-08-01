@@ -4,18 +4,20 @@
     class="absolute top-0 left-0 w-full h-full bg-cover bg-center"
     [ngStyle]="{'background-image': 'url(' + currentItem.imageUrl + ')'}"
   ></div>
-  <span
-    data-carousel-prev
-    class="absolute top-1/2 left-2 -translate-y-1/2 cursor-pointer material-symbols-outlined !text-[48px] text-white mix-blend-difference"
-    (click)="previous($event)"
-  >
-    chevron_left
-  </span>
-  <span
-    data-carousel-next
-    class="absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer material-symbols-outlined !text-[48px] text-white mix-blend-difference"
-    (click)="next($event)"
-  >
-    chevron_right
-  </span>
+  @if(items().length > 1) {
+    <span
+      data-carousel-prev
+      class="absolute top-1/2 left-2 -translate-y-1/2 cursor-pointer material-symbols-outlined !text-[48px] text-white mix-blend-difference"
+      (click)="previous($event)"
+    >
+      chevron_left
+    </span>
+    <span
+      data-carousel-next
+      class="absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer material-symbols-outlined !text-[48px] text-white mix-blend-difference"
+      (click)="next($event)"
+      >
+      chevron_right
+    </span>
+  }
 </div>
