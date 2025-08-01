@@ -42,7 +42,7 @@
   "devDependencies": {
     "@angular/build": "^20.0.5",
     "@angular/cli": "^20.0.5",
-    "@angular/compiler-cli": "^20.0.0",
+    "@angular/compiler-cli": "^20.1.4",
     "@types/jasmine": "~5.1.0",
     "@types/moment": "^2.13.0",
     "@types/node": "^24.0.11",
