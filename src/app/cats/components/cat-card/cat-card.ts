@@ -10,7 +10,7 @@ import { CommonModule } from "@angular/common";
 import { Cat } from "@models/cat";
 import { Carousel, CarouselItem } from "@shared/components/carousel/carousel";
 import { CatBadges } from "../cat-badges/cat-badges";
-import { RouterLink } from "@angular/router";
+import { Router, RouterLink } from "@angular/router";
 import { MinutesAgoPipe } from "@shared/pipes/minutes-ago.pipe";
 
 @Component({
@@ -33,6 +33,8 @@ export class CatCard {
     );
   }
 
+  constructor(private router: Router) {}
+
   async onLikeClick(event: MouseEvent) {
     event.stopPropagation();
 
@@ -41,5 +43,11 @@ export class CatCard {
     }
 
     this.likeClick.emit();
+  }
+
+  onUserClick(event: MouseEvent) {
+    event.stopPropagation();
+
+    this.router.navigate(["/user", this.cat().username]);
   }
 }
