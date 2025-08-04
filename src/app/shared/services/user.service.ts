@@ -81,12 +81,9 @@ export class UserService {
     }
 
     return firstValueFrom(
-      this.http.post<void>(`${environment.apiUrl}/v1/users/logout`, {}).pipe(
-        tap(() => {
-          this.authStateService.setUnauthenticated();
-          this.storageService.clear();
-        })
-      )
+      this.http
+        .post<void>(`${environment.apiUrl}/v1/users/logout`, {})
+        .pipe(tap(() => this.authStateService.setUnauthenticated()))
     );
   }
 
@@ -200,12 +197,7 @@ export class UserService {
     return firstValueFrom(
       this.http
         .post<void>(`${environment.apiUrl}/v1/users/deactivate`, {})
-        .pipe(
-          tap(() => {
-            this.authStateService.setUnauthenticated();
-            this.storageService.clear();
-          })
-        )
+        .pipe(tap(() => this.authStateService.setUnauthenticated()))
     );
   }
 

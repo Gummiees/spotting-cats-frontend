@@ -2,7 +2,6 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { environment } from "@environments/environment";
 import { firstValueFrom, map } from "rxjs";
-import { StorageService } from "../../shared/services/storage.service";
 import { AuthStateService } from "../../shared/services/auth-state.service";
 import {
   isAdminOrSuperadmin,
@@ -15,20 +14,19 @@ import { AdminProfileUser } from "@models/admin-profile-user";
 export class AdminService {
   constructor(
     private http: HttpClient,
-    private storageService: StorageService,
     private authStateService: AuthStateService
   ) {}
 
   async migrateAvatars(): Promise<void> {
     const user = this.authStateService.user();
     if (!user) {
-      this.onForbiddenRequest();
-      throw new Error("User not found");
+      this.authStateService.setUnauthenticated();
+      return;
     }
 
     if (!isAdminOrSuperadmin(user.role)) {
-      this.onForbiddenRequest();
-      throw new Error("User is not admin");
+      this.authStateService.setUnauthenticated();
+      return;
     }
 
     return firstValueFrom(
@@ -45,8 +43,8 @@ export class AdminService {
     role: UserRole
   ): Promise<void> {
     if (!this.loggedInUserHasPermissionsOverUser(role)) {
-      this.onForbiddenRequest();
-      throw new ForbiddenException("User is not an admin");
+      this.authStateService.setUnauthenticated();
+      return;
     }
 
     return firstValueFrom(
@@ -59,8 +57,8 @@ export class AdminService {
 
   async unbanUser(username: string, role: UserRole): Promise<void> {
     if (!this.loggedInUserHasPermissionsOverUser(role)) {
-      this.onForbiddenRequest();
-      throw new ForbiddenException("User is not an admin");
+      this.authStateService.setUnauthenticated();
+      return;
     }
 
     return firstValueFrom(
@@ -76,8 +74,8 @@ export class AdminService {
     role: UserRole
   ): Promise<void> {
     if (!this.loggedInUserHasPermissionsOverUser(role)) {
-      this.onForbiddenRequest();
-      throw new ForbiddenException("User is not an admin");
+      this.authStateService.setUnauthenticated();
+      return;
     }
 
     return firstValueFrom(
@@ -90,8 +88,8 @@ export class AdminService {
 
   async unbanIp(username: string, role: UserRole): Promise<void> {
     if (!this.loggedInUserHasPermissionsOverUser(role)) {
-      this.onForbiddenRequest();
-      throw new ForbiddenException("User is not an admin");
+      this.authStateService.setUnauthenticated();
+      return;
     }
 
     return firstValueFrom(
@@ -104,13 +102,13 @@ export class AdminService {
   async cleanup(): Promise<void> {
     const user = this.authStateService.user();
     if (!user) {
-      this.onForbiddenRequest();
-      throw new UnauthorizedException("User not logged in");
+      this.authStateService.setUnauthenticated();
+      return;
     }
 
     if (!isAdminOrSuperadmin(user.role)) {
-      this.onForbiddenRequest();
-      throw new ForbiddenException("User is not an admin");
+      this.authStateService.setUnauthenticated();
+      return;
     }
 
     return firstValueFrom(
@@ -127,8 +125,8 @@ export class AdminService {
 
   async updateRole(username: string, role: UserRole): Promise<void> {
     if (!this.loggedInUserHasPermissionsOverUser(role)) {
-      this.onForbiddenRequest();
-      throw new ForbiddenException("User is not an admin");
+      this.authStateService.setUnauthenticated();
+      return;
     }
 
     return firstValueFrom(
@@ -148,8 +146,8 @@ export class AdminService {
 
   async demoteToUser(username: string, role: UserRole): Promise<void> {
     if (!this.loggedInUserHasPermissionsOverUser(role)) {
-      this.onForbiddenRequest();
-      throw new ForbiddenException("User is not an admin");
+      this.authStateService.setUnauthenticated();
+      return;
     }
 
     return firstValueFrom(
@@ -170,7 +168,7 @@ export class AdminService {
   async getAdminProfileUser(username: string): Promise<AdminProfileUser> {
     const user = this.authStateService.user();
     if (!user) {
-      this.onForbiddenRequest();
+      this.authStateService.setUnauthenticated();
       throw new UnauthorizedException("User not logged in");
     }
 
@@ -193,23 +191,18 @@ export class AdminService {
   async purgeCats() {
     const user = this.authStateService.user();
     if (!user) {
-      this.onForbiddenRequest();
+      this.authStateService.setUnauthenticated();
       throw new Error("User not found");
     }
 
     if (!isAdminOrSuperadmin(user.role)) {
-      this.onForbiddenRequest();
+      this.authStateService.setUnauthenticated();
       throw new Error("User is not admin");
     }
 
     return firstValueFrom(
       this.http.delete<void>(`${environment.apiUrl}/v1/cats/admin/purge`, {})
     );
-  }
-
-  private onForbiddenRequest() {
-    this.authStateService.setUnauthenticated();
-    this.storageService.clear();
   }
 
   private loggedInUserHasPermissionsOverUser(role: UserRole): boolean {

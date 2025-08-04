@@ -3,36 +3,29 @@ import { Injectable } from "@angular/core";
 import { environment } from "@environments/environment";
 import { firstValueFrom } from "rxjs";
 import { AuthStateService } from "../../shared/services/auth-state.service";
-import { StorageService } from "@shared/services/storage.service";
 
 @Injectable()
 export class AdminCacheService {
   constructor(
     private http: HttpClient,
-    private authStateService: AuthStateService,
-    private storageService: StorageService
+    private authStateService: AuthStateService
   ) {}
 
   async flushCache(): Promise<void> {
     const user = this.authStateService.user();
     if (!user) {
-      this.onForbiddenRequest();
-      throw new Error("User not found");
+      this.authStateService.setUnauthenticated();
+      return;
     }
 
     if (user.role !== "superadmin") {
-      this.onForbiddenRequest();
-      throw new Error("User is not admin");
+      this.authStateService.setUnauthenticated();
+      return;
     }
 
     return firstValueFrom(
       this.http.post<void>(`${environment.apiUrl}/v1/cache/flush`, {})
     );
-  }
-
-  private onForbiddenRequest() {
-    this.authStateService.setUnauthenticated();
-    this.storageService.clear();
   }
 }
 

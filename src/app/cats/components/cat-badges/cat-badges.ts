@@ -103,6 +103,29 @@ export class CatBadges {
       });
     }
 
+    if (!!this.cat().age) {
+      configs.push({
+        label: `${this.cat().age} years old`,
+        icon: "cake",
+        bgColor: "bg-rose-50",
+        textColor: "text-rose-800",
+        ringColor: "ring-rose-600/20",
+        iconColor: "text-rose-500",
+      });
+    }
+
+    const breed = this.cat().breed;
+    if (!!breed) {
+      configs.push({
+        label: breed,
+        icon: "pets",
+        bgColor: "bg-teal-50",
+        textColor: "text-teal-800",
+        ringColor: "ring-teal-600/20",
+        iconColor: "text-teal-500",
+      });
+    }
+
     return configs;
   }
 

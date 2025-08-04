@@ -2,10 +2,10 @@
 @if(userNotFound() || ((isUserBanned || user()?.isInactive) && !loggedInUserHasElevatedRole)) {
   <app-not-found />
 } @else {
-<app-header title="Profile" />
-<main>
+<main class="p-3">
+  <div class="p-4 bg-white rounded-sm shadow-sm">
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="border-b border-gray-900/10 pt-2 pb-3 flex flex-col gap-y-2">
+      <div class="pt-2 pb-3 flex flex-col gap-y-2">
         <div class="flex items-center gap-3">
           <img class="size-16 text-gray-300 w-16 h-16" [src]="user()?.avatarUrl" aria-hidden="true" data-slot="icon"/>
           <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
@@ -47,6 +47,7 @@
           }
         </div>
       </div>
+    </div>
   </div>
 </main>
 }

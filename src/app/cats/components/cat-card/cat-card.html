@@ -9,7 +9,7 @@
       </div>
       <div class="flex items-center gap-x-1">
         <span>{{ cat().totalLikes }}</span>
-        <span class="material-symbols-outlined enabled:cursor-pointer disabled:cursor-not-allowed z-1" [ngClass]="{'text-red-500': cat().isLiked}" [style.fontVariationSettings]="cat().isLiked ? '\'FILL\' 1' : '\'FILL\' 0'" (click)="onLikeClick($event)">favorite</span>
+        <span class="material-symbols-outlined cursor-pointer z-1" [ngClass]="{'text-red-500': cat().isLiked}" [style.fontVariationSettings]="cat().isLiked ? '\'FILL\' 1' : '\'FILL\' 0'" (click)="onLikeClick($event)">favorite</span>
       </div>
     </div>
     <app-cat-badges [cat]="cat()" />
@@ -23,7 +23,11 @@
       }
     </div>
     <div class="flex items-center justify-between gap-x-2">
-      <span class="text-xs text-gray-500">{{ cat().username }}</span>
+      @if(cat()!.username) {
+        <a [routerLink]="['/user', cat()!.username]" class="text-xs text-gray-500 hover:underline">{{ cat()!.username }}</a>
+      } @else {
+        <span class="text-xs text-gray-500">Deleted user</span>
+      }
       <span class="text-xs text-gray-500">{{ cat().createdAt | minutesAgo }}</span>
     </div>
   </div>

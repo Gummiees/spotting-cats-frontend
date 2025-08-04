@@ -12,6 +12,7 @@ export class IconButton {
   ariaLabel = input<string>("");
   isDisabled = input<boolean>(false);
   onClick = output<void>();
+  type = input<"default" | "danger">("default");
 
   onButtonClick() {
     this.onClick.emit();

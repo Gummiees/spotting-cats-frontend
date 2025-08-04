@@ -343,8 +343,6 @@ export class AdminProfile implements OnInit, OnDestroy {
       this.loadingService.setLoading(true);
       const user = await this.adminService.getAdminProfileUser(this.username);
       this.user.set(user);
-    } catch (error) {
-      this.snackbarService.show("Failed to get user profile", "error");
     } finally {
       this.loadingService.setLoading(false);
     }

@@ -3,6 +3,7 @@ import { HttpClient } from "@angular/common/http";
 import { environment } from "@environments/environment";
 import { OwnUser } from "@models/own-user";
 import { firstValueFrom, map } from "rxjs";
+import { StorageService } from "./storage.service";
 
 @Injectable({
   providedIn: "root",
@@ -13,8 +14,10 @@ export class AuthStateService {
   private _isLoading = signal<boolean>(false);
   private _initialAuthCheck: Promise<boolean> | null = null;
 
-  constructor(private http: HttpClient) {
-    // Check authentication status on service initialization
+  constructor(
+    private http: HttpClient,
+    private storageService: StorageService
+  ) {
     this._initialAuthCheck = this.checkAuthStatus();
   }
 
@@ -64,5 +67,6 @@ export class AuthStateService {
   setUnauthenticated() {
     this._user.set(null);
     this._isAuthenticated.set(false);
+    this.storageService.clear();
   }
 }

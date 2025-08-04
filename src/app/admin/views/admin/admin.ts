@@ -7,7 +7,6 @@ import {
 } from "@shared/utils/role-permissions";
 import { AdminCacheService } from "../../services/admin-cache.service";
 import { SnackbarService } from "@shared/services/snackbar.service";
-import { StorageService } from "@shared/services/storage.service";
 
 @Component({
   selector: "app-admin",
@@ -27,8 +26,7 @@ export class Admin {
     private authStateService: AuthStateService,
     private adminService: AdminService,
     private adminCacheService: AdminCacheService,
-    private snackbarService: SnackbarService,
-    private storageService: StorageService
+    private snackbarService: SnackbarService
   ) {}
 
   get userHasElevatedRole(): boolean {
@@ -72,7 +70,6 @@ export class Admin {
 
   private onForbiddenRequest() {
     this.authStateService.setUnauthenticated();
-    this.storageService.clear();
     this.snackbarService.show("You are not authorized to do that", "error");
   }
 }
