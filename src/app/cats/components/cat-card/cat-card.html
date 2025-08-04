@@ -24,7 +24,7 @@
     </div>
     <div class="flex items-center justify-between gap-x-2">
       @if(cat()!.username) {
-        <a [routerLink]="['/user', cat()!.username]" class="text-xs text-gray-500 hover:underline">{{ cat()!.username }}</a>
+        <a [routerLink]="['/user', cat()!.username]" class="text-xs text-violet-700 hover:underline">{{ cat()!.username }}</a>
       } @else {
         <span class="text-xs text-gray-500">Deleted user</span>
       }

@@ -1,0 +1,161 @@
+// Override Leaflet z-index values globally to prevent conflicts
+.leaflet-container {
+  z-index: 1 !important;
+}
+
+.leaflet-popup {
+  z-index: 2 !important;
+}
+
+.leaflet-popup-tip {
+  z-index: 2 !important;
+}
+
+.leaflet-control {
+  z-index: 3 !important;
+}
+
+.leaflet-control-zoom {
+  z-index: 3 !important;
+}
+
+.leaflet-control-attribution {
+  z-index: 3 !important;
+}
+
+.leaflet-control-layers {
+  z-index: 3 !important;
+}
+
+.leaflet-control-scale {
+  z-index: 3 !important;
+}
+
+.leaflet-control-fullscreen {
+  z-index: 3 !important;
+}
+
+.leaflet-control-minimap {
+  z-index: 3 !important;
+}
+
+.leaflet-control-measure {
+  z-index: 3 !important;
+}
+
+.leaflet-control-draw {
+  z-index: 3 !important;
+}
+
+.leaflet-control-geocoder {
+  z-index: 3 !important;
+}
+
+.leaflet-control-locate {
+  z-index: 3 !important;
+}
+
+.leaflet-control-legend {
+  z-index: 3 !important;
+}
+
+.leaflet-control-printer {
+  z-index: 3 !important;
+}
+
+.leaflet-control-coordinates {
+  z-index: 3 !important;
+}
+
+.leaflet-control-command {
+  z-index: 3 !important;
+}
+
+.leaflet-control-command-list {
+  z-index: 3 !important;
+}
+
+.leaflet-control-command-button {
+  z-index: 3 !important;
+}
+
+.leaflet-control-command-button:hover {
+  z-index: 3 !important;
+}
+
+.leaflet-control-command-button.active {
+  z-index: 3 !important;
+}
+
+.leaflet-control-command-button.active:hover {
+  z-index: 3 !important;
+}
+
+.leaflet-control-command-button.disabled {
+  z-index: 3 !important;
+}
+
+.leaflet-control-command-button.disabled:hover {
+  z-index: 3 !important;
+}
+
+.leaflet-control-command-button.disabled.active {
+  z-index: 3 !important;
+}
+
+.leaflet-control-command-button.disabled.active:hover {
+  z-index: 3 !important;
+}
+
+.leaflet-control-command-button.disabled.active:hover:before {
+  z-index: 3 !important;
+}
+
+.leaflet-control-command-button.disabled.active:hover:after {
+  z-index: 3 !important;
+}
+
+.leaflet-control-command-button.disabled.active:hover:before,
+.leaflet-control-command-button.disabled.active:hover:after {
+  z-index: 3 !important;
+}
+
+.leaflet-control-command-button.disabled.active:hover:before,
+.leaflet-control-command-button.disabled.active:hover:after,
+.leaflet-control-command-button.disabled.active:hover:before,
+.leaflet-control-command-button.disabled.active:hover:after {
+  z-index: 3 !important;
+}
+
+.leaflet-control-command-button.disabled.active:hover:before,
+.leaflet-control-command-button.disabled.active:hover:after,
+.leaflet-control-command-button.disabled.active:hover:before,
+.leaflet-control-command-button.disabled.active:hover:after,
+.leaflet-control-command-button.disabled.active:hover:before,
+.leaflet-control-command-button.disabled.active:hover:after {
+  z-index: 3 !important;
+}
+
+.leaflet-control-command-button.disabled.active:hover:before,
+.leaflet-control-command-button.disabled.active:hover:after,
+.leaflet-control-command-button.disabled.active:hover:before,
+.leaflet-control-command-button.disabled.active:hover:after,
+.leaflet-control-command-button.disabled.active:hover:before,
+.leaflet-control-command-button.disabled.active:hover:after,
+.leaflet-control-command-button.disabled.active:hover:before,
+.leaflet-control-command-button.disabled.active:hover:after {
+  z-index: 3 !important;
+}
+
+.leaflet-control-command-button.disabled.active:hover:before,
+.leaflet-control-command-button.disabled.active:hover:after,
+.leaflet-control-command-button.disabled.active:hover:before,
+.leaflet-control-command-button.disabled.active:hover:after,
+.leaflet-control-command-button.disabled.active:hover:before,
+.leaflet-control-command-button.disabled.active:hover:after,
+.leaflet-control-command-button.disabled.active:hover:before,
+.leaflet-control-command-button.disabled.active:hover:after,
+.leaflet-control-command-button.disabled.active:hover:before,
+.leaflet-control-command-button.disabled.active:hover:after {
+  z-index: 3 !important;
+} 

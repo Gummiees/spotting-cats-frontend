@@ -8,20 +8,35 @@ import {
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
-import { AuthStateService } from "@shared/services/auth-state.service";
 import { ReactiveFormsModule } from "@angular/forms";
-import { NotFound } from "../not-found/not-found";
+import {
+  LeafletDirective,
+  LeafletLayersDirective,
+} from "@bluehalo/ngx-leaflet";
+import {
+  latLng,
+  Layer,
+  MapOptions,
+  tileLayer,
+  marker,
+  Icon,
+  icon,
+} from "leaflet";
 import { Subscription } from "rxjs";
-import { Cat } from "@models/cat";
+
+import { NotFound } from "../not-found/not-found";
 import { CatBadges } from "../cats/components/cat-badges/cat-badges";
-import { Carousel, CarouselItem } from "@shared/components/carousel/carousel";
-import { LoginModalService } from "@shared/services/login-modal.service";
-import { CatsService } from "@shared/services/cats.service";
-import { SnackbarService } from "@shared/services/snackbar.service";
-import { MinutesAgoPipe } from "@shared/pipes/minutes-ago.pipe";
-import { Modal } from "@shared/components/modal/modal";
 import { ModalContentSimple } from "@shared/components/modal-content-simple/modal-content-simple";
 import { IconButton } from "@shared/components/icon-button/icon-button";
+import { Carousel, CarouselItem } from "@shared/components/carousel/carousel";
+import { Modal } from "@shared/components/modal/modal";
+import { AuthStateService } from "@shared/services/auth-state.service";
+import { SnackbarService } from "@shared/services/snackbar.service";
+import { LoginModalService } from "@shared/services/login-modal.service";
+import { CatsService } from "@shared/services/cats.service";
+import { MinutesAgoPipe } from "@shared/pipes/minutes-ago.pipe";
+import { Cat } from "@models/cat";
+import { MapService } from "@shared/services/map.service";
 
 @Component({
   selector: "app-cat-profile",
@@ -38,10 +53,13 @@ import { IconButton } from "@shared/components/icon-button/icon-button";
     Modal,
     ModalContentSimple,
     IconButton,
+    LeafletDirective,
+    LeafletLayersDirective,
   ],
 })
 export class CatProfile implements OnInit, OnDestroy {
   cat = signal<Cat | null>(null);
+  location = signal<string | null>(null);
   catNotFound = signal(false);
   loadingLike = signal(false);
   loadingDelete = signal(false);
@@ -57,6 +75,59 @@ export class CatProfile implements OnInit, OnDestroy {
     );
   }
 
+  get googleMapsUrl(): Signal<string | null> {
+    return computed(() => {
+      const cat = this.cat();
+      if (!cat || !cat.xCoordinate || !cat.yCoordinate) {
+        return null;
+      }
+      return MapService.getGoogleMapsUrl(cat.xCoordinate, cat.yCoordinate);
+    });
+  }
+
+  get hasLocation(): Signal<boolean> {
+    return computed(() => {
+      const cat = this.cat();
+      return !!cat?.xCoordinate && !!cat?.yCoordinate;
+    });
+  }
+
+  get isCurrentUserOwner() {
+    const currentUsername = this.authStateService.user()?.username;
+    return !!currentUsername && currentUsername === this.cat()?.username;
+  }
+
+  get leafletOptions(): Signal<MapOptions> {
+    return computed(() => {
+      const cat = this.cat();
+      return MapService.getLeafletMapOptions({
+        latitude: cat?.xCoordinate,
+        longitude: cat?.yCoordinate,
+      });
+    });
+  }
+
+  get leafletLayers(): Signal<Layer[]> {
+    return computed(() => {
+      const cat = this.cat();
+      if (!cat || !cat.xCoordinate || !cat.yCoordinate) {
+        return [];
+      }
+
+      const marker = MapService.getLeafletMarker({
+        name: cat.name,
+        latitude: cat.xCoordinate,
+        longitude: cat.yCoordinate,
+      });
+
+      if (!marker) {
+        return [];
+      }
+      marker.on("add", () => marker.openPopup());
+      return [marker];
+    });
+  }
+
   constructor(
     private authStateService: AuthStateService,
     private route: ActivatedRoute,
@@ -66,16 +137,15 @@ export class CatProfile implements OnInit, OnDestroy {
     private router: Router
   ) {}
 
-  get isCurrentUserOwner() {
-    const currentUsername = this.authStateService.user()?.username;
-    return !!currentUsername && currentUsername === this.cat()?.username;
-  }
-
   ngOnInit(): void {
     this.catSubscription = this.route.data.subscribe({
       next: (data) => {
-        const cat = data["cat"] as Cat | null;
+        const { cat, location } = data["data"] as {
+          cat: Cat;
+          location: string | null;
+        };
         this.cat.set(cat);
+        this.location.set(location);
         this.catNotFound.set(cat === null);
       },
       error: (_) => {

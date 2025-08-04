@@ -42,6 +42,20 @@ confirmColor="danger"
       <div class="text-sm text-gray-700">{{ cat()!.extraInfo }}</div>
     }
     <app-cat-badges [cat]="cat()!"/>
+    @if(!!location()) {
+      <div class="flex items-center gap-x-1">
+        <span class="material-symbols-outlined !text-[18px]" [ngClass]="{'text-gray-700': !googleMapsUrl(), 'text-violet-700': googleMapsUrl()}">location_on</span>
+        @if(googleMapsUrl()) {
+          <a class="text-sm text-violet-700 hover:underline" [href]="googleMapsUrl()" target="_blank">{{ location() }}</a>
+        } @else {
+          <div class="text-sm text-gray-700">{{ location() }}</div>
+        }
+      </div>
+    }
+    @if(hasLocation()) {
+      <div class="h-[300px]" leaflet [leafletOptions]="leafletOptions()" [leafletLayers]="leafletLayers()">
+      </div>
+    }
     <div class="">
     @if(carouselItems() && carouselItems()!.length > 0) {
       <app-carousel [items]="carouselItems()!" />
@@ -53,7 +67,7 @@ confirmColor="danger"
     </div>
     <div class="flex items-center justify-between gap-x-2">
       @if(cat()!.username) {
-      <a [routerLink]="['/user', cat()!.username]" class="text-xs text-gray-500 hover:underline">{{ cat()!.username }}</a>
+      <a [routerLink]="['/user', cat()!.username]" class="text-xs text-violet-700 hover:underline">{{ cat()!.username }}</a>
       } @else {
         <span class="text-xs text-gray-500">Deleted user</span>
       }

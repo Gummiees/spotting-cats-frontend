@@ -7,14 +7,18 @@ import {
 import { LoadingService } from "@shared/services/loading.service";
 import { CatsService, NotFoundException } from "./cats.service";
 import { Cat } from "@models/cat";
+import { MapService } from "./map.service";
 
 @Injectable({
   providedIn: "root",
 })
-export class CatProfileResolverService implements Resolve<Cat | null> {
+export class CatProfileResolverService
+  implements Resolve<{ cat: Cat; location: string | null } | null>
+{
   constructor(
     private catsService: CatsService,
-    private loadingService: LoadingService
+    private loadingService: LoadingService,
+    private mapService: MapService
   ) {}
 
   async resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
@@ -25,7 +29,12 @@ export class CatProfileResolverService implements Resolve<Cat | null> {
 
     try {
       this.loadingService.setRouteLoading(true);
-      return await this.catsService.getCatById(id);
+      const cat = await this.catsService.getCatById(id);
+      const location = await this.mapService.getCatLocation(
+        cat.xCoordinate,
+        cat.yCoordinate
+      );
+      return { cat, location };
     } catch (error) {
       if (error instanceof NotFoundException) {
         return null;
