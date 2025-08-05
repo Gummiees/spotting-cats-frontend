@@ -5,7 +5,7 @@ import { CatsComponent } from "./cats/cats";
 import { NotFound } from "./not-found/not-found";
 import { ProfileResolverService } from "./profile/profile-resolver.service";
 import { CatProfileResolverService } from "@shared/services/cat-profile-resolver.service";
-import { BreedResolverService } from "@shared/services/breed-resolver.service";
+import { CatFormResolverService } from "@shared/services/cat-form-resolver.service";
 
 export const routes: Routes = [
   { path: "", redirectTo: "/cats", pathMatch: "full" },
@@ -13,7 +13,7 @@ export const routes: Routes = [
   {
     path: "cat/add",
     loadComponent: () => import("./cat-form/cat-form").then((m) => m.CatForm),
-    resolve: { breedsData: BreedResolverService },
+    resolve: { data: CatFormResolverService },
     canActivate: [AuthGuard],
   },
   {
@@ -25,10 +25,7 @@ export const routes: Routes = [
   {
     path: "cat/:id/edit",
     loadComponent: () => import("./cat-form/cat-form").then((m) => m.CatForm),
-    resolve: {
-      data: CatProfileResolverService,
-      breedsData: BreedResolverService,
-    },
+    resolve: { data: CatFormResolverService },
     canActivate: [AuthGuard],
   },
   {

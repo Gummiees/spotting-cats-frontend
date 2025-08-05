@@ -1,0 +1,16 @@
+
+<div class="w-38 h-38 border border-gray-300 rounded-sm overflow-hidden relative flex-shrink-0">
+  <img 
+    [src]="imageUrl()" 
+    [alt]="imageName()"
+    class="w-full h-full object-cover"
+  />
+  <app-icon-button
+    class="absolute top-1 right-1"
+    icon="delete"
+    type="danger"
+    ariaLabel="Delete image"
+    [hasBackgroundActive]="true"
+    (onClick)="onClick()"
+  />
+</div>

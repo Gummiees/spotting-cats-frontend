@@ -3,7 +3,7 @@ import { Injectable } from "@angular/core";
 import { firstValueFrom, retry } from "rxjs";
 
 import { environment } from "@environments/environment";
-import { Cat, CreateCat, UpdateCat } from "@models/cat";
+import { Cat, CreateCat, isUpdateCat, UpdateCat } from "@models/cat";
 
 export const MAX_CATS_PER_PAGE = 12;
 
@@ -153,7 +153,16 @@ export class CatsService {
       formData.append("isFriendly", cat.isFriendly.toString());
     }
 
-    // Add images if provided
+    if (isUpdateCat(cat)) {
+      if (cat.keepImages && cat.keepImages.length > 0) {
+        cat.keepImages.forEach((image: string) => {
+          formData.append("keepImages", image);
+        });
+      } else {
+        formData.append("replaceImages", "true");
+      }
+    }
+
     if (images && images.length > 0) {
       images.forEach((image, _) => {
         formData.append(`images`, image);

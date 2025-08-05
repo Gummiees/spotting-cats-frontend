@@ -37,6 +37,7 @@ import {
   SearchableDropdown,
   SearchableDropdownOption,
 } from "@shared/components/searchable-dropdown/searchable-dropdown";
+import { CatFormImage } from "./cat-form-image/cat-form-image";
 
 @Component({
   selector: "app-cat-form",
@@ -52,6 +53,7 @@ import {
     IconButton,
     ReactiveFormsModule,
     SearchableDropdown,
+    CatFormImage,
   ],
 })
 export class CatForm implements OnInit, OnDestroy {
@@ -90,7 +92,6 @@ export class CatForm implements OnInit, OnDestroy {
     isSterilized: new FormControl<boolean | null>(null),
     isFriendly: new FormControl<boolean | null>(null),
     keepImages: new FormControl<string[] | null>(null),
-    replaceImages: new FormControl<boolean | null>(null),
   });
 
   get title(): Signal<string> {
@@ -101,11 +102,22 @@ export class CatForm implements OnInit, OnDestroy {
     return computed(() => this.isLoadingApiCall() || this.isProcessingFiles());
   }
 
+  get totalImages(): Signal<number> {
+    return computed(() => {
+      const currentFiles = this.files() || [];
+      const keepImages = this.catForm.get("keepImages")?.value || [];
+      return currentFiles.length + keepImages.length;
+    });
+  }
+
   get isImageLimitReached(): Signal<boolean> {
     return computed(() => {
-      const currentFiles = this.files();
-      return currentFiles ? currentFiles.length >= this.MAX_IMAGES : false;
+      return this.totalImages() >= this.MAX_IMAGES;
     });
+  }
+
+  get formImages(): Signal<string[]> {
+    return computed(() => this.catForm.get("keepImages")?.value || []);
   }
 
   private isLoadingApiCall = signal(false);
@@ -136,37 +148,39 @@ export class CatForm implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.routeDataSubscription = this.route.data.subscribe({
       next: (data) => {
-        this.breeds.set(data?.["breedsData"]?.breeds || []);
+        const isCreateMode = this.route.snapshot.url.some(
+          (segment) => segment.path === "add"
+        );
+
+        const resolverData = data?.["data"] as {
+          cat: Cat | null;
+          breeds: string[];
+        } | null;
+
+        if (resolverData === null) {
+          this.catNotFound.set(true);
+          return;
+        }
+
+        const { cat, breeds } = resolverData;
+
+        this.breeds.set(breeds || []);
         this.catForm
           .get("breed")
           ?.setValidators([
             Validators.maxLength(100),
             breedValidator(this.breeds()),
           ]);
-        this.catForm.updateValueAndValidity();
 
-        const isCreateMode = this.route.snapshot.url.some(
-          (segment) => segment.path === "add"
-        );
         if (isCreateMode) {
           this.catNotFound.set(false);
           return;
         }
 
-        const resolverData = data?.["data"] as {
-          cat: Cat | null;
-        } | null;
-        if (resolverData === null) {
-          this.catNotFound.set(true);
-          return;
-        }
-
-        const { cat } = resolverData;
         if (cat === null) {
           this.catNotFound.set(true);
           return;
         }
-
         this.cat.set(cat);
         this.catForm.patchValue({
           name: cat.name,
@@ -180,7 +194,6 @@ export class CatForm implements OnInit, OnDestroy {
           isSterilized: cat.isSterilized,
           isFriendly: cat.isFriendly,
           keepImages: cat.imageUrls,
-          replaceImages: null,
         });
         this.catForm.updateValueAndValidity();
         this.catNotFound.set(false);
@@ -252,6 +265,12 @@ export class CatForm implements OnInit, OnDestroy {
       this.imageUrls.set(file, URL.createObjectURL(file));
     }
     return this.imageUrls.get(file)!;
+  }
+
+  removeFormImage(imageUrl: string): void {
+    const currentImages = this.formImages();
+    const updatedImages = currentImages.filter((image) => image !== imageUrl);
+    this.catForm.patchValue({ keepImages: updatedImages });
   }
 
   removeFile(fileToRemove: File): void {
@@ -364,6 +383,10 @@ export class CatForm implements OnInit, OnDestroy {
   }
 
   private async updateCat(catId: string, files: File[] | null) {
+    if (!this.totalImages()) {
+      throw new Error("Please select at least one image");
+    }
+
     const catValue: UpdateCat = {
       ...this.catForm.value,
       name: this.catForm.value.name!,
@@ -377,7 +400,6 @@ export class CatForm implements OnInit, OnDestroy {
       isSterilized: this.catForm.value.isSterilized,
       isFriendly: this.catForm.value.isFriendly,
       keepImages: this.catForm.value.keepImages,
-      replaceImages: this.catForm.value.replaceImages,
     };
 
     await this.catsService.updateCat(catId, catValue, files);

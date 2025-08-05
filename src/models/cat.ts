@@ -29,6 +29,9 @@ export interface Cat extends BaseCat {
 export interface CreateCat extends BaseCat {}
 
 export interface UpdateCat extends BaseCat {
-  replaceImages?: boolean | null;
   keepImages?: string[] | null;
+}
+
+export function isUpdateCat(cat: CreateCat | UpdateCat): cat is UpdateCat {
+  return "keepImages" in cat || "replaceImages" in cat;
 }

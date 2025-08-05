@@ -17,27 +17,25 @@
       (onClick)="onUploadPhotosClick()"
     />
     
-    @if (files()) {
+    @if (totalImages() > 0) {
       <div class="text-sm text-gray-600 mb-2">
-        {{ files()?.length || 0 }} of {{ MAX_IMAGES }} images uploaded
+        {{ totalImages() }} of {{ MAX_IMAGES }} images uploaded
       </div>
       <div class="flex gap-2 mt-2 overflow-x-auto pb-2">
+        @for (imageUrl of formImages(); track imageUrl) {
+          <app-cat-form-image
+            [imageUrl]="imageUrl"
+            [imageName]="imageUrl"
+            (removeFile)="removeFormImage(imageUrl)"
+          />
+        }
         @for (file of files(); track file) {
-          <div class="w-38 h-38 border border-gray-300 rounded-sm overflow-hidden relative flex-shrink-0">
-            <img 
-              [src]="getImageUrl(file)" 
-              [alt]="file.name"
-              class="w-full h-full object-cover"
-            />
-            <app-icon-button
-              class="absolute top-1 right-1"
-              icon="delete"
-              type="danger"
-              ariaLabel="Delete image"
-              [hasBackgroundActive]="true"
-              (onClick)="removeFile(file)"
-            />
-          </div>
+          <app-cat-form-image
+            [imageUrl]="getImageUrl(file)"
+            [imageName]="file.name"
+            [file]="file"
+            (removeFile)="removeFile(file)"
+          />
         }
       </div>
     }
