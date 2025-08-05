@@ -19,9 +19,10 @@ import { environment } from "@environments/environment";
 export class MapService {
   private reverseMapUrl = `${environment.apiUrl}/v1/geocoding/reverse`;
   private static defaultTileLayer = tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
     {
-      maxZoom: 18,
+      maxZoom: 20,
+      attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
     }
   );
   private static madridLatLng = latLng(40.416775, -3.70379);
@@ -38,14 +39,14 @@ export class MapService {
     if (!latitude || !longitude) {
       return {
         layers: [this.defaultTileLayer],
-        zoom: 12,
+        zoom: 15,
         center: this.madridLatLng,
       };
     }
 
     return {
       layers: [this.defaultTileLayer],
-      zoom: 16,
+      zoom: 18,
       center: latLng(latitude, longitude),
     };
   }
@@ -81,10 +82,9 @@ export class MapService {
 
   static getLeafletIcon(): Icon {
     return icon({
-      ...Icon.Default.prototype.options,
       iconUrl: "assets/marker-icon.png",
-      iconRetinaUrl: "assets/marker-icon-2x.png",
-      shadowUrl: "assets/marker-shadow.png",
+      iconSize: [30, 42],
+      iconAnchor: [15, 42],
     });
   }
 

@@ -316,7 +316,7 @@ export class CatForm implements OnInit, OnDestroy {
 
     if (this.userMarker) {
       this.userMarker.addTo(map);
-      map.setView(this.userMarker.getLatLng(), 15);
+      map.setView(this.userMarker.getLatLng(), 18);
       return;
     }
 
