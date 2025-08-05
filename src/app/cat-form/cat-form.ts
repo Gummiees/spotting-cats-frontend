@@ -21,7 +21,6 @@ import { Cat, CreateCat, UpdateCat } from "@models/cat";
 import { AuthStateService } from "@shared/services/auth-state.service";
 import { SnackbarService } from "@shared/services/snackbar.service";
 import { NotFound } from "../not-found/not-found";
-import { IconButton } from "@shared/components/icon-button/icon-button";
 import { PrimaryButton } from "@shared/components/primary-button/primary-button";
 import {
   CatsService,
@@ -38,6 +37,18 @@ import {
   SearchableDropdownOption,
 } from "@shared/components/searchable-dropdown/searchable-dropdown";
 import { CatFormImage } from "./cat-form-image/cat-form-image";
+import { LeafletDirective } from "@bluehalo/ngx-leaflet";
+import {
+  Control,
+  latLng,
+  Map as LeafletMap,
+  LeafletMouseEvent,
+  MapOptions,
+  marker,
+  Marker,
+} from "leaflet";
+import { MapService } from "@shared/services/map.service";
+import "leaflet-control-geocoder";
 
 @Component({
   selector: "app-cat-form",
@@ -50,10 +61,10 @@ import { CatFormImage } from "./cat-form-image/cat-form-image";
     NullableSwitch,
     Header,
     PrimaryButton,
-    IconButton,
     ReactiveFormsModule,
     SearchableDropdown,
     CatFormImage,
+    LeafletDirective,
   ],
 })
 export class CatForm implements OnInit, OnDestroy {
@@ -64,6 +75,8 @@ export class CatForm implements OnInit, OnDestroy {
   files = signal<File[] | null>(null);
   private imageUrls = new Map<File, string>();
   private breeds = signal<string[]>([]);
+  private map!: LeafletMap;
+  private userMarker: Marker | null = null;
 
   breedOptions = computed((): SearchableDropdownOption[] => {
     return this.breeds().map((breed, index) => ({
@@ -76,8 +89,6 @@ export class CatForm implements OnInit, OnDestroy {
 
   catForm = new FormGroup({
     name: new FormControl<string | null>(null, [Validators.required]),
-    xCoordinate: new FormControl<number>(0, [Validators.required]),
-    yCoordinate: new FormControl<number>(0, [Validators.required]),
     age: new FormControl<number | null>(null, [
       Validators.min(0),
       Validators.max(30),
@@ -184,8 +195,6 @@ export class CatForm implements OnInit, OnDestroy {
         this.cat.set(cat);
         this.catForm.patchValue({
           name: cat.name,
-          xCoordinate: cat.xCoordinate,
-          yCoordinate: cat.yCoordinate,
           age: cat.age,
           breed: cat.breed,
           extraInfo: cat.extraInfo,
@@ -195,6 +204,9 @@ export class CatForm implements OnInit, OnDestroy {
           isFriendly: cat.isFriendly,
           keepImages: cat.imageUrls,
         });
+        this.userMarker = MapService.getUserMarker(
+          latLng(cat.xCoordinate, cat.yCoordinate)
+        );
         this.catForm.updateValueAndValidity();
         this.catNotFound.set(false);
       },
@@ -287,6 +299,77 @@ export class CatForm implements OnInit, OnDestroy {
     }
   }
 
+  get leafletOptions(): Signal<MapOptions> {
+    return computed(() => {
+      const cat = this.cat();
+      return MapService.getLeafletMapOptions({
+        latitude: cat?.xCoordinate,
+        longitude: cat?.yCoordinate,
+      });
+    });
+  }
+
+  onMapReady(map: LeafletMap) {
+    this.map = map;
+    map.on("click", this.onMapClick.bind(this));
+    this.setGeocoder();
+
+    if (this.userMarker) {
+      this.userMarker.addTo(map);
+      map.setView(this.userMarker.getLatLng(), 15);
+      return;
+    }
+
+    if (!navigator.geolocation) {
+      alert("La geolocalización no está soportada por tu navegador");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords = latLng(
+          position.coords.latitude,
+          position.coords.longitude
+        );
+        map.setView(coords, 15);
+        this.userMarker = MapService.getUserMarker(coords)
+          .bindPopup("You are here", { closeButton: false })
+          .addTo(map);
+      },
+      (error) => {
+        this.snackbarService.show("Error getting location", "error");
+        console.error(error);
+      }
+    );
+  }
+
+  private onMapClick(event: LeafletMouseEvent) {
+    if (this.userMarker) {
+      this.userMarker.remove();
+    }
+    this.userMarker = MapService.getUserMarker(event.latlng);
+    if (this.userMarker) {
+      this.userMarker.addTo(this.map);
+    }
+  }
+
+  private setGeocoder() {
+    const geocoder = (Control as any).geocoder({
+      defaultMarkGeocode: false,
+    });
+
+    geocoder.on("markgeocode", (e: any) => {
+      if (this.userMarker) {
+        this.userMarker.remove();
+      }
+      const center = e.geocode.center;
+      this.map.setView(center, 15);
+      this.userMarker = MapService.getUserMarker(center).addTo(this.map);
+    });
+
+    geocoder.addTo(this.map);
+  }
+
   onAgeKeydown(event: KeyboardEvent) {
     const invalidKeys = ["e", "E", "+", "-", "."];
     if (invalidKeys.includes(event.key)) {
@@ -364,11 +447,16 @@ export class CatForm implements OnInit, OnDestroy {
       throw new Error("Please select at least one image");
     }
 
+    const userMarker = this.userMarker;
+    if (!userMarker) {
+      throw new Error("Please select the cat's location");
+    }
+
     const catValue: CreateCat = {
       ...this.catForm.value,
       name: this.catForm.value.name!,
-      xCoordinate: this.catForm.value.xCoordinate!,
-      yCoordinate: this.catForm.value.yCoordinate!,
+      xCoordinate: userMarker.getLatLng().lat,
+      yCoordinate: userMarker.getLatLng().lng,
       age: this.catForm.value.age,
       breed: this.catForm.value.breed,
       extraInfo: this.catForm.value.extraInfo,
@@ -387,11 +475,16 @@ export class CatForm implements OnInit, OnDestroy {
       throw new Error("Please select at least one image");
     }
 
+    const userMarker = this.userMarker;
+    if (!userMarker) {
+      throw new Error("Please select the cat's location");
+    }
+
     const catValue: UpdateCat = {
       ...this.catForm.value,
       name: this.catForm.value.name!,
-      xCoordinate: this.catForm.value.xCoordinate!,
-      yCoordinate: this.catForm.value.yCoordinate!,
+      xCoordinate: userMarker.getLatLng().lat,
+      yCoordinate: userMarker.getLatLng().lng,
       age: this.catForm.value.age,
       breed: this.catForm.value.breed,
       extraInfo: this.catForm.value.extraInfo,

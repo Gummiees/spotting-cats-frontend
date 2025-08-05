@@ -8,6 +8,7 @@ import {
   MapOptions,
   marker,
   tileLayer,
+  LatLng,
 } from "leaflet";
 import { firstValueFrom, map, tap } from "rxjs";
 import { environment } from "@environments/environment";
@@ -17,6 +18,13 @@ import { environment } from "@environments/environment";
 })
 export class MapService {
   private reverseMapUrl = `${environment.apiUrl}/v1/geocoding/reverse`;
+  private static defaultTileLayer = tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+      maxZoom: 18,
+    }
+  );
+  private static madridLatLng = latLng(40.416775, -3.70379);
 
   constructor(private http: HttpClient) {}
 
@@ -29,18 +37,14 @@ export class MapService {
   }): MapOptions {
     if (!latitude || !longitude) {
       return {
-        layers: [],
-        zoom: 1,
-        center: latLng(0, 0),
+        layers: [this.defaultTileLayer],
+        zoom: 12,
+        center: this.madridLatLng,
       };
     }
 
     return {
-      layers: [
-        tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          maxZoom: 18,
-        }),
-      ],
+      layers: [this.defaultTileLayer],
       zoom: 16,
       center: latLng(latitude, longitude),
     };
@@ -62,13 +66,26 @@ export class MapService {
     return marker([latitude, longitude], {
       title: name,
       alt: name,
-      icon: icon({
-        ...Icon.Default.prototype.options,
-        iconUrl: "assets/marker-icon.png",
-        iconRetinaUrl: "assets/marker-icon-2x.png",
-        shadowUrl: "assets/marker-shadow.png",
-      }),
-    }).bindPopup(name || "Cat", { closeButton: false });
+      icon: this.getLeafletIcon(),
+    });
+  }
+
+  static getUserMarker(coords: LatLng): Marker {
+    return marker(coords, {
+      draggable: true,
+      title: "Drag me to the cat's location",
+      alt: "Drag me to the cat's location",
+      icon: this.getLeafletIcon(),
+    });
+  }
+
+  static getLeafletIcon(): Icon {
+    return icon({
+      ...Icon.Default.prototype.options,
+      iconUrl: "assets/marker-icon.png",
+      iconRetinaUrl: "assets/marker-icon-2x.png",
+      shadowUrl: "assets/marker-shadow.png",
+    });
   }
 
   static getGoogleMapsUrl(latitude: number, longitude: number): string {
