@@ -1,0 +1,67 @@
+@if(catNotFound()) {
+  <app-not-found />
+} @else {
+  <app-header [title]="title()" />
+<main class="p-3 flex flex-col">
+  <div class="p-4 bg-white rounded-sm shadow-sm flex flex-col gap-2 flex-1">
+    <app-image-input
+      [triggerClick]="triggerFileInput()"
+      (selected)="onFilesSelected()"
+      (processed)="onFilesProcessed($event)"
+      (error)="onFilesError($event)"
+    />
+    <app-primary-button 
+    buttonText="Upload Photos" 
+      [isLoading]="isLoading()" 
+      (onClick)="onUploadPhotosClick()"
+    />
+    <form [formGroup]="catForm" class="flex flex-col gap-2">
+      <div class="flex flex-col gap-2">
+        <label class="text-sm font-medium flex items-center gap-1" for="name">
+          Name
+          <div class="flex items-top gap-1">
+            <span class="text-red-500">*</span>
+            <span class="text-red-500 text-xs">required</span>
+          </div>
+        </label>
+        <input class="border border-gray-300 rounded-sm p-2" type="text" id="name" formControlName="name" />
+        @if (catForm.get('name')?.invalid && catForm.get('name')?.touched) {
+          <span class="text-red-500 text-sm">Name is required</span>
+        }
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="text-sm font-medium" for="age">Age</label>
+        <input class="border border-gray-300 rounded-sm p-2" type="number" id="age" max="30" min="0" formControlName="age" />
+        @if (catForm.get('age')?.invalid && catForm.get('age')?.touched) {
+          <span class="text-red-500 text-sm">Age must be between 0 and 30</span>
+        }
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="text-sm font-medium" for="breed">Breed</label>
+        <input class="border border-gray-300 rounded-sm p-2" type="text" id="breed" maxlength="100" formControlName="breed" />
+        @if (catForm.get('breed')?.invalid && catForm.get('breed')?.touched) {
+          @if (catForm.get('breed')?.errors?.['breedFormat']) {
+            <span class="text-red-500 text-sm">Breed can only contain letters, numbers, spaces, hyphens, and underscores</span>
+          } @else if (catForm.get('breed')?.errors?.['maxlength']) {
+            <span class="text-red-500 text-sm">Breed must be less than 100 characters</span>
+          }
+        }
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="text-sm font-medium" for="extraInfo">Extra Info</label>
+        <textarea class="border border-gray-300 rounded-sm p-2" id="extraInfo" maxlength="1000" formControlName="extraInfo"></textarea>
+        @if (catForm.get('extraInfo')?.invalid && catForm.get('extraInfo')?.touched) {
+          <span class="text-red-500 text-sm">Extra Info must be less than 1000 characters</span>
+        }
+      </div>
+      <app-primary-button 
+        class="self-end"
+        buttonText="Save"
+        [isDisabled]="catForm.invalid"
+        [isLoading]="isLoading()" 
+        (onClick)="onSaveClick()"
+      />
+    </form>
+  </div>
+</main>
+}

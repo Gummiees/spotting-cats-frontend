@@ -23,6 +23,7 @@ import {
 import { EmptyCatCard } from "./components/empty-cat-card/empty-cat-card";
 import { MAX_CATS_PER_PAGE } from "@shared/services/cats.service";
 import { LoginModalService } from "@shared/services/login-modal.service";
+import { Router } from "@angular/router";
 
 @Component({
   selector: "app-cats",
@@ -32,7 +33,6 @@ import { LoginModalService } from "@shared/services/login-modal.service";
     CommonModule,
     ReactiveFormsModule,
     PrimaryButton,
-    ImageInput,
     CatCard,
     EmptyCatCard,
   ],
@@ -41,7 +41,6 @@ export class CatsComponent implements OnInit {
   cats = signal<Cat[]>([]);
   loading = signal<boolean>(false);
   loadingLike = signal<boolean>(false);
-  triggerFileInput = signal<boolean>(false);
   emptyItems: Signal<null[]> = computed(() => {
     const items: null[] = [];
     const catsCount = this.cats().length;
@@ -77,7 +76,8 @@ export class CatsComponent implements OnInit {
     private catsService: CatsService,
     private snackbarService: SnackbarService,
     private authStateService: AuthStateService,
-    private loginModalService: LoginModalService
+    private loginModalService: LoginModalService,
+    private router: Router
   ) {}
 
   @HostListener("window:resize")
@@ -129,69 +129,13 @@ export class CatsComponent implements OnInit {
     }
   }
 
-  async onAddCat() {
+  async onAddCatClick() {
     if (!this.user) {
       this.loginModalService.openModal();
       return;
     }
 
-    this.loading.set(true);
-  }
-
-  onUploadPhotosClick() {
-    this.triggerFileInput.set(true);
-    setTimeout(() => this.triggerFileInput.set(false), 100);
-  }
-
-  async onFileSelected() {
-    if (!this.user) {
-      this.loginModalService.openModal();
-      return;
-    }
-
-    this.loading.set(true);
-  }
-
-  onFileError(error: string) {
-    this.snackbarService.show(error, "error");
-    this.loading.set(false);
-  }
-
-  async onFileProcessed(files: File[]) {
-    if (!this.user) {
-      this.loginModalService.openModal();
-      return;
-    }
-
-    try {
-      await this.catsService.addCat(
-        {
-          xCoordinate: 40.925908,
-          yCoordinate: -0.06771,
-          name: "Cat with Photos",
-          age: 3,
-          breed: "Mixed",
-          extraInfo: "Cat uploaded with photos",
-          isMale: true,
-          isSterilized: false,
-          isFriendly: true,
-        },
-        files
-      );
-      this.onReloadCats();
-      this.snackbarService.show(
-        "Cat uploaded successfully with photos!",
-        "success"
-      );
-    } catch (error) {
-      if (error instanceof NsfwContentDetectedException) {
-        this.snackbarService.show("NSFW content detected", "error");
-        return;
-      }
-      this.snackbarService.show("Error uploading cat with photos", "error");
-    } finally {
-      this.loading.set(false);
-    }
+    this.router.navigate(["/cat/add"]);
   }
 
   onLoadMoreCats() {

@@ -1,17 +1,16 @@
 interface BaseCat {
   xCoordinate: number;
   yCoordinate: number;
-  address?: string;
-  protectorId?: string;
-  colonyId?: string;
-  name?: string;
-  age?: number;
-  breed?: string;
-  extraInfo?: string;
-  isDomestic?: boolean;
-  isMale?: boolean;
-  isSterilized?: boolean;
-  isFriendly?: boolean;
+  protectorId?: string | null;
+  colonyId?: string | null;
+  name?: string | null;
+  age?: number | null;
+  breed?: string | null;
+  extraInfo?: string | null;
+  isDomestic?: boolean | null;
+  isMale?: boolean | null;
+  isSterilized?: boolean | null;
+  isFriendly?: boolean | null;
 }
 
 export interface Cat extends BaseCat {
@@ -20,15 +19,16 @@ export interface Cat extends BaseCat {
   imageUrls: string[];
   isUserOwner: boolean;
   isLiked: boolean;
-  username?: string;
+  username?: string | null;
+  address?: string | null;
   createdAt: Date;
-  updatedAt?: Date;
-  confirmedOwnerAt?: Date;
+  updatedAt?: Date | null;
+  confirmedOwnerAt?: Date | null;
 }
 
 export interface CreateCat extends BaseCat {}
 
 export interface UpdateCat extends BaseCat {
-  replaceImages?: boolean;
-  keepImages?: string[];
+  replaceImages?: boolean | null;
+  keepImages?: string[] | null;
 }

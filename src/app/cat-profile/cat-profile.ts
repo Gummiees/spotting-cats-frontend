@@ -104,7 +104,7 @@ export class CatProfile implements OnInit, OnDestroy, AfterViewInit {
       }
 
       const marker = MapService.getLeafletMarker({
-        name: cat.name,
+        name: cat.name ?? "Cat",
         latitude: cat.xCoordinate,
         longitude: cat.yCoordinate,
       });
@@ -129,13 +129,26 @@ export class CatProfile implements OnInit, OnDestroy, AfterViewInit {
   ngOnInit(): void {
     this.catSubscription = this.route.data.subscribe({
       next: (data) => {
-        const { cat, location } = data["data"] as {
+        if (!data["data"]) {
+          this.catNotFound.set(true);
+          return;
+        }
+
+        const resolverData = data["data"] as {
           cat: Cat;
           location: string | null;
-        };
-        this.cat.set(cat);
-        this.location.set(location);
-        this.catNotFound.set(cat === null);
+        } | null;
+
+        if (resolverData === null) {
+          this.cat.set(null);
+          this.location.set(null);
+          this.catNotFound.set(true);
+        } else {
+          const { cat, location } = resolverData;
+          this.cat.set(cat);
+          this.location.set(location);
+          this.catNotFound.set(false);
+        }
       },
       error: (_) => {
         this.catNotFound.set(true);
@@ -171,6 +184,8 @@ export class CatProfile implements OnInit, OnDestroy, AfterViewInit {
     this.loadingDelete.set(true);
     try {
       await this.catsService.deleteCat(cat.id);
+      this.router.navigate(["/cats"]);
+      this.snackbarService.show("Cat deleted successfully", "success");
     } catch (error) {
       this.snackbarService.show("Failed to delete cat", "error");
     } finally {
@@ -212,7 +227,7 @@ export class CatProfile implements OnInit, OnDestroy, AfterViewInit {
 
   async onEditClick(event: MouseEvent) {
     event.stopPropagation();
-    console.log("edit");
+    this.router.navigate(["/cat", this.cat()?.id, "edit"]);
   }
 
   async onDeleteClick(event: MouseEvent) {

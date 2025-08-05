@@ -10,10 +10,21 @@ export const routes: Routes = [
   { path: "", redirectTo: "/cats", pathMatch: "full" },
   { path: "cats", component: CatsComponent },
   {
+    path: "cat/add",
+    loadComponent: () => import("./cat-form/cat-form").then((m) => m.CatForm),
+    canActivate: [AuthGuard],
+  },
+  {
     path: "cat/:id",
     loadComponent: () =>
       import("./cat-profile/cat-profile").then((m) => m.CatProfile),
     resolve: { data: CatProfileResolverService },
+  },
+  {
+    path: "cat/:id/edit",
+    loadComponent: () => import("./cat-form/cat-form").then((m) => m.CatForm),
+    resolve: { data: CatProfileResolverService },
+    canActivate: [AuthGuard],
   },
   {
     path: "admin",

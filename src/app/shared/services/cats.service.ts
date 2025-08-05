@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { firstValueFrom, map } from "rxjs";
+import { firstValueFrom } from "rxjs";
 
 import { environment } from "@environments/environment";
 import { Cat, CreateCat, UpdateCat } from "@models/cat";
@@ -103,7 +103,10 @@ export class CatsService {
     });
   }
 
-  private buildFormData(cat: CreateCat | UpdateCat, images?: File[]): FormData {
+  private buildFormData(
+    cat: CreateCat | UpdateCat,
+    images: File[] | null
+  ): FormData {
     const formData = new FormData();
 
     // Add each cat field individually
@@ -150,7 +153,11 @@ export class CatsService {
     return formData;
   }
 
-  async updateCat(id: string, cat: UpdateCat, images?: File[]): Promise<void> {
+  async updateCat(
+    id: string,
+    cat: UpdateCat,
+    images: File[] | null
+  ): Promise<void> {
     return firstValueFrom(
       this.http.put<void>(
         `${environment.apiUrl}/v1/cats/${id}`,
