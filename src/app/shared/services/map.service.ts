@@ -10,12 +10,13 @@ import {
   tileLayer,
 } from "leaflet";
 import { firstValueFrom, map, tap } from "rxjs";
+import { environment } from "@environments/environment";
 
 @Injectable({
   providedIn: "root",
 })
 export class MapService {
-  private reverseMapUrl = "https://nominatim.openstreetmap.org/reverse";
+  private reverseMapUrl = `${environment.apiUrl}/v1/geocoding/reverse`;
 
   constructor(private http: HttpClient) {}
 
@@ -80,41 +81,17 @@ export class MapService {
   ): Promise<string | null> {
     const params = new HttpParams()
       .set("lat", latitude.toString())
-      .set("lon", longitude.toString())
-      .set("format", "json");
-    return firstValueFrom(
-      this.http
-        .get<{
-          address?: {
-            city?: string;
-            town?: string;
-            village?: string;
-            state?: string;
-            country?: string;
-          };
-        } | null>(this.reverseMapUrl, { params })
-        .pipe(
-          map((res) => {
-            if (!res?.address) {
-              return null;
-            }
-            let address = "";
-            const city =
-              res?.address?.city || res?.address?.town || res?.address?.village;
-            if (city) {
-              address += city;
-            }
-            const state = res?.address?.state;
-            if (state) {
-              address += `, ${state}`;
-            }
-            const country = res?.address?.country;
-            if (country) {
-              address += `, ${country}`;
-            }
-            return address.length > 0 ? address : null;
-          })
-        )
-    );
+      .set("lon", longitude.toString());
+
+    try {
+      return firstValueFrom(
+        this.http
+          .get<{ address: string | null }>(this.reverseMapUrl, { params })
+          .pipe(map((res) => res.address))
+      );
+    } catch (error) {
+      console.error("Reverse geocoding failed:", error);
+      return `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+    }
   }
 }

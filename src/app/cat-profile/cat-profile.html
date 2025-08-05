@@ -20,8 +20,8 @@ confirmColor="danger"
 @if(cat() === null || catNotFound()) {
   <app-not-found />
 } @else {
-<main class="p-3">
-  <div class="p-4 bg-white rounded-sm shadow-sm flex flex-col gap-2">
+<main class="p-3 h-[calc(100vh-4rem)] flex flex-col md:h-auto">
+  <div class="p-4 bg-white rounded-sm shadow-sm flex flex-col gap-2 max-h-full overflow-hidden flex-1">
     <div class="flex items-center justify-between gap-x-2">
       <div class="flex items-center gap-2">
         <h1 class="text-2xl font-bold wrap-anywhere">{{cat()!.name}}</h1>
@@ -52,18 +52,18 @@ confirmColor="danger"
         }
       </div>
     }
-    @if(hasLocation()) {
-      <div class="h-[300px]" leaflet [leafletOptions]="leafletOptions()" [leafletLayers]="leafletLayers()">
+    <div class="flex flex-col gap-y-2 md:flex-row md:gap-x-2 h-full md:h-auto">
+      <div class="w-full flex-1 rounded-md min-h-[100px] sm:min-h-[200px]" leaflet [leafletOptions]="leafletOptions()" [leafletLayers]="leafletLayers()">
       </div>
-    }
-    <div class="">
-    @if(carouselItems() && carouselItems()!.length > 0) {
-      <app-carousel [items]="carouselItems()!" />
-    } @else {
-      <div class="flex items-center justify-center h-full">
-        <i class="fa-solid fa-cat text-gray-500 !text-[100px] py-6"></i>
+      <div class="min-w-0 min-h-0 max-w-[400px] md:min-w-[400px] flex-shrink">
+        @if(carouselItems() && carouselItems()!.length > 0) {
+          <app-carousel [items]="carouselItems()!" />
+        } @else {
+        <div class="flex items-center justify-center h-full">
+          <i class="fa-solid fa-cat text-gray-500 !text-[100px] py-6"></i>
+        </div>
+        }
       </div>
-      }
     </div>
     <div class="flex items-center justify-between gap-x-2">
       @if(cat()!.username) {

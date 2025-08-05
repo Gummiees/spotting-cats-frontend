@@ -5,6 +5,8 @@ import {
   OnInit,
   Signal,
   signal,
+  AfterViewInit,
+  ViewChild,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
@@ -13,15 +15,7 @@ import {
   LeafletDirective,
   LeafletLayersDirective,
 } from "@bluehalo/ngx-leaflet";
-import {
-  latLng,
-  Layer,
-  MapOptions,
-  tileLayer,
-  marker,
-  Icon,
-  icon,
-} from "leaflet";
+import { Layer, Map, MapOptions } from "leaflet";
 import { Subscription } from "rxjs";
 
 import { NotFound } from "../not-found/not-found";
@@ -57,7 +51,7 @@ import { MapService } from "@shared/services/map.service";
     LeafletLayersDirective,
   ],
 })
-export class CatProfile implements OnInit, OnDestroy {
+export class CatProfile implements OnInit, OnDestroy, AfterViewInit {
   cat = signal<Cat | null>(null);
   location = signal<string | null>(null);
   catNotFound = signal(false);
@@ -65,6 +59,8 @@ export class CatProfile implements OnInit, OnDestroy {
   loadingDelete = signal(false);
   isDeleteModalOpen = signal(false);
   private catSubscription!: Subscription;
+
+  @ViewChild(LeafletDirective) mapDirective!: LeafletDirective;
 
   get carouselItems(): Signal<CarouselItem[] | undefined> {
     return computed(() =>
@@ -82,13 +78,6 @@ export class CatProfile implements OnInit, OnDestroy {
         return null;
       }
       return MapService.getGoogleMapsUrl(cat.xCoordinate, cat.yCoordinate);
-    });
-  }
-
-  get hasLocation(): Signal<boolean> {
-    return computed(() => {
-      const cat = this.cat();
-      return !!cat?.xCoordinate && !!cat?.yCoordinate;
     });
   }
 
@@ -152,6 +141,14 @@ export class CatProfile implements OnInit, OnDestroy {
         this.catNotFound.set(true);
       },
     });
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      if (this.mapDirective?.map) {
+        this.mapDirective.map.invalidateSize();
+      }
+    }, 100);
   }
 
   onDeleteModalClose() {

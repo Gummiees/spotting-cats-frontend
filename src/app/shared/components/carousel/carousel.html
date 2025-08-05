@@ -1,4 +1,4 @@
-<div class="relative w-full aspect-square overflow-hidden rounded-md"  data-carousel="slide">
+<div class="relative w-full overflow-hidden rounded-md" [ngClass]="fullHeight() ? 'h-full' : 'aspect-square'"  data-carousel="slide">
   <div
     data-carousel-item
     class="absolute top-0 left-0 w-full h-full bg-cover bg-center"

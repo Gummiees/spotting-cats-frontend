@@ -14,6 +14,7 @@ export interface CarouselItem {
 })
 export class Carousel {
   items = input.required<CarouselItem[]>();
+  fullHeight = input<boolean>(false);
   currentIndex = signal(0);
 
   get currentItem() {

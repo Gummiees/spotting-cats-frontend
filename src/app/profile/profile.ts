@@ -2,7 +2,6 @@ import { Component, OnDestroy, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ActivatedRoute, RouterLink } from "@angular/router";
 import { AuthStateService } from "@shared/services/auth-state.service";
-import { Header } from "@shared/components/header/header";
 import { ReactiveFormsModule } from "@angular/forms";
 import { Badge } from "@shared/components/badge/badge";
 import { ExternalUser } from "@models/external-user";
@@ -17,7 +16,6 @@ import { DaysAgoPipe } from "@shared/pipes/days-ago.pipe";
   standalone: true,
   imports: [
     CommonModule,
-    Header,
     Badge,
     ReactiveFormsModule,
     NotFound,
