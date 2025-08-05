@@ -36,6 +36,7 @@ import { ImageInput } from "@shared/components/image-input/image-input";
 import { positiveIntegerValidator } from "@shared/validators/positive-integer.validator";
 import { breedValidator } from "@shared/validators/breed.validator";
 import { Header } from "@shared/components/header/header";
+import { NullableSwitch } from "@shared/components/nullable-switch/nullable-switch";
 
 @Component({
   selector: "app-cat-form",
@@ -45,7 +46,7 @@ import { Header } from "@shared/components/header/header";
     CommonModule,
     NotFound,
     ImageInput,
-    IconButton,
+    NullableSwitch,
     Header,
     PrimaryButton,
     ReactiveFormsModule,
@@ -187,6 +188,22 @@ export class CatForm implements OnInit, OnDestroy {
     if (invalidKeys.includes(event.key)) {
       event.preventDefault();
     }
+  }
+
+  getBooleanValueFromFormControlName(formControlName: string) {
+    const value = this.catForm.get(formControlName)?.value;
+    if (value === undefined || value === null) {
+      return "Not sure";
+    }
+    return value ? "Yes" : "No";
+  }
+
+  getSexValue() {
+    const value = this.catForm.get("isMale")?.value;
+    if (value === undefined || value === null) {
+      return "Not sure";
+    }
+    return value ? "Male" : "Female";
   }
 
   async onSaveClick() {

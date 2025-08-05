@@ -15,7 +15,7 @@
       [isLoading]="isLoading()" 
       (onClick)="onUploadPhotosClick()"
     />
-    <form [formGroup]="catForm" class="flex flex-col gap-2">
+    <form [formGroup]="catForm" class="flex flex-col gap-3">
       <div class="flex flex-col gap-2">
         <label class="text-sm font-medium flex items-center gap-1" for="name">
           Name
@@ -53,6 +53,26 @@
         @if (catForm.get('extraInfo')?.invalid && catForm.get('extraInfo')?.touched) {
           <span class="text-red-500 text-sm">Extra Info must be less than 1000 characters</span>
         }
+      </div>
+      <div class="flex flex gap-2 items-center">
+        <label class="text-sm font-medium" for="isDomestic">Is domestic?</label>
+        <app-nullable-switch class="self-start" formControlName="isDomestic" />
+        <div class="text-sm text-gray-500">{{ getBooleanValueFromFormControlName('isDomestic') }}</div>
+      </div>
+      <div class="flex flex gap-2 items-center">
+        <label class="text-sm font-medium" for="isMale">What sex is it?</label>
+        <app-nullable-switch class="self-start" trueColor="bg-sky-500" falseColor="bg-fuchsia-500" formControlName="isMale" />
+        <div class="text-sm text-gray-500">{{ getSexValue() }}</div>
+      </div>
+      <div class="flex flex gap-2 items-center">
+        <label class="text-sm font-medium" for="isSterilized">Is sterilized?</label>
+        <app-nullable-switch class="self-start" formControlName="isSterilized" />
+        <div class="text-sm text-gray-500">{{ getBooleanValueFromFormControlName('isSterilized') }}</div>
+      </div>
+      <div class="flex flex gap-2 items-center">
+        <label class="text-sm font-medium" for="isFriendly">Is friendly?</label>
+        <app-nullable-switch class="self-start" formControlName="isFriendly" />
+        <div class="text-sm text-gray-500">{{ getBooleanValueFromFormControlName('isFriendly') }}</div>
       </div>
       <app-primary-button 
         class="self-end"
