@@ -1,6 +1,7 @@
 interface BaseCat {
   xCoordinate: number;
   yCoordinate: number;
+  address?: string;
   protectorId?: string;
   colonyId?: string;
   name?: string;

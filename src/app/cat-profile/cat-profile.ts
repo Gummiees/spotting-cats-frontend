@@ -15,7 +15,7 @@ import {
   LeafletDirective,
   LeafletLayersDirective,
 } from "@bluehalo/ngx-leaflet";
-import { Layer, Map, MapOptions } from "leaflet";
+import { Layer, MapOptions } from "leaflet";
 import { Subscription } from "rxjs";
 
 import { NotFound } from "../not-found/not-found";
@@ -144,6 +144,7 @@ export class CatProfile implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    // Trigger map resize after view is initialized to ensure proper centering
     setTimeout(() => {
       if (this.mapDirective?.map) {
         this.mapDirective.map.invalidateSize();

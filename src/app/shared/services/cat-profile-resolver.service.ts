@@ -30,10 +30,13 @@ export class CatProfileResolverService
     try {
       this.loadingService.setRouteLoading(true);
       const cat = await this.catsService.getCatById(id);
-      const location = await this.mapService.getCatLocation(
-        cat.xCoordinate,
-        cat.yCoordinate
-      );
+      let location = cat.address || null;
+      if (!location) {
+        location = await this.mapService.getCatLocation(
+          cat.xCoordinate,
+          cat.yCoordinate
+        );
+      }
       return { cat, location };
     } catch (error) {
       if (error instanceof NotFoundException) {
