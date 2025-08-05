@@ -1,9 +1,5 @@
 import {
   Component,
-  input,
-  output,
-  OnChanges,
-  SimpleChanges,
   OnDestroy,
   OnInit,
   signal,
@@ -37,6 +33,10 @@ import { positiveIntegerValidator } from "@shared/validators/positive-integer.va
 import { breedValidator } from "@shared/validators/breed.validator";
 import { Header } from "@shared/components/header/header";
 import { NullableSwitch } from "@shared/components/nullable-switch/nullable-switch";
+import {
+  SearchableDropdown,
+  SearchableDropdownOption,
+} from "@shared/components/searchable-dropdown/searchable-dropdown";
 
 @Component({
   selector: "app-cat-form",
@@ -49,14 +49,28 @@ import { NullableSwitch } from "@shared/components/nullable-switch/nullable-swit
     NullableSwitch,
     Header,
     PrimaryButton,
+    IconButton,
     ReactiveFormsModule,
+    SearchableDropdown,
   ],
 })
 export class CatForm implements OnInit, OnDestroy {
+  readonly MAX_IMAGES = 10;
   cat = signal<Cat | null>(null);
   catNotFound = signal(false);
   triggerFileInput = signal<boolean>(false);
   files = signal<File[] | null>(null);
+  private imageUrls = new Map<File, string>();
+  private breeds = signal<string[]>([]);
+
+  breedOptions = computed((): SearchableDropdownOption[] => {
+    return this.breeds().map((breed, index) => ({
+      id: `breed-${index}`,
+      label: breed,
+      value: breed,
+    }));
+  });
+  isBreedDropdownOpen = signal(false);
 
   catForm = new FormGroup({
     name: new FormControl<string | null>(null, [Validators.required]),
@@ -67,10 +81,7 @@ export class CatForm implements OnInit, OnDestroy {
       Validators.max(30),
       positiveIntegerValidator(),
     ]),
-    breed: new FormControl<string | null>(null, [
-      Validators.maxLength(100),
-      breedValidator(),
-    ]),
+    breed: new FormControl<string | null>(null, [Validators.maxLength(100)]),
     extraInfo: new FormControl<string | null>(null, [
       Validators.maxLength(1000),
     ]),
@@ -90,9 +101,16 @@ export class CatForm implements OnInit, OnDestroy {
     return computed(() => this.isLoadingApiCall() || this.isProcessingFiles());
   }
 
+  get isImageLimitReached(): Signal<boolean> {
+    return computed(() => {
+      const currentFiles = this.files();
+      return currentFiles ? currentFiles.length >= this.MAX_IMAGES : false;
+    });
+  }
+
   private isLoadingApiCall = signal(false);
   private isProcessingFiles = signal(false);
-  private catSubscription!: Subscription;
+  private routeDataSubscription!: Subscription;
 
   private get user() {
     return this.authStateService.user();
@@ -116,8 +134,17 @@ export class CatForm implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.catSubscription = this.route.data.subscribe({
+    this.routeDataSubscription = this.route.data.subscribe({
       next: (data) => {
+        this.breeds.set(data?.["breedsData"]?.breeds || []);
+        this.catForm
+          .get("breed")
+          ?.setValidators([
+            Validators.maxLength(100),
+            breedValidator(this.breeds()),
+          ]);
+        this.catForm.updateValueAndValidity();
+
         const isCreateMode = this.route.snapshot.url.some(
           (segment) => segment.path === "add"
         );
@@ -174,7 +201,44 @@ export class CatForm implements OnInit, OnDestroy {
   }
 
   onFilesProcessed(files: File[]) {
-    this.files.set(files);
+    const currentFiles = this.files() || [];
+
+    // Filter out duplicate files
+    const newFiles = files.filter(
+      (newFile) =>
+        !currentFiles.some(
+          (existingFile) =>
+            existingFile.name === newFile.name &&
+            existingFile.size === newFile.size &&
+            existingFile.lastModified === newFile.lastModified
+        )
+    );
+
+    const maxNewFiles = this.MAX_IMAGES - currentFiles.length;
+    const filesToAdd = newFiles.slice(0, maxNewFiles);
+    const rejectedCount = newFiles.length - filesToAdd.length;
+
+    if (rejectedCount > 0) {
+      this.snackbarService.show(
+        `Maximum ${this.MAX_IMAGES} images allowed. ${rejectedCount} image${
+          rejectedCount > 1 ? "s" : ""
+        } were not added.`,
+        "warning"
+      );
+    }
+
+    // Show message if duplicates were found
+    const duplicateCount = files.length - newFiles.length;
+    if (duplicateCount > 0) {
+      this.snackbarService.show(
+        `${duplicateCount} duplicate image${
+          duplicateCount > 1 ? "s" : ""
+        } were skipped.`,
+        "warning"
+      );
+    }
+
+    this.files.set([...currentFiles, ...filesToAdd]);
     this.isProcessingFiles.set(false);
   }
 
@@ -183,11 +247,40 @@ export class CatForm implements OnInit, OnDestroy {
     this.isProcessingFiles.set(false);
   }
 
+  getImageUrl(file: File): string {
+    if (!this.imageUrls.has(file)) {
+      this.imageUrls.set(file, URL.createObjectURL(file));
+    }
+    return this.imageUrls.get(file)!;
+  }
+
+  removeFile(fileToRemove: File): void {
+    const currentFiles = this.files();
+    if (currentFiles) {
+      const updatedFiles = currentFiles.filter((file) => file !== fileToRemove);
+      this.files.set(updatedFiles.length > 0 ? updatedFiles : null);
+
+      const url = this.imageUrls.get(fileToRemove);
+      if (url) {
+        URL.revokeObjectURL(url);
+        this.imageUrls.delete(fileToRemove);
+      }
+    }
+  }
+
   onAgeKeydown(event: KeyboardEvent) {
     const invalidKeys = ["e", "E", "+", "-", "."];
     if (invalidKeys.includes(event.key)) {
       event.preventDefault();
     }
+  }
+
+  onBreedSelectionChange(value: string | null) {
+    this.catForm.patchValue({ breed: value });
+  }
+
+  onBreedDropdownOpenChange(isOpen: boolean) {
+    this.isBreedDropdownOpen.set(isOpen);
   }
 
   getBooleanValueFromFormControlName(formControlName: string) {
@@ -292,6 +385,12 @@ export class CatForm implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.catSubscription.unsubscribe();
+    this.routeDataSubscription.unsubscribe();
+
+    // Clean up object URLs to prevent memory leaks
+    this.imageUrls.forEach((url) => {
+      URL.revokeObjectURL(url);
+    });
+    this.imageUrls.clear();
   }
 }

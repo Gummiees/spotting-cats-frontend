@@ -13,6 +13,7 @@ export class IconButton {
   isDisabled = input<boolean>(false);
   onClick = output<void>();
   type = input<"default" | "danger">("default");
+  hasBackgroundActive = input<boolean>(false);
 
   onButtonClick() {
     this.onClick.emit();

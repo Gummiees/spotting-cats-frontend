@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { firstValueFrom } from "rxjs";
+import { firstValueFrom, retry } from "rxjs";
 
 import { environment } from "@environments/environment";
 import { Cat, CreateCat, UpdateCat } from "@models/cat";
@@ -100,6 +100,16 @@ export class CatsService {
         default:
           throw new CatServiceException(error.error.message);
       }
+    });
+  }
+
+  async getCatBreeds(): Promise<string[]> {
+    return firstValueFrom(
+      this.http
+        .get<string[]>(`${environment.apiUrl}/v1/cats/breed`)
+        .pipe(retry(3))
+    ).catch((error) => {
+      throw new CatServiceException(error.error.message);
     });
   }
 

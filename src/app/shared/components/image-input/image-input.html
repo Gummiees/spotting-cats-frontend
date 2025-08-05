@@ -1,7 +1,7 @@
 <input 
   type="file" 
   multiple 
-  accept=".jpg,.jpeg,.png,.webp" 
+  [accept]="acceptImageTypes" 
   class="hidden" 
   #fileInput
   (change)="onFileSelected($event)"

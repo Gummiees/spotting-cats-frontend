@@ -5,9 +5,11 @@ import {
   ElementRef,
   input,
   effect,
+  OnDestroy,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import * as nsfwjs from "nsfwjs";
+import { Subject, switchMap, takeUntil } from "rxjs";
 
 @Component({
   selector: "app-image-input",
@@ -15,7 +17,7 @@ import * as nsfwjs from "nsfwjs";
   standalone: true,
   imports: [CommonModule],
 })
-export class ImageInput {
+export class ImageInput implements OnDestroy {
   @ViewChild("fileInput", { static: true })
   fileInput!: ElementRef<HTMLInputElement>;
 
@@ -23,8 +25,11 @@ export class ImageInput {
   selected = output<void>();
   processed = output<File[]>();
   error = output<string>();
+  acceptImageTypes = ".jpg, .jpeg, .png, .webp";
 
   private nsfwModel: nsfwjs.NSFWJS | null = null;
+  private destroy$ = new Subject<void>();
+  private fileSelection$ = new Subject<File[]>();
 
   constructor() {
     effect(() => {
@@ -32,10 +37,29 @@ export class ImageInput {
         this.triggerFileInput();
       }
     });
+
+    // Set up the file processing pipeline
+    this.fileSelection$
+      .pipe(
+        switchMap((files) => this.processFiles(files)),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (result) => {
+          if (result.success && result.files) {
+            this.processed.emit(result.files);
+          } else if (!result.success && result.error) {
+            this.error.emit(result.error);
+          }
+        },
+        error: (error) => {
+          console.error("Error processing files:", error);
+          this.error.emit("Failed to process files");
+        },
+      });
   }
 
-  async onFileSelected(event: Event) {
-    this.selected.emit();
+  onFileSelected(event: Event) {
     const target = event.target as HTMLInputElement;
     const files = Array.from(target.files || []);
 
@@ -43,13 +67,29 @@ export class ImageInput {
       return;
     }
 
+    this.selected.emit();
+
+    const nonImageFiles = files.filter((file) => !this.isImageFile(file));
+
+    if (nonImageFiles.length > 0) {
+      this.error.emit(`Only images allowed (${this.acceptImageTypes})`);
+      target.value = "";
+      return;
+    }
+
+    this.fileSelection$.next(files);
+    target.value = "";
+  }
+
+  private async processFiles(
+    files: File[]
+  ): Promise<{ success: boolean; files?: File[]; error?: string }> {
     if (!this.nsfwModel) {
       try {
         this.nsfwModel = await nsfwjs.load("InceptionV3");
       } catch (error) {
         console.error("Failed to load NSFW model:", error);
-        this.processed.emit(files);
-        return;
+        return { success: true, files };
       }
     }
 
@@ -60,18 +100,17 @@ export class ImageInput {
         const hasNSFW = await this.checkImageForNSFW(file);
 
         if (hasNSFW) {
-          this.error.emit(
-            "NSFW content detected. Please select a different image."
-          );
-          target.value = "";
-          return;
+          return {
+            success: false,
+            error: "NSFW content detected. Please select a different image.",
+          };
         }
       } catch (error) {
         console.error("Error processing file for NSFW detection:", error);
       }
     }
 
-    this.processed.emit(files);
+    return { success: true, files };
   }
 
   private async checkImageForNSFW(file: File): Promise<boolean> {
@@ -112,7 +151,16 @@ export class ImageInput {
     });
   }
 
+  private isImageFile(file: File): boolean {
+    return file.type.startsWith("image/");
+  }
+
   triggerFileInput() {
     this.fileInput.nativeElement.click();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
