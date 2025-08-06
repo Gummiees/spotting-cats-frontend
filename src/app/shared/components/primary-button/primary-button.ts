@@ -20,7 +20,8 @@ export class PrimaryButton {
   isLoading = input<boolean>(false);
   buttonText = input<string>("");
   onClick = output<void>();
-  buttonType = input<PrimaryButtonType>("default");
+  type = input<PrimaryButtonType>("default");
+  buttonType = input<"button" | "submit">("button");
   buttonSize = input<"auto" | "full">("auto");
 
   onButtonClick() {
@@ -29,7 +30,7 @@ export class PrimaryButton {
 
   getButtonClass(): string[] {
     const classList = [];
-    switch (this.buttonType()) {
+    switch (this.type()) {
       case "danger":
         classList.push(
           "bg-red-600",

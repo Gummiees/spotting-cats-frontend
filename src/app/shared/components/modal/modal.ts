@@ -23,6 +23,7 @@ export class Modal implements OnDestroy {
   isDisabled = input<boolean>(false);
   onConfirm = output<void>();
   onCancel = output<void>();
+  displayButtons = input<boolean>(true);
 
   constructor() {
     // Effect to handle scroll disabling when modal opens/closes

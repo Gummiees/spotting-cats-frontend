@@ -321,7 +321,10 @@ export class CatForm implements OnInit, OnDestroy {
     }
 
     if (!navigator.geolocation) {
-      alert("La geolocalización no está soportada por tu navegador");
+      this.snackbarService.show(
+        "Geolocation is not supported by your browser",
+        "error"
+      );
       return;
     }
 
@@ -333,12 +336,18 @@ export class CatForm implements OnInit, OnDestroy {
         );
         map.setView(coords, 15);
         this.userMarker = MapService.getUserMarker(coords)
-          .bindPopup("You are here", { closeButton: false })
+          .bindPopup("You are here! Drag me or click on the cat's location", {
+            closeButton: false,
+          })
           .addTo(map);
       },
       (error) => {
-        this.snackbarService.show("Error getting location", "error");
+        this.snackbarService.show(
+          `Error getting location: ${error.message}`,
+          "error"
+        );
         console.error(error);
+        map.setView(MapService.getLeafletMapOptions({}).center!, 15);
       }
     );
   }

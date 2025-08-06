@@ -9,13 +9,15 @@
             <ng-content select="content"></ng-content>
           </div>
           <div class="py-3 bg-gray-50 flex w-full justify-between">
-            <div class="px-4 flex flex-row-reverse sm:px-6 gap-x-2">
+            <div class="px-4 flex flex-row-reverse sm:px-6 gap-x-2" [ngClass]="{'w-full': !displayButtons()}">
               <ng-content select="footer"></ng-content>
             </div>
-            <div class="px-4 flex flex-row-reverse sm:px-6 gap-x-2">
-              <app-primary-button [isLoading]="isLoading()" [buttonText]="confirmText()" (onClick)="onConfirmClick()" [buttonType]="getButtonType()" [isDisabled]="isDisabled()" />
-              <app-secondary-button [isLoading]="isLoading()" [buttonText]="cancelText()" (onClick)="onCancelClick()" />
-            </div>
+            @if(displayButtons()) {
+              <div class="px-4 flex flex-row-reverse sm:px-6 gap-x-2">
+                <app-primary-button [isLoading]="isLoading()" [buttonText]="confirmText()" (onClick)="onConfirmClick()" [type]="getButtonType()" [isDisabled]="isDisabled()" />
+                <app-secondary-button [isLoading]="isLoading()" [buttonText]="cancelText()" (onClick)="onCancelClick()" />
+              </div>
+            }
           </div>
         </div>
       </div>

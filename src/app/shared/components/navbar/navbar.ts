@@ -54,7 +54,7 @@ export class Navbar {
   }
 
   async onLogout() {
-    if (!this.isMenuOpen()) {
+    if (!this.userMenuOpen()) {
       return;
     }
 

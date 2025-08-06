@@ -1,15 +1,17 @@
 import { Component, input, output, signal, OnDestroy } from "@angular/core";
-import { ModalContentSimple } from "@shared/components/modal-content-simple/modal-content-simple";
 import { Modal } from "@shared/components/modal/modal";
-import { FormControl, ReactiveFormsModule, Validators } from "@angular/forms";
-import { CommonModule } from "@angular/common";
-import { UserService } from "@shared/services/user.service";
-import { SnackbarService } from "@shared/services/snackbar.service";
 import {
-  ForbiddenException,
-  RateLimitException,
-} from "src/app/admin/services/admin.service";
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from "@angular/forms";
+import { CommonModule } from "@angular/common";
+import { UserService, RateLimitException } from "@shared/services/user.service";
+import { SnackbarService } from "@shared/services/snackbar.service";
 import { PrimaryButton } from "@shared/components/primary-button/primary-button";
+import { SecondaryButton } from "@shared/components/secondary-button/secondary-button";
+import { stricterEmailValidator } from "@shared/validators/stricter-email.validator";
 
 @Component({
   selector: "app-login-modal",
@@ -17,7 +19,7 @@ import { PrimaryButton } from "@shared/components/primary-button/primary-button"
   standalone: true,
   imports: [
     Modal,
-    ModalContentSimple,
+    SecondaryButton,
     ReactiveFormsModule,
     CommonModule,
     PrimaryButton,
@@ -30,14 +32,24 @@ export class LoginModal implements OnDestroy {
 
   loadingButton = signal(false);
   email = signal<string | null>(null);
+  isOnCodeStep = signal(false);
   resendTimeLeft = signal<number>(0);
-  emailInput = new FormControl("", [Validators.required, Validators.email]);
-  codeInput = new FormControl("", [
-    Validators.required,
-    Validators.minLength(6),
-    Validators.maxLength(6),
-  ]);
+  emailForm = new FormGroup({
+    email: new FormControl<string | null>(null, [
+      Validators.required,
+      stricterEmailValidator(),
+      Validators.email,
+    ]),
+  });
+  codeForm = new FormGroup({
+    code: new FormControl<string | null>(null, [
+      Validators.required,
+      Validators.minLength(6),
+      Validators.maxLength(6),
+    ]),
+  });
 
+  private lastEmailSentCodeTo = signal<string | null>(null);
   private resendTimer: number | null = null;
 
   constructor(
@@ -46,7 +58,7 @@ export class LoginModal implements OnDestroy {
   ) {}
 
   async onConfirmModal() {
-    if (this.email()) {
+    if (this.isOnCodeStep()) {
       await this.validateCodeAndVerify();
     } else {
       await this.validateEmailAndSendCode();
@@ -54,15 +66,15 @@ export class LoginModal implements OnDestroy {
   }
 
   private async validateCodeAndVerify() {
-    if (this.isCodeInvalid || !this.codeInput.value) {
+    if (this.codeForm.invalid || !this.codeForm.value.code) {
       this.snackbarService.show("Please enter a valid code", "error");
       return;
     }
-    await this.verifyCode(this.codeInput.value);
+    await this.verifyCode(this.codeForm.value.code);
   }
 
   private async validateEmailAndSendCode() {
-    if (this.isEmailInvalid || !this.emailInput.value) {
+    if (this.emailForm.invalid || !this.emailForm.value.email) {
       this.snackbarService.show("Please enter a valid email", "error");
       return;
     }
@@ -73,20 +85,19 @@ export class LoginModal implements OnDestroy {
       );
       return;
     }
-    await this.sendCode(this.emailInput.value.trim().toLowerCase());
+    await this.sendCode(this.emailForm.value.email.trim().toLowerCase());
   }
 
   private async sendCode(email: string) {
     this.loadingButton.set(true);
+    this.emailForm.disable();
     try {
       await this.userService.sendCode(email);
       this.email.set(email);
+      this.lastEmailSentCodeTo.set(email);
+      this.isOnCodeStep.set(true);
       this.startResendTimer();
     } catch (error) {
-      if (error instanceof ForbiddenException) {
-        this.snackbarService.show(error.message, "error");
-        return;
-      }
       if (error instanceof RateLimitException) {
         this.snackbarService.show(
           "You have reached the maximum number of requests. Please try again later.",
@@ -101,16 +112,17 @@ export class LoginModal implements OnDestroy {
       this.email.set(null);
     } finally {
       this.loadingButton.set(false);
+      this.emailForm.enable();
     }
   }
 
   private async verifyCode(code: string) {
     this.loadingButton.set(true);
+    this.codeForm.disable();
     try {
       await this.userService.verifyCode(code);
       this.email.set(null);
-      this.emailInput.reset();
-      this.codeInput.reset();
+      this.emailForm.reset();
       this.onSuccessfulLogin.emit();
     } catch (error) {
       this.snackbarService.show(
@@ -119,11 +131,12 @@ export class LoginModal implements OnDestroy {
       );
     } finally {
       this.loadingButton.set(false);
+      this.codeForm.enable();
     }
   }
 
   async onCancelModal() {
-    this.email() ? this.resetInputs() : this.onCancel.emit();
+    this.isOnCodeStep() ? this.resetCodeInput() : this.onExit();
   }
 
   async onResendCode() {
@@ -131,14 +144,24 @@ export class LoginModal implements OnDestroy {
   }
 
   private canResendCode(): boolean {
-    return this.resendTimeLeft() === 0;
+    return (
+      this.resendTimeLeft() === 0 ||
+      this.lastEmailSentCodeTo() !== this.emailForm.value.email
+    );
   }
 
-  private resetInputs() {
-    this.emailInput.reset();
-    this.codeInput.reset();
-    this.email.set(null);
+  private resetCodeInput() {
+    this.codeForm.reset();
     this.stopResendTimer();
+    this.resendTimeLeft.set(0);
+    this.isOnCodeStep.set(false);
+  }
+
+  private onExit() {
+    this.emailForm.reset();
+    this.email.set(null);
+    this.resetCodeInput();
+    this.onCancel.emit();
   }
 
   private startResendTimer() {
@@ -167,53 +190,55 @@ export class LoginModal implements OnDestroy {
   }
 
   get title(): string {
-    return this.email() ? "Verify Email" : "Login";
+    return this.isOnCodeStep() ? "Verify Email" : "Login";
   }
 
   get message(): string {
-    return this.email()
-      ? "Please enter the code sent to your email."
+    return this.isOnCodeStep()
+      ? `Please enter the code sent to the email ${this.email()}`
       : "Please enter your email to login.";
   }
 
-  get inputType(): string {
-    return this.email() ? "number" : "email";
-  }
-
-  get inputPlaceholder(): string {
-    return this.email() ? "Enter code" : "Enter email";
-  }
-
-  get autocomplete(): string {
-    return this.email() ? "one-time-code" : "email";
-  }
-
   get confirmText(): string {
-    return this.email() ? "Verify" : "Send code";
+    return this.isOnCodeStep() ? "Verify" : "Send code";
   }
 
   get cancelText(): string {
-    return this.email() ? "Return" : "Cancel";
+    return this.isOnCodeStep() ? "Return" : "Cancel";
   }
 
   get isFullWidth(): boolean {
-    return !this.email();
+    return !this.isOnCodeStep();
   }
 
   get input(): FormControl {
-    return this.email() ? this.codeInput : this.emailInput;
+    return this.isOnCodeStep()
+      ? this.codeForm.controls.code
+      : this.emailForm.controls.email;
   }
 
   get isDisabled(): boolean {
     return (
       this.loadingButton() ||
-      (!this.email() && this.isEmailInvalid) ||
-      (!!this.email() && this.isCodeInvalid)
+      (!this.isOnCodeStep() && this.isEmailStepDisabled) ||
+      (this.isOnCodeStep() && this.codeForm.invalid)
+    );
+  }
+
+  private get isEmailStepDisabled(): boolean {
+    return (
+      this.emailForm.invalid ||
+      (this.lastEmailSentCodeTo() === this.emailForm.value.email &&
+        this.resendTimeLeft() > 0)
     );
   }
 
   get shouldDisplayResendButton(): boolean {
-    return !!this.email() && !!this.emailInput.valid && !!this.emailInput.value;
+    return (
+      this.isOnCodeStep() &&
+      !!this.emailForm.controls.email.valid &&
+      !!this.emailForm.controls.email.value
+    );
   }
 
   get isResendButtonDisabled(): boolean {
@@ -224,13 +249,5 @@ export class LoginModal implements OnDestroy {
     return this.canResendCode()
       ? "Resend code"
       : `Resend code in ${this.resendTimeLeft()} seconds`;
-  }
-
-  private get isEmailInvalid(): boolean {
-    return this.emailInput.invalid || this.emailInput.pristine;
-  }
-
-  private get isCodeInvalid(): boolean {
-    return this.codeInput.invalid || this.codeInput.pristine;
   }
 }
