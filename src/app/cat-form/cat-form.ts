@@ -341,13 +341,16 @@ export class CatForm implements OnInit, OnDestroy {
           })
           .addTo(map);
       },
-      (error) => {
+      (error: GeolocationPositionError) => {
         this.snackbarService.show(
-          `Error getting location: ${error.message}`,
+          `Error getting location: ${error.message} (code: ${error.code})`,
           "error"
         );
         console.error(error);
         map.setView(MapService.getLeafletMapOptions({}).center!, 15);
+      },
+      {
+        maximumAge: 60 * 60 * 1000, // 1 hour
       }
     );
   }
