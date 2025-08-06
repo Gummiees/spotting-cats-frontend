@@ -88,7 +88,6 @@ export class CatsComponent implements OnInit {
   ngOnInit() {
     this.updateColumnsPerRow();
     this.loadCats();
-    this.snackbarService.show("Hello", "warning");
   }
 
   private updateColumnsPerRow() {
