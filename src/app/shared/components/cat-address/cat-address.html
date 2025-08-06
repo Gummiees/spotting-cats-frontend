@@ -1,0 +1,10 @@
+@if(!!cat().address) {
+  <div class="flex items-center gap-x-1">
+    <span class="material-symbols-outlined !text-[18px]" [ngClass]="{'text-gray-700': !googleMapsUrl(), 'text-violet-700': googleMapsUrl()}">location_on</span>
+    @if(googleMapsUrl()) {
+      <a class="text-sm text-violet-700 hover:underline" [href]="googleMapsUrl()" target="_blank">{{ cat().address }}</a>
+    } @else {
+      <div class="text-sm text-gray-700">{{ cat().address }}</div>
+    }
+  </div>
+}

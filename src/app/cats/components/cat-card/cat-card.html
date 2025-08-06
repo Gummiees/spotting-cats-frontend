@@ -11,7 +11,8 @@
         <span>{{ cat().totalLikes }}</span>
         <span class="material-symbols-outlined cursor-pointer z-1" [ngClass]="{'text-red-500': cat().isLiked}" [style.fontVariationSettings]="cat().isLiked ? '\'FILL\' 1' : '\'FILL\' 0'" (click)="onLikeClick($event)">favorite</span>
       </div>
-    </div>
+      </div>
+    <app-cat-address [cat]="cat()" />
     <app-cat-badges [cat]="cat()" />
     <div class="flex-1 min-h-0">
       @if(carouselItems().length > 0) {

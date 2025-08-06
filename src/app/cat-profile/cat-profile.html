@@ -42,16 +42,7 @@ confirmColor="danger"
       <div class="text-sm text-gray-700">{{ cat()!.extraInfo }}</div>
     }
     <app-cat-badges [cat]="cat()!"/>
-    @if(!!location()) {
-      <div class="flex items-center gap-x-1">
-        <span class="material-symbols-outlined !text-[18px]" [ngClass]="{'text-gray-700': !googleMapsUrl(), 'text-violet-700': googleMapsUrl()}">location_on</span>
-        @if(googleMapsUrl()) {
-          <a class="text-sm text-violet-700 hover:underline" [href]="googleMapsUrl()" target="_blank">{{ location() }}</a>
-        } @else {
-          <div class="text-sm text-gray-700">{{ location() }}</div>
-        }
-      </div>
-    }
+    <app-cat-address [cat]="cat()!"/>
     <div class="flex flex-col gap-y-2 md:flex-row md:gap-x-2 h-full md:h-auto">
       <div class="w-full flex-1 rounded-md min-h-[100px] sm:min-h-[200px]" leaflet [leafletOptions]="leafletOptions()" [leafletLayers]="leafletLayers()">
       </div>

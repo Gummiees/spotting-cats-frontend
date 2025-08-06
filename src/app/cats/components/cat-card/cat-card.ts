@@ -1,23 +1,24 @@
-import {
-  Component,
-  computed,
-  input,
-  output,
-  Signal,
-  signal,
-} from "@angular/core";
+import { Component, computed, input, output, Signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { Cat } from "@models/cat";
 import { Carousel, CarouselItem } from "@shared/components/carousel/carousel";
-import { CatBadges } from "../cat-badges/cat-badges";
+import { CatBadges } from "../../../shared/components/cat-badges/cat-badges";
 import { Router, RouterLink } from "@angular/router";
 import { MinutesAgoPipe } from "@shared/pipes/minutes-ago.pipe";
+import { CatAddress } from "@shared/components/cat-address/cat-address";
 
 @Component({
   selector: "app-cat-card",
   templateUrl: "./cat-card.html",
   standalone: true,
-  imports: [CommonModule, Carousel, CatBadges, RouterLink, MinutesAgoPipe],
+  imports: [
+    CommonModule,
+    Carousel,
+    CatBadges,
+    RouterLink,
+    MinutesAgoPipe,
+    CatAddress,
+  ],
 })
 export class CatCard {
   loadingLike = input<boolean>(false);

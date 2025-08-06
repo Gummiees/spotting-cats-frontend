@@ -19,7 +19,7 @@ import { Layer, MapOptions } from "leaflet";
 import { Subscription } from "rxjs";
 
 import { NotFound } from "../not-found/not-found";
-import { CatBadges } from "../cats/components/cat-badges/cat-badges";
+import { CatBadges } from "../shared/components/cat-badges/cat-badges";
 import { ModalContentSimple } from "@shared/components/modal-content-simple/modal-content-simple";
 import { IconButton } from "@shared/components/icon-button/icon-button";
 import { Carousel, CarouselItem } from "@shared/components/carousel/carousel";
@@ -31,6 +31,7 @@ import { CatsService } from "@shared/services/cats.service";
 import { MinutesAgoPipe } from "@shared/pipes/minutes-ago.pipe";
 import { Cat } from "@models/cat";
 import { MapService } from "@shared/services/map.service";
+import { CatAddress } from "@shared/components/cat-address/cat-address";
 
 @Component({
   selector: "app-cat-profile",
@@ -49,11 +50,11 @@ import { MapService } from "@shared/services/map.service";
     IconButton,
     LeafletDirective,
     LeafletLayersDirective,
+    CatAddress,
   ],
 })
 export class CatProfile implements OnInit, OnDestroy, AfterViewInit {
   cat = signal<Cat | null>(null);
-  location = signal<string | null>(null);
   catNotFound = signal(false);
   loadingLike = signal(false);
   loadingDelete = signal(false);
@@ -69,16 +70,6 @@ export class CatProfile implements OnInit, OnDestroy, AfterViewInit {
         altText: this.cat()?.name ?? `Cat ${index + 1}`,
       }))
     );
-  }
-
-  get googleMapsUrl(): Signal<string | null> {
-    return computed(() => {
-      const cat = this.cat();
-      if (!cat || !cat.xCoordinate || !cat.yCoordinate) {
-        return null;
-      }
-      return MapService.getGoogleMapsUrl(cat.xCoordinate, cat.yCoordinate);
-    });
   }
 
   get isCurrentUserOwner() {
@@ -129,24 +120,13 @@ export class CatProfile implements OnInit, OnDestroy, AfterViewInit {
   ngOnInit(): void {
     this.catSubscription = this.route.data.subscribe({
       next: (data) => {
-        if (!data["data"]) {
-          this.catNotFound.set(true);
-          return;
-        }
-
-        const resolverData = data["data"] as {
-          cat: Cat;
-          location: string | null;
-        } | null;
+        const resolverData = data["cat"] as Cat | null;
 
         if (resolverData === null) {
           this.cat.set(null);
-          this.location.set(null);
           this.catNotFound.set(true);
         } else {
-          const { cat, location } = resolverData;
-          this.cat.set(cat);
-          this.location.set(location);
+          this.cat.set(resolverData);
           this.catNotFound.set(false);
         }
       },

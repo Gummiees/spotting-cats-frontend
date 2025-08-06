@@ -20,7 +20,7 @@ export const routes: Routes = [
     path: "cat/:id",
     loadComponent: () =>
       import("./cat-profile/cat-profile").then((m) => m.CatProfile),
-    resolve: { data: CatProfileResolverService },
+    resolve: { cat: CatProfileResolverService },
   },
   {
     path: "cat/:id/edit",
