@@ -5,25 +5,26 @@ import {
   computed,
   HostListener,
   Signal,
+  QueryList,
+  ViewChildren,
+  ElementRef,
 } from "@angular/core";
 import { ReactiveFormsModule } from "@angular/forms";
 import { CommonModule } from "@angular/common";
 
 import { Cat } from "@models/cat";
 import { PrimaryButton } from "@shared/components/primary-button/primary-button";
-import { ImageInput } from "@shared/components/image-input/image-input";
 import { SnackbarService } from "@shared/services/snackbar.service";
 import { AuthStateService } from "@shared/services/auth-state.service";
 import { CatCard } from "./components/cat-card/cat-card";
-import {
-  CatsFilter,
-  CatsService,
-  NsfwContentDetectedException,
-} from "@shared/services/cats.service";
+import { CatsFilter, CatsService } from "@shared/services/cats.service";
 import { EmptyCatCard } from "./components/empty-cat-card/empty-cat-card";
 import { MAX_CATS_PER_PAGE } from "@shared/services/cats.service";
 import { LoginModalService } from "@shared/services/login-modal.service";
 import { Router } from "@angular/router";
+import { CatsMap } from "./components/cats-map/cats-map";
+import { MapService } from "@shared/services/map.service";
+import { LatLng, latLng } from "leaflet";
 
 @Component({
   selector: "app-cats",
@@ -35,12 +36,45 @@ import { Router } from "@angular/router";
     PrimaryButton,
     CatCard,
     EmptyCatCard,
+    CatsMap,
   ],
 })
 export class CatsComponent implements OnInit {
   cats = signal<Cat[]>([]);
   loading = signal<boolean>(false);
   loadingLike = signal<boolean>(false);
+  selectedCatId = signal<string | null>(null);
+  userCoords = signal<LatLng | null>(null);
+
+  @ViewChildren("catCard", { read: ElementRef })
+  catCardElements!: QueryList<ElementRef>;
+
+  sortedCats: Signal<Cat[]> = computed(() => {
+    const cats = this.cats();
+    const userCoords = this.userCoords();
+
+    if (!userCoords || cats.length === 0) {
+      return cats;
+    }
+
+    // Sort cats by distance from user location
+    return [...cats].sort((a, b) => {
+      const distanceA = MapService.calculateDistance(
+        userCoords.lat,
+        userCoords.lng,
+        a.yCoordinate,
+        a.xCoordinate
+      );
+      const distanceB = MapService.calculateDistance(
+        userCoords.lat,
+        userCoords.lng,
+        b.yCoordinate,
+        b.xCoordinate
+      );
+      return distanceA - distanceB;
+    });
+  });
+
   emptyItems: Signal<null[]> = computed(() => {
     const items: null[] = [];
     const catsCount = this.cats().length;
@@ -88,6 +122,7 @@ export class CatsComponent implements OnInit {
   ngOnInit() {
     this.updateColumnsPerRow();
     this.loadCats();
+    this.getUserLocation();
   }
 
   private updateColumnsPerRow() {
@@ -181,5 +216,82 @@ export class CatsComponent implements OnInit {
     } finally {
       this.loadingLike.set(false);
     }
+  }
+
+  onCatSelected(catId: string) {
+    this.scrollToCat(catId);
+  }
+
+  private scrollToCat(catId: string) {
+    const catIndex = this.sortedCats().findIndex((cat) => cat.id === catId);
+    if (catIndex !== -1 && this.catCardElements) {
+      const catCardElement = this.catCardElements.toArray()[catIndex];
+      if (catCardElement) {
+        const element = catCardElement.nativeElement;
+
+        // Listen for scroll end event
+        const onScrollEnd = () => {
+          this.selectedCatId.set(catId);
+
+          // Clear selection after highlighting animation
+          setTimeout(() => {
+            this.selectedCatId.set(null);
+          }, 3000);
+
+          // Clean up listener
+          document.removeEventListener("scrollend", onScrollEnd);
+        };
+
+        // Add scroll end listener
+        document.addEventListener("scrollend", onScrollEnd, { once: true });
+
+        // Fallback for browsers that don't support scrollend
+        const fallbackTimeout = setTimeout(() => {
+          document.removeEventListener("scrollend", onScrollEnd);
+          onScrollEnd();
+        }, 1000);
+
+        // Clear fallback if scrollend fires
+        document.addEventListener(
+          "scrollend",
+          () => {
+            clearTimeout(fallbackTimeout);
+          },
+          { once: true }
+        );
+
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    }
+  }
+
+  private async getUserLocation(): Promise<void> {
+    try {
+      const coords = await this.getPositionWithGeolocation();
+      this.userCoords.set(coords);
+    } catch (error) {
+      // User location not available, continue without sorting by distance
+      console.log("Geolocation not available:", error);
+    }
+  }
+
+  private getPositionWithGeolocation(): Promise<LatLng> {
+    return new Promise<LatLng>((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const coords = latLng(
+            position.coords.latitude,
+            position.coords.longitude
+          );
+          resolve(coords);
+        },
+        (error: GeolocationPositionError) => {
+          reject(error);
+        }
+      );
+    });
   }
 }

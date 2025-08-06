@@ -10,6 +10,7 @@ import { CatAddress } from "@shared/components/cat-address/cat-address";
 @Component({
   selector: "app-cat-card",
   templateUrl: "./cat-card.html",
+  styleUrl: "./cat-card.scss",
   standalone: true,
   imports: [
     CommonModule,
@@ -23,6 +24,7 @@ import { CatAddress } from "@shared/components/cat-address/cat-address";
 export class CatCard {
   loadingLike = input<boolean>(false);
   cat = input.required<Cat>();
+  isHighlighted = input<boolean>(false);
   likeClick = output<void>();
 
   get carouselItems(): Signal<CarouselItem[]> {

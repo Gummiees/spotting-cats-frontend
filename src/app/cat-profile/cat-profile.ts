@@ -81,8 +81,8 @@ export class CatProfile implements OnInit, OnDestroy, AfterViewInit {
     return computed(() => {
       const cat = this.cat();
       return MapService.getLeafletMapOptions({
-        latitude: cat?.xCoordinate,
-        longitude: cat?.yCoordinate,
+        latitude: cat?.yCoordinate,
+        longitude: cat?.xCoordinate,
       });
     });
   }
@@ -96,8 +96,8 @@ export class CatProfile implements OnInit, OnDestroy, AfterViewInit {
 
       const marker = MapService.getLeafletMarker({
         name: cat.name ?? "Cat",
-        latitude: cat.xCoordinate,
-        longitude: cat.yCoordinate,
+        latitude: cat.yCoordinate,
+        longitude: cat.xCoordinate,
       });
 
       if (!marker) {

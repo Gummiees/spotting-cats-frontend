@@ -97,6 +97,8 @@ export class CatsService {
           throw new InvalidCatException(error.error.message);
         case 401:
           throw new UnauthorizedException(error.error.message);
+        case 422:
+          throw new ProfanityException(error.error.message);
         default:
           throw new CatServiceException(error.error.message);
       }
@@ -195,6 +197,8 @@ export class CatsService {
           throw new ForbiddenException(error.error.message);
         case 404:
           throw new NotFoundException(error.error.message);
+        case 422:
+          throw new ProfanityException(error.error.message);
         default:
           throw new CatServiceException(error.error.message);
       }
@@ -274,3 +278,5 @@ export class ForbiddenException extends CatServiceException {}
 export class NotFoundException extends CatServiceException {}
 
 export class RateLimitException extends CatServiceException {}
+
+export class ProfanityException extends CatServiceException {}

@@ -10,10 +10,17 @@
             />
           </div>
         </div>
+        <app-cats-map [cats]="cats()" [userCoords]="userCoords()" (catSelected)="onCatSelected($event)" />
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        @for (cat of cats(); track cat.id) {
-          <app-cat-card [cat]="cat" [loadingLike]="isLoadingLike" (likeClick)="onLikeCat(cat.id)" />
+        @for (cat of sortedCats(); track cat.id) {
+          <app-cat-card 
+            [cat]="cat" 
+            [loadingLike]="isLoadingLike" 
+            [isHighlighted]="selectedCatId() === cat.id"
+            (likeClick)="onLikeCat(cat.id)" 
+            #catCard
+          />
         }
         @for (item of emptyItems(); track $index) {
           <app-empty-cat-card (click)="onAddCatClick()" />

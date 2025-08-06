@@ -25,6 +25,7 @@ import { PrimaryButton } from "@shared/components/primary-button/primary-button"
 import {
   CatsService,
   NsfwContentDetectedException,
+  ProfanityException,
 } from "@shared/services/cats.service";
 import { LoginModalService } from "@shared/services/login-modal.service";
 import { ImageInput } from "@shared/components/image-input/image-input";
@@ -205,7 +206,7 @@ export class CatForm implements OnInit, OnDestroy {
           keepImages: cat.imageUrls,
         });
         this.userMarker = MapService.getUserMarker(
-          latLng(cat.xCoordinate, cat.yCoordinate)
+          latLng(cat.yCoordinate, cat.xCoordinate)
         );
         this.catForm.updateValueAndValidity();
         this.catNotFound.set(false);
@@ -303,8 +304,8 @@ export class CatForm implements OnInit, OnDestroy {
     return computed(() => {
       const cat = this.cat();
       return MapService.getLeafletMapOptions({
-        latitude: cat?.xCoordinate,
-        longitude: cat?.yCoordinate,
+        latitude: cat?.yCoordinate,
+        longitude: cat?.xCoordinate,
       });
     });
   }
@@ -328,18 +329,23 @@ export class CatForm implements OnInit, OnDestroy {
       return;
     }
 
+    this.setPositionWithGeolocation();
+  }
+
+  private setPositionWithGeolocation() {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const coords = latLng(
           position.coords.latitude,
           position.coords.longitude
         );
-        map.setView(coords, 15);
+        this.map.setView(coords, 15);
         this.userMarker = MapService.getUserMarker(coords)
           .bindPopup("You are here! Drag me or click on the cat's location", {
-            closeButton: false,
+            offset: [0, -32],
           })
-          .addTo(map);
+          .addTo(this.map)
+          .openPopup();
       },
       (error: GeolocationPositionError) => {
         this.snackbarService.show(
@@ -347,7 +353,7 @@ export class CatForm implements OnInit, OnDestroy {
           "error"
         );
         console.error(error);
-        map.setView(MapService.getLeafletMapOptions({}).center!, 15);
+        this.map.setView(MapService.getLeafletMapOptions({}).center!, 15);
       },
       {
         maximumAge: 60 * 60 * 1000, // 1 hour
@@ -443,7 +449,15 @@ export class CatForm implements OnInit, OnDestroy {
       this.snackbarService.show("Cat saved successfully", "success");
     } catch (error) {
       if (error instanceof NsfwContentDetectedException) {
-        this.snackbarService.show("NSFW content detected", "error");
+        this.snackbarService.show(
+          "NSFW content detected. Please refrain from uploading NSFW content.",
+          "error"
+        );
+      } else if (error instanceof ProfanityException) {
+        this.snackbarService.show(
+          "Profanity detected. Please refrain from using profanity.",
+          "error"
+        );
       } else if (error instanceof Error) {
         this.snackbarService.show(error.message, "error");
       } else {
@@ -467,8 +481,8 @@ export class CatForm implements OnInit, OnDestroy {
     const catValue: CreateCat = {
       ...this.catForm.value,
       name: this.catForm.value.name!,
-      xCoordinate: userMarker.getLatLng().lat,
-      yCoordinate: userMarker.getLatLng().lng,
+      xCoordinate: userMarker.getLatLng().lng,
+      yCoordinate: userMarker.getLatLng().lat,
       age: this.catForm.value.age,
       breed: this.catForm.value.breed,
       extraInfo: this.catForm.value.extraInfo,
@@ -495,8 +509,8 @@ export class CatForm implements OnInit, OnDestroy {
     const catValue: UpdateCat = {
       ...this.catForm.value,
       name: this.catForm.value.name!,
-      xCoordinate: userMarker.getLatLng().lat,
-      yCoordinate: userMarker.getLatLng().lng,
+      xCoordinate: userMarker.getLatLng().lng,
+      yCoordinate: userMarker.getLatLng().lat,
       age: this.catForm.value.age,
       breed: this.catForm.value.breed,
       extraInfo: this.catForm.value.extraInfo,

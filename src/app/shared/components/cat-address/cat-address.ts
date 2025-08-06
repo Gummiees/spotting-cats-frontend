@@ -18,7 +18,10 @@ export class CatAddress {
       if (!cat || !cat.xCoordinate || !cat.yCoordinate) {
         return null;
       }
-      return MapService.getGoogleMapsUrl(cat.xCoordinate, cat.yCoordinate);
+      return MapService.getGoogleMapsUrl({
+        latitude: cat.yCoordinate,
+        longitude: cat.xCoordinate,
+      });
     });
   }
 }
