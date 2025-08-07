@@ -7,7 +7,7 @@
     "start": "ng serve",
     "prebuild": "node -r dotenv/config scripts/env.js",
     "build": "node -v && ng build",
-    "serve": "cross-env HOST=0.0.0.0 serve -s dist/spotting-cats-frontend/browser -l $PORT",
+    "serve": "node server.js",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
@@ -39,6 +39,7 @@
     "@vercel/speed-insights": "^1.2.0",
     "cross-env": "^10.0.0",
     "dotenv": "^17.2.1",
+    "express": "^5.1.0",
     "leaflet": "^1.9.4",
     "leaflet-control-geocoder": "^3.2.0",
     "leo-profanity": "^1.8.0",
