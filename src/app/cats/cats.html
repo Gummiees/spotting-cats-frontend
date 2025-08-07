@@ -14,7 +14,7 @@
           />
         }
         @for (item of emptyItems(); track $index) {
-          <app-empty-cat-card (click)="onAddCatClick()" />
+          <app-empty-cat-card (onClick)="onAddCatClick()" />
         }
       </div>
       @if(hasMoreCats()) {
