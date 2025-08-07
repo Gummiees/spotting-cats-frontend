@@ -36,6 +36,10 @@ const stagingEnvContent = generateEnvFileContent(true);
 
 const envDir = path.join(__dirname, "..", "src", "environments");
 
+if (!fs.existsSync(envDir)) {
+  fs.mkdirSync(envDir, { recursive: true });
+}
+
 writeEnvFile(path.join(envDir, "environment.ts"), mainEnvContent);
 writeEnvFile(path.join(envDir, "environment.development.ts"), devEnvContent);
 writeEnvFile(path.join(envDir, "environment.staging.ts"), stagingEnvContent);
