@@ -34,8 +34,6 @@
     "@bluehalo/ngx-leaflet": "^20.0.0",
     "@maptiler/leaflet-maptilersdk": "^4.1.0",
     "@tailwindcss/postcss": "^4.1.11",
-    "@vercel/analytics": "^1.5.0",
-    "@vercel/speed-insights": "^1.2.0",
     "dotenv": "^17.2.1",
     "leaflet": "^1.9.4",
     "leaflet-control-geocoder": "^3.2.0",
