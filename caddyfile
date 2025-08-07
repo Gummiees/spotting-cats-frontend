@@ -1,10 +1,26 @@
 {
-    auto_https off
+	admin off
+	persist_config off
+	auto_https off
+  auto_https off
+	log {
+		format json
+	}
+	# server options
+	servers {
+		trusted_proxies static private_ranges
+	}
 }
 
-:$PORT {
-    root * /app/dist/spotting-cats-frontend/browser
-    encode gzip
-    try_files {path} /index.html
-    file_server
+:{$PORT} {
+	log {
+		format json
+	}
+	rewrite /health /*
+
+	# serve from the set folder
+	root * {$ANGULAR_OUTPUT_PATH}/browser
+	encode gzip
+	file_server
+	try_files {path} /index.html
 }
