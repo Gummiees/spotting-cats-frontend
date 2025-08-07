@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "prestart": "node scripts/env.js",
+    "prestart": "node -r dotenv/config scripts/env.js",
     "start": "ng serve",
-    "prebuild": "node scripts/env.js",
+    "prebuild": "node -r dotenv/config scripts/env.js",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
@@ -51,7 +51,6 @@
     "@angular/compiler-cli": "^20.0.0",
     "@types/jasmine": "~5.1.0",
     "@types/leaflet": "^1.9.20",
-    "@types/moment": "^2.13.0",
     "@types/node": "^24.0.11",
     "autoprefixer": "^10.4.21",
     "jasmine-core": "~5.7.0",
