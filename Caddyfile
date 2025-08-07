@@ -1,0 +1,26 @@
+{
+	admin off
+	persist_config off
+	auto_https off
+	auto_https off
+	log {
+		format json
+	}
+	# server options
+	servers {
+		trusted_proxies static private_ranges
+	}
+}
+
+:3000 {
+	log {
+		format json
+	}
+	rewrite /health /*
+
+	# serve from the set folder
+	root * /app/dist/spotting-cats-frontend/browser
+	encode gzip
+	file_server
+	try_files {path} /index.html
+}

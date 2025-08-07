@@ -95,8 +95,6 @@ export class CatsService {
             throw new NsfwContentDetectedException("NSFW content detected");
           }
           throw new InvalidCatException(error.error.message);
-        case 401:
-          throw new UnauthorizedException(error.error.message);
         case 422:
           throw new ProfanityException(error.error.message);
         default:
