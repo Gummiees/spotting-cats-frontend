@@ -11,7 +11,7 @@
     "test": "ng test"
   },
   "engines": {
-    "node": ">=22.12.0 <23"
+    "node": "22.15.1"
   },
   "prettier": {
     "overrides": [
