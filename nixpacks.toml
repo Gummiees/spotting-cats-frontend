@@ -1,2 +1,2 @@
-[variables]
-NODE_VERSION = '22.15.1'
+[phases.setup]
+	nixpkgsArchive = '51ad838b03a05b1de6f9f2a0fffecee64a9788ee' # 22.13.1 - https://github.com/NixOS/nixpkgs/commit/51ad838b03a05b1de6f9f2a0fffecee64a9788ee
