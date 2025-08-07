@@ -19,7 +19,7 @@
 	rewrite /health /*
 
 	# serve from the set folder
-	root * {$ANGULAR_OUTPUT_PATH}/browser
+	root * /app/dist/spotting-cats-frontend/browser
 	encode gzip
 	file_server
 	try_files {path} /index.html
