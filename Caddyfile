@@ -2,7 +2,7 @@
 	admin off
 	persist_config off
 	auto_https off
-  auto_https off
+	auto_https off
 	log {
 		format json
 	}
