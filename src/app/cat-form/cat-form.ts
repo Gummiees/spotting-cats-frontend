@@ -344,7 +344,7 @@ export class CatForm implements OnInit, OnDestroy {
         this.map.setView(coords, 15);
         this.userMarker = this.createUserMarker(coords)
           .bindPopup("You are here! Drag me or click on the cat's location", {
-            offset: [0, -32],
+            offset: [0, -15],
           })
           .addTo(this.map)
           .openPopup();
@@ -393,7 +393,7 @@ export class CatForm implements OnInit, OnDestroy {
         this.userMarker.remove();
       }
       const center = e.geocode.center;
-      this.map.setView(center, 15);
+      this.map.setView(center, 17);
       this.userMarker = this.createUserMarker(center).addTo(this.map);
     });
 

@@ -148,8 +148,8 @@ export class MapService {
   static getLeafletIcon(): Icon {
     return icon({
       iconUrl: "assets/marker-icon.png",
-      iconSize: [30, 42],
-      iconAnchor: [15, 42],
+      iconSize: [20, 20],
+      iconAnchor: [10, 20],
     });
   }
 

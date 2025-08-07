@@ -12,7 +12,9 @@ import {
   latLng,
   latLngBounds,
   Popup,
+  Control,
 } from "leaflet";
+import "leaflet-control-geocoder";
 
 @Component({
   selector: "app-cats-map",
@@ -25,6 +27,7 @@ export class CatsMap {
   userCoords = input<LatLng | null>(null);
   catSelected = output<string>();
   private map!: LeafletMap;
+  private geocoder: any | null = null;
   private markersLayer!: LayerGroup;
 
   get leafletOptions(): MapOptions {
@@ -42,28 +45,56 @@ export class CatsMap {
 
   async onMapReady(map: LeafletMap): Promise<void> {
     this.map = map;
+    this.setGeocoder();
     this.markersLayer = layerGroup().addTo(this.map);
     const cats = this.cats();
     const userCoords = this.userCoords();
     this.updateMapView(cats);
 
     if (userCoords) {
-      this.map.openPopup("You are here", userCoords);
+      this.map.openPopup("Your current location", userCoords, {
+        closeButton: false,
+      });
     }
 
-    if (userCoords && cats.length > 0) {
-      const nearestCat = this.findNearestCat(userCoords, cats);
+    // Filter valid cats for bounds/centering
+    const validCats = cats.filter(
+      (cat) =>
+        cat.xCoordinate != null &&
+        cat.yCoordinate != null &&
+        !isNaN(cat.xCoordinate) &&
+        !isNaN(cat.yCoordinate)
+    );
+
+    if (userCoords && validCats.length > 0) {
+      const nearestCat = this.findNearestCat(userCoords, validCats);
       const bounds = latLngBounds([
         [userCoords.lat, userCoords.lng],
         [nearestCat.yCoordinate, nearestCat.xCoordinate],
       ]);
-
       map.fitBounds(bounds, { padding: [20, 40] });
     } else if (userCoords) {
       this.map.setView(userCoords, 15);
-    } else if (cats.length > 0) {
-      this.centerMapOnCats(cats);
+    } else if (validCats.length > 0) {
+      this.centerMapOnCats(validCats);
     }
+  }
+
+  private setGeocoder() {
+    if (this.geocoder) {
+      return;
+    }
+
+    this.geocoder = (Control as any).geocoder({
+      defaultMarkGeocode: false,
+    });
+
+    this.geocoder.on("markgeocode", (e: any) => {
+      const center = e.geocode.center;
+      this.map.setView(center, 17);
+    });
+
+    this.geocoder.addTo(this.map);
   }
 
   private updateMapView(cats: Cat[]): void {
@@ -88,12 +119,20 @@ export class CatsMap {
   }
 
   private centerMapOnCats(cats: Cat[]): void {
-    if (cats.length === 0) return;
+    // Filter valid cats for bounds/centering
+    const validCats = cats.filter(
+      (cat) =>
+        cat.xCoordinate != null &&
+        cat.yCoordinate != null &&
+        !isNaN(cat.xCoordinate) &&
+        !isNaN(cat.yCoordinate)
+    );
+    if (validCats.length === 0) return;
 
-    const mapOptions = MapService.getLeafletMapOptionsForBounds(cats);
+    const mapOptions = MapService.getLeafletMapOptionsForBounds(validCats);
     this.map.setView(mapOptions.center!, mapOptions.zoom!);
     const bounds = latLngBounds(
-      cats.map((cat) => latLng(cat.yCoordinate, cat.xCoordinate))
+      validCats.map((cat) => latLng(cat.yCoordinate, cat.xCoordinate))
     );
     this.map.fitBounds(bounds, { padding: [0, 20] });
   }

@@ -57,8 +57,16 @@ export class CatsComponent implements OnInit {
       return cats;
     }
 
+    const validCats = cats.filter(
+      (cat) =>
+        cat.xCoordinate != null &&
+        cat.yCoordinate != null &&
+        !isNaN(cat.xCoordinate) &&
+        !isNaN(cat.yCoordinate)
+    );
+
     // Sort cats by distance from user location
-    return [...cats].sort((a, b) => {
+    return [...validCats].sort((a, b) => {
       const distanceA = MapService.calculateDistance(
         userCoords.lat,
         userCoords.lng,
