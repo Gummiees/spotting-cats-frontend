@@ -7,7 +7,7 @@
     "start": "ng serve",
     "prebuild": "node -r dotenv/config scripts/env.js",
     "build": "node -v && ng build",
-    "serve": "node server.js",
+    "start:server": "node server.js",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
