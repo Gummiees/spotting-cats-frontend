@@ -73,4 +73,13 @@ export class Navbar {
   onLoginClick() {
     this.loginModalService.openModal();
   }
+
+  async onAddCatClick() {
+    if (!this.user) {
+      this.loginModalService.openModal();
+      return;
+    }
+    this.closeMenus();
+    this.router.navigate(["/cat/add"]);
+  }
 }
