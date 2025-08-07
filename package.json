@@ -7,6 +7,7 @@
     "start": "ng serve",
     "prebuild": "node -r dotenv/config scripts/env.js",
     "build": "node -v && ng build",
+    "serve": "serve -s dist/spotting-cats-frontend",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
@@ -43,6 +44,7 @@
     "moment": "^2.30.1",
     "nsfwjs": "^4.2.1",
     "rxjs": "~7.8.0",
+    "serve": "^14.2.4",
     "tailwindcss": "^4.1.11",
     "tslib": "^2.3.0",
     "uuid": "^11.1.0",
