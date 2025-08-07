@@ -1,2 +1,2 @@
 [phases.setup]
-	nixpkgsArchive = '373d6a14e460f2a1fc8859aeeda11d955487ed37' # 22.17.0 - https://github.com/NixOS/nixpkgs/commit/373d6a14e460f2a1fc8859aeeda11d955487ed37
+	nixpkgsArchive = '51ad838b03a05b1de6f9f2a0fffecee64a9788ee' # 22.13.1 - https://github.com/NixOS/nixpkgs/commit/51ad838b03a05b1de6f9f2a0fffecee64a9788ee
