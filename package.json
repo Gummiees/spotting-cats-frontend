@@ -10,6 +10,9 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
+  "engines": {
+    "node": "22"
+  },
   "prettier": {
     "overrides": [
       {
