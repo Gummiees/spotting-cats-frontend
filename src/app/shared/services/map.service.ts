@@ -59,7 +59,6 @@ export class MapService {
       return this.getLeafletMapOptions({});
     }
 
-    // Calculate bounds from all cat coordinates
     const validCats = cats.filter(
       (cat) =>
         cat.xCoordinate != null &&
@@ -80,7 +79,6 @@ export class MapService {
       });
     }
 
-    // Calculate center point (average of all coordinates)
     const avgLatitude =
       validCats.reduce((sum, cat) => sum + cat.yCoordinate, 0) /
       validCats.length;
@@ -88,17 +86,9 @@ export class MapService {
       validCats.reduce((sum, cat) => sum + cat.xCoordinate, 0) /
       validCats.length;
 
-    // Calculate bounds
-    const bounds = latLngBounds(
-      validCats.map((cat) => latLng(cat.yCoordinate, cat.xCoordinate))
-    );
-
-    // Calculate appropriate zoom level based on bounds
-    const zoom = this.calculateZoomFromBounds(bounds);
-
     return {
       layers: [this.defaultTileLayer],
-      zoom: zoom,
+      zoom: 18,
       center: latLng(avgLatitude, avgLongitude),
     };
   }
@@ -142,6 +132,15 @@ export class MapService {
   static getUserMarker(coords: LatLng): Marker {
     return marker(coords, {
       draggable: true,
+      title: "You are here",
+      alt: "You are here",
+      icon: this.getLeafletIcon(),
+    });
+  }
+
+  static getSelectCatLocationMarker(coords: LatLng): Marker {
+    return marker(coords, {
+      draggable: true,
       title: "Drag me to the cat's location",
       alt: "Drag me to the cat's location",
       icon: this.getLeafletIcon(),
@@ -183,44 +182,6 @@ export class MapService {
     } catch (error) {
       console.error("Reverse geocoding failed:", error);
       return `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
-    }
-  }
-
-  static calculateZoomToShowBothPoints(
-    coordsA: LatLng,
-    coordsB: LatLng
-  ): number {
-    const distance = this.calculateDistance(
-      coordsA.lat,
-      coordsA.lng,
-      coordsB.lat,
-      coordsB.lng
-    );
-
-    const zoom = this.calculateLogarithmicZoom(distance);
-    return Math.round(zoom);
-  }
-
-  private static calculateLogarithmicZoom(distance: number): number {
-    // Handle edge cases
-    if (distance <= 0) return 18;
-    if (distance >= 1000) return 1;
-
-    // Balanced logarithmic formula:
-    // 100km -> 2, 50km -> 3, 20km -> 4, 10km -> 7, 5km -> 10, 2km -> 13, 1km -> 15
-
-    if (distance >= 20) {
-      // For long distances (≥20km): zoom 2-4
-      const zoom = 6.8 - 1.0 * Math.log(distance);
-      return Math.max(2, Math.min(4, zoom));
-    } else if (distance >= 1) {
-      // For medium distances (1-20km): zoom 7-15
-      const zoom = 13.8 - 2.2 * Math.log(distance);
-      return Math.max(7, Math.min(15, zoom));
-    } else {
-      // For very short distances (<1km): zoom 16-18
-      const zoom = 18.5 - 2.5 * Math.log(distance);
-      return Math.max(16, Math.min(18, zoom));
     }
   }
 

@@ -10,6 +10,8 @@ import {
   layerGroup,
   LatLng,
   latLng,
+  latLngBounds,
+  Popup,
 } from "leaflet";
 
 @Component({
@@ -45,17 +47,18 @@ export class CatsMap {
     const userCoords = this.userCoords();
     this.updateMapView(cats);
 
+    if (userCoords) {
+      this.map.openPopup("You are here", userCoords);
+    }
+
     if (userCoords && cats.length > 0) {
       const nearestCat = this.findNearestCat(userCoords, cats);
-      const zoomLevel = MapService.calculateZoomToShowBothPoints(
-        userCoords,
-        latLng(nearestCat.yCoordinate, nearestCat.xCoordinate)
-      );
+      const bounds = latLngBounds([
+        [userCoords.lat, userCoords.lng],
+        [nearestCat.yCoordinate, nearestCat.xCoordinate],
+      ]);
 
-      const centerLat = (userCoords.lat + nearestCat.yCoordinate) / 2;
-      const centerLng = (userCoords.lng + nearestCat.xCoordinate) / 2;
-
-      this.map.setView([centerLat, centerLng], zoomLevel);
+      map.fitBounds(bounds, { padding: [20, 40] });
     } else if (userCoords) {
       this.map.setView(userCoords, 15);
     } else if (cats.length > 0) {
@@ -88,8 +91,11 @@ export class CatsMap {
     if (cats.length === 0) return;
 
     const mapOptions = MapService.getLeafletMapOptionsForBounds(cats);
-
     this.map.setView(mapOptions.center!, mapOptions.zoom!);
+    const bounds = latLngBounds(
+      cats.map((cat) => latLng(cat.yCoordinate, cat.xCoordinate))
+    );
+    this.map.fitBounds(bounds, { padding: [0, 20] });
   }
 
   private findNearestCat(userCoords: LatLng, cats: Cat[]): Cat {

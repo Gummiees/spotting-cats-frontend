@@ -205,7 +205,7 @@ export class CatForm implements OnInit, OnDestroy {
           isFriendly: cat.isFriendly,
           keepImages: cat.imageUrls,
         });
-        this.userMarker = MapService.getUserMarker(
+        this.userMarker = MapService.getSelectCatLocationMarker(
           latLng(cat.yCoordinate, cat.xCoordinate)
         );
         this.catForm.updateValueAndValidity();
@@ -340,7 +340,7 @@ export class CatForm implements OnInit, OnDestroy {
           position.coords.longitude
         );
         this.map.setView(coords, 15);
-        this.userMarker = MapService.getUserMarker(coords)
+        this.userMarker = MapService.getSelectCatLocationMarker(coords)
           .bindPopup("You are here! Drag me or click on the cat's location", {
             offset: [0, -32],
           })
@@ -365,7 +365,7 @@ export class CatForm implements OnInit, OnDestroy {
     if (this.userMarker) {
       this.userMarker.remove();
     }
-    this.userMarker = MapService.getUserMarker(event.latlng);
+    this.userMarker = MapService.getSelectCatLocationMarker(event.latlng);
     if (this.userMarker) {
       this.userMarker.addTo(this.map);
     }
@@ -382,7 +382,9 @@ export class CatForm implements OnInit, OnDestroy {
       }
       const center = e.geocode.center;
       this.map.setView(center, 15);
-      this.userMarker = MapService.getUserMarker(center).addTo(this.map);
+      this.userMarker = MapService.getSelectCatLocationMarker(center).addTo(
+        this.map
+      );
     });
 
     geocoder.addTo(this.map);
