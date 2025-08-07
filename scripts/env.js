@@ -34,6 +34,8 @@ const mainEnvContent = generateEnvFileContent(true);
 const devEnvContent = generateEnvFileContent(false);
 const stagingEnvContent = generateEnvFileContent(true);
 
+console.log("creating env file with dev env content", devEnvContent);
+
 const envDir = path.join(__dirname, "..", "src", "environments");
 
 if (!fs.existsSync(envDir)) {
