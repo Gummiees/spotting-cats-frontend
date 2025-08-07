@@ -1,6 +1,6 @@
 <div class="flex items-center justify-center">
   <div class="relative" [class.opacity-50]="disabled()">
-    <div class="w-14 h-7 rounded-full relative cursor-pointer transition-all duration-200 ease-in-out" 
+    <div class="w-14 h-7 rounded-full relative transition-all duration-200 ease-in-out" 
          [ngClass]="disabled() ? 'cursor-not-allowed' : 'cursor-pointer'" 
          (click)="!disabled() && cycleValue()"
          [class]="value() === false ? falseColor() : value() === true ? trueColor() : 'bg-gray-500'">

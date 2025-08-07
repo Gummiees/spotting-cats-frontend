@@ -28,6 +28,7 @@ export class SearchableDropdown {
   buttonText = input<string>("Select option");
   selectedValue = input<string | null>(null);
   isOpen = input<boolean>(false);
+  isDisabled = input<boolean>(false);
 
   // Output events
   selectionChange = output<string | null>();
@@ -76,6 +77,9 @@ export class SearchableDropdown {
   }
 
   onToggleDropdown() {
+    if (this.isDisabled()) {
+      return;
+    }
     this.openChange.emit(!this.isOpen());
   }
 

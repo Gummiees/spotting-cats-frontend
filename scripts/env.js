@@ -16,18 +16,26 @@ if (fs.existsSync(envPath)) {
 }
 
 // Generate environment.ts content
-const envContent = `export const environment = {
-  production: ${process.env.NODE_ENV === "production" || false},
-  apiUrl: "${envVars.API_URL || "https://api.thecatapi.com/v1"}",
+const generateEnvFileContent = (isProduction) => {
+  return `export const environment = {
+  production: ${isProduction},
+  apiUrl: "${envVars.API_URL || ""}",
+  maptilerApiKey: "${envVars.MAPTILER_API_KEY || ""}",
 };
 `;
+};
 
-// Write to environment.ts
-const envFilePath = path.join(
-  __dirname,
-  "..",
-  "src",
-  "environments",
-  "environment.ts"
-);
-fs.writeFileSync(envFilePath, envContent);
+const writeEnvFile = (filePath, content) => {
+  fs.writeFileSync(filePath, content);
+  console.log(`Generated ${path.basename(filePath)}`);
+};
+
+const mainEnvContent = generateEnvFileContent(true);
+const devEnvContent = generateEnvFileContent(false);
+const stagingEnvContent = generateEnvFileContent(true);
+
+const envDir = path.join(__dirname, "..", "src", "environments");
+
+writeEnvFile(path.join(envDir, "environment.ts"), mainEnvContent);
+writeEnvFile(path.join(envDir, "environment.development.ts"), devEnvContent);
+writeEnvFile(path.join(envDir, "environment.staging.ts"), stagingEnvContent);

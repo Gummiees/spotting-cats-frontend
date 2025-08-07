@@ -42,10 +42,10 @@ import { LeafletDirective } from "@bluehalo/ngx-leaflet";
 import {
   Control,
   latLng,
+  LatLng,
   Map as LeafletMap,
   LeafletMouseEvent,
   MapOptions,
-  marker,
   Marker,
 } from "leaflet";
 import { MapService } from "@shared/services/map.service";
@@ -151,8 +151,10 @@ export class CatForm implements OnInit, OnDestroy {
     effect(() => {
       if (this.isLoading()) {
         this.catForm.disable();
+        this.disableDraggingMarker();
       } else {
         this.catForm.enable();
+        this.enableDraggingMarker();
       }
     });
   }
@@ -205,7 +207,7 @@ export class CatForm implements OnInit, OnDestroy {
           isFriendly: cat.isFriendly,
           keepImages: cat.imageUrls,
         });
-        this.userMarker = MapService.getSelectCatLocationMarker(
+        this.userMarker = this.createUserMarker(
           latLng(cat.yCoordinate, cat.xCoordinate)
         );
         this.catForm.updateValueAndValidity();
@@ -340,12 +342,15 @@ export class CatForm implements OnInit, OnDestroy {
           position.coords.longitude
         );
         this.map.setView(coords, 15);
-        this.userMarker = MapService.getSelectCatLocationMarker(coords)
+        this.userMarker = this.createUserMarker(coords)
           .bindPopup("You are here! Drag me or click on the cat's location", {
             offset: [0, -32],
           })
           .addTo(this.map)
           .openPopup();
+        if (this.catForm.disabled) {
+          this.disableDraggingMarker();
+        }
       },
       (error: GeolocationPositionError) => {
         this.snackbarService.show(
@@ -362,10 +367,14 @@ export class CatForm implements OnInit, OnDestroy {
   }
 
   private onMapClick(event: LeafletMouseEvent) {
+    if (this.catForm.disabled) {
+      return;
+    }
+
     if (this.userMarker) {
       this.userMarker.remove();
     }
-    this.userMarker = MapService.getSelectCatLocationMarker(event.latlng);
+    this.userMarker = this.createUserMarker(event.latlng);
     if (this.userMarker) {
       this.userMarker.addTo(this.map);
     }
@@ -377,14 +386,15 @@ export class CatForm implements OnInit, OnDestroy {
     });
 
     geocoder.on("markgeocode", (e: any) => {
+      if (this.catForm.disabled) {
+        return;
+      }
       if (this.userMarker) {
         this.userMarker.remove();
       }
       const center = e.geocode.center;
       this.map.setView(center, 15);
-      this.userMarker = MapService.getSelectCatLocationMarker(center).addTo(
-        this.map
-      );
+      this.userMarker = this.createUserMarker(center).addTo(this.map);
     });
 
     geocoder.addTo(this.map);
@@ -525,6 +535,51 @@ export class CatForm implements OnInit, OnDestroy {
 
     await this.catsService.updateCat(catId, catValue, files);
     this.router.navigate(["/cat", catId]);
+  }
+
+  get isFileButtonDisabled(): Signal<boolean> {
+    return computed(() => {
+      return (
+        this.isLoading() || this.catForm.disabled || this.isImageLimitReached()
+      );
+    });
+  }
+
+  get isSubmitButtonDisabled(): Signal<boolean> {
+    return computed(() => {
+      return (
+        this.catForm.invalid ||
+        this.isLoading() ||
+        this.catForm.pristine ||
+        this.catForm.disabled
+      );
+    });
+  }
+
+  get isBreedDropdownDisabled(): Signal<boolean> {
+    return computed(() => {
+      return this.isLoading() || this.catForm.disabled;
+    });
+  }
+
+  private createUserMarker(coords: LatLng): Marker {
+    const marker = MapService.getSelectCatLocationMarker(coords);
+    if (this.catForm.disabled) {
+      marker.dragging?.disable();
+    }
+    return marker;
+  }
+
+  private disableDraggingMarker(): void {
+    if (this.userMarker) {
+      this.userMarker.dragging?.disable();
+    }
+  }
+
+  private enableDraggingMarker(): void {
+    if (this.userMarker) {
+      this.userMarker.dragging?.enable();
+    }
   }
 
   ngOnDestroy(): void {

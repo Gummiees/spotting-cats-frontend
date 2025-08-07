@@ -10,24 +10,20 @@ import {
   tileLayer,
   LatLng,
   LatLngBounds,
-  latLngBounds,
 } from "leaflet";
-import { firstValueFrom, map, tap } from "rxjs";
+import { firstValueFrom, map } from "rxjs";
 import { environment } from "@environments/environment";
 import { Cat } from "@models/cat";
+import { MaptilerLayer } from "@maptiler/leaflet-maptilersdk";
 
 @Injectable({
   providedIn: "root",
 })
 export class MapService {
   private reverseMapUrl = `${environment.apiUrl}/v1/geocoding/reverse`;
-  private static defaultTileLayer = tileLayer(
-    "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-    {
-      maxZoom: 20,
-      attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
-    }
-  );
+  private static maptilerLayer = new MaptilerLayer({
+    apiKey: environment.maptilerApiKey,
+  });
   private static madridLatLng = latLng(40.416775, -3.70379);
 
   constructor(private http: HttpClient) {}
@@ -41,14 +37,14 @@ export class MapService {
   }): MapOptions {
     if (!latitude || !longitude) {
       return {
-        layers: [this.defaultTileLayer],
+        layers: [this.maptilerLayer],
         zoom: 15,
         center: this.madridLatLng,
       };
     }
 
     return {
-      layers: [this.defaultTileLayer],
+      layers: [this.maptilerLayer],
       zoom: 18,
       center: latLng(latitude, longitude),
     };
@@ -87,7 +83,7 @@ export class MapService {
       validCats.length;
 
     return {
-      layers: [this.defaultTileLayer],
+      layers: [this.maptilerLayer],
       zoom: 18,
       center: latLng(avgLatitude, avgLongitude),
     };

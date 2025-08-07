@@ -13,7 +13,7 @@
     <app-primary-button 
     buttonText="Upload Photos" 
       [isLoading]="isLoading()" 
-      [isDisabled]="isImageLimitReached()"
+      [isDisabled]="isFileButtonDisabled()"
       (onClick)="onUploadPhotosClick()"
     />
     
@@ -53,14 +53,14 @@
             <span class="text-red-500 text-xs">required</span>
           </div>
         </label>
-        <input class="border border-gray-300 rounded-sm p-2 placeholder-gray-500" type="text" id="name" formControlName="name" placeholder="Enter cat's name" />
+        <input class="border border-gray-300 rounded-sm p-2 placeholder-gray-500 disabled:bg-gray-100 disabled:text-gray-500 disabled:border-gray-200 disabled:cursor-not-allowed" type="text" id="name" formControlName="name" placeholder="Enter cat's name" />
         @if (catForm.get('name')?.invalid && catForm.get('name')?.touched) {
           <span class="text-red-500 text-sm">Name is required</span>
         }
       </div>
       <div class="flex flex-col gap-2">
         <label class="text-sm font-medium" for="age">Age</label>
-        <input class="border border-gray-300 rounded-sm p-2 placeholder-gray-500" type="number" id="age" max="30" min="0" formControlName="age" placeholder="Enter age (0-30)" />
+        <input class="border border-gray-300 rounded-sm p-2 placeholder-gray-500 disabled:bg-gray-100 disabled:text-gray-500 disabled:border-gray-200 disabled:cursor-not-allowed" type="number" id="age" max="30" min="0" formControlName="age" placeholder="Enter age (0-30)" />
         @if (catForm.get('age')?.invalid && catForm.get('age')?.touched) {
           <span class="text-red-500 text-sm">Age must be between 0 and 30</span>
         }
@@ -73,6 +73,7 @@
           buttonText="Select breed"
           [selectedValue]="catForm.get('breed')?.value || null"
           [isOpen]="isBreedDropdownOpen()"
+          [isDisabled]="isBreedDropdownDisabled()"
           (selectionChange)="onBreedSelectionChange($event)"
           (openChange)="onBreedDropdownOpenChange($event)"
         />
@@ -88,7 +89,7 @@
       </div>
       <div class="flex flex-col gap-2">
         <label class="text-sm font-medium" for="extraInfo">Extra Info</label>
-        <textarea class="border border-gray-300 rounded-sm p-2 placeholder-gray-500" id="extraInfo" rows="3" maxlength="1000" formControlName="extraInfo" placeholder="Add any additional information about the cat..."></textarea>
+        <textarea class="border border-gray-300 rounded-sm p-2 placeholder-gray-500 disabled:bg-gray-100 disabled:text-gray-500 disabled:border-gray-200 disabled:cursor-not-allowed" id="extraInfo" rows="3" maxlength="1000" formControlName="extraInfo" placeholder="Add any additional information about the cat..."></textarea>
         @if (catForm.get('extraInfo')?.invalid && catForm.get('extraInfo')?.touched) {
           <span class="text-red-500 text-sm">Extra Info must be less than 1000 characters</span>
         }
@@ -116,7 +117,7 @@
       <app-primary-button 
         class="self-end"
         buttonText="Save"
-        [isDisabled]="catForm.invalid"
+        [isDisabled]="isSubmitButtonDisabled()"
         [isLoading]="isLoading()" 
         (onClick)="onSaveClick()"
       />
