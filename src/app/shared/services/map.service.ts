@@ -15,6 +15,7 @@ import { firstValueFrom, map } from "rxjs";
 import { environment } from "@environments/environment";
 import { Cat } from "@models/cat";
 import { MaptilerLayer } from "@maptiler/leaflet-maptilersdk";
+import { MapStyle } from "@maptiler/sdk";
 
 @Injectable({
   providedIn: "root",
@@ -23,6 +24,7 @@ export class MapService {
   private reverseMapUrl = `${environment.apiUrl}/v1/geocoding/reverse`;
   private static maptilerLayer = new MaptilerLayer({
     apiKey: environment.maptilerApiKey,
+    style: MapStyle.STREETS,
   });
   private static madridLatLng = latLng(40.416775, -3.70379);
 

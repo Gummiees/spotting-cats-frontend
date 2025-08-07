@@ -17,7 +17,21 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "allowedCommonJsDependencies": ["moment", "leo-profanity"],
+            "allowedCommonJsDependencies": [
+              "moment",
+              "leo-profanity",
+              "nsfwjs",
+              "leaflet",
+              "leaflet-control-geocoder",
+              "@maptiler/sdk",
+              "maplibre-gl",
+              "events",
+              "seedrandom",
+              "node-fetch",
+              "long",
+              "string_decoder",
+              "buffer/"
+            ],
             "browser": "src/main.ts",
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
@@ -53,7 +67,7 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "1MB",
+                  "maximumWarning": "2MB",
                   "maximumError": "5MB"
                 },
                 {
@@ -74,7 +88,7 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "1MB",
+                  "maximumWarning": "2MB",
                   "maximumError": "5MB"
                 },
                 {
