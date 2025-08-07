@@ -11,11 +11,14 @@
       (error)="onFilesError($event)"
     />
     <app-primary-button 
-    buttonText="Upload Photos" 
+      buttonText="Upload Photos" 
+      buttonSize="full"
       [isLoading]="isLoading()" 
       [isDisabled]="isFileButtonDisabled()"
       (onClick)="onUploadPhotosClick()"
     />
+
+    <hr class="my-1 border-gray-300" />
     
     @if (totalImages() > 0) {
       <div class="text-sm text-gray-600 mb-2">
@@ -115,8 +118,9 @@
         <div class="text-sm text-gray-500">{{ getBooleanValueFromFormControlName('isFriendly') }}</div>
       </div>
       <app-primary-button 
-        class="self-end"
+        class="sm:self-end"
         buttonText="Save"
+        buttonSize="full"
         [isDisabled]="isSubmitButtonDisabled()"
         [isLoading]="isLoading()" 
         (onClick)="onSaveClick()"

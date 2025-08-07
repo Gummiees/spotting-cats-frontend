@@ -76,12 +76,12 @@
 
   <!-- Mobile menu -->
   <div [ngClass]="isMenuOpen() ? ['h-auto', 'pointer-events-auto'] : ['h-0', 'pointer-events-none']" class="sm:hidden overflow-hidden" id="mobile-menu">
-    <div class="px-2 flex flex-col gap-y-4">
+    <div class="p-3 flex flex-col gap-y-4">
       <app-primary-button class="flex items-center" buttonSize="full" buttonText="Add cat" (onClick)="onAddCatClick()" />
       <div class="space-y-1">
         <a routerLink="/cats" routerLinkActive #catsRla="routerLinkActive" [ngClass]="catsRla.isActive ? ['bg-gray-900', 'text-white'] : ['text-gray-300 hover:bg-gray-700 hover:text-white']" [attr.aria-current]="catsRla.isActive ? 'page' : null" class="block rounded-md px-3 py-2 text-base text-sm font-medium" (click)="closeMenus()">Cats</a>
         @if(isAdminOrSuperadmin()) {
-          <a routerLink="/admin" routerLinkActive #adminRla="routerLinkActive" [ngClass]="adminRla.isActive ? ['bg-gray-900', 'text-white'] : ['text-gray-300 hover:bg-gray-700 hover:text-white']" [attr.aria-current]="adminRla.isActive ? 'page' : null" class="block rounded-md px-3 py-2 text-base text-sm font-medium mb-3" (click)="closeMenus()">Admin</a>
+          <a routerLink="/admin" routerLinkActive #adminRla="routerLinkActive" [ngClass]="adminRla.isActive ? ['bg-gray-900', 'text-white'] : ['text-gray-300 hover:bg-gray-700 hover:text-white']" [attr.aria-current]="adminRla.isActive ? 'page' : null" class="block rounded-md px-3 py-2 text-base text-sm font-medium" (click)="closeMenus()">Admin</a>
         }
       </div>
     </div>
