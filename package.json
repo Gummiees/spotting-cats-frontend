@@ -30,7 +30,7 @@
     "@angular/core": "^20.0.0",
     "@angular/forms": "^20.0.0",
     "@angular/platform-browser": "^20.0.0",
-    "@angular/router": "^20.0.0",
+    "@angular/router": "^20.2.3",
     "@bluehalo/ngx-leaflet": "^20.0.0",
     "@maptiler/leaflet-maptilersdk": "^4.1.0",
     "@tailwindcss/postcss": "^4.1.11",
